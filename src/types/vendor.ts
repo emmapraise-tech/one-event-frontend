@@ -20,6 +20,7 @@ export interface Vendor {
 }
 
 export interface CreateVendorData {
+  userId: string;
   businessName: string;
   businessAddress: string;
   businessPhone: string;

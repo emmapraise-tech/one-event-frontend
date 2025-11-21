@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { UserType } from "@/types/auth"
 
 export const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -11,7 +12,7 @@ export const registerSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   phone: z.string().min(10, { message: "Phone number must be at least 10 digits" }),
-  type: z.enum(["CUSTOMER", "VENDOR"]).optional(),
+  type: z.nativeEnum(UserType).optional(),
 })
 
 export type LoginValues = z.infer<typeof loginSchema>
