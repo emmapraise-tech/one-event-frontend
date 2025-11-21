@@ -23,6 +23,11 @@ export const vendorService = {
     return response.data.data;
   },
 
+  async getVendorBookings(): Promise<any[]> {
+    const response = await api.get<ApiResponse<any[]>>('/vendors/bookings');
+    return response.data.data;
+  },
+
   async remove(id: string): Promise<void> {
     await api.delete(`/vendors/${id}`);
   },

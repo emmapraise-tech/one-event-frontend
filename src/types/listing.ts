@@ -15,6 +15,15 @@ export enum ListingStatus {
   PENDING = 'PENDING',
 }
 
+export interface ListingImage {
+  id: string;
+  listingId: string;
+  url: string;
+  alt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Listing {
   id: string;
   vendorId: string;
@@ -33,6 +42,7 @@ export interface Listing {
   longitude?: number;
   rating: number;
   reviewCount: number;
+  images?: ListingImage[];
   createdAt: string;
   updatedAt: string;
   vendor?: Vendor;

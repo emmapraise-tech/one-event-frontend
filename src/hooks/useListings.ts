@@ -17,12 +17,22 @@ export function useListings() {
     },
   });
 
+  const updateListingMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateListingData> }) =>
+      listingService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['listings'] });
+    },
+  });
+
   return {
     listings,
     isLoading,
     error,
     createListing: createListingMutation.mutate,
     isCreating: createListingMutation.isPending,
+    updateListing: updateListingMutation.mutate,
+    isUpdating: updateListingMutation.isPending,
   };
 }
 
@@ -31,5 +41,13 @@ export function useListing(id: string) {
     queryKey: ['listing', id],
     queryFn: () => listingService.findOne(id),
     enabled: !!id,
+  });
+}
+
+export function useListingBySlug(slug: string) {
+  return useQuery({
+    queryKey: ['listing', 'slug', slug],
+    queryFn: () => listingService.findBySlug(slug),
+    enabled: !!slug,
   });
 }

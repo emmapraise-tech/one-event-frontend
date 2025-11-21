@@ -15,6 +15,13 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import Link from "next/link"
 import { AlertCircle } from "lucide-react"
 
@@ -29,6 +36,7 @@ export default function RegisterPage() {
       email: "",
       password: "",
       phone: "",
+      type: "CUSTOMER",
     },
   })
 
@@ -120,6 +128,21 @@ export default function RegisterPage() {
                   {form.formState.errors.password.message}
                 </p>
               )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="type">Account Type</Label>
+              <Select
+                value={form.watch("type") || "CUSTOMER"}
+                onValueChange={(value) => form.setValue("type", value as "CUSTOMER" | "VENDOR")}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select account type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CUSTOMER">Customer</SelectItem>
+                  <SelectItem value="VENDOR">Vendor</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <Button className="w-full" type="submit" disabled={isRegistering}>
               {isRegistering ? "Creating account..." : "Create account"}

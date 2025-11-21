@@ -1,3 +1,9 @@
+export enum UserType {
+  CUSTOMER = 'CUSTOMER',
+  VENDOR = 'VENDOR',
+  ADMIN = 'ADMIN',
+}
+
 export interface User {
   id: string;
   firstName?: string;
@@ -5,7 +11,7 @@ export interface User {
   middleName?: string;
   email: string;
   phone: string;
-  type: 'CUSTOMER' | 'SERVICE_PROVIDER' | 'ADMIN';
+  type: UserType;
   isActive: boolean;
   isVerified: boolean;
   createdAt: string;
@@ -29,5 +35,5 @@ export interface RegisterData {
   email: string;
   password: string;
   phone: string;
-  role?: 'CUSTOMER' | 'SERVICE_PROVIDER';
+  type?: UserType;
 }

@@ -4,8 +4,9 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Store, Calendar, Settings, LogOut, PlusCircle } from "lucide-react"
+import { LayoutDashboard, Store, Calendar, Settings, LogOut, PlusCircle, Users, Shield } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
+import { UserType } from "@/types/auth"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -13,7 +14,8 @@ export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
 
-  const isVendor = user?.type === 'SERVICE_PROVIDER' || user?.type === 'ADMIN'
+  const isVendor = user?.type === UserType.VENDOR || user?.type === UserType.ADMIN
+  const isAdmin = user?.type === UserType.ADMIN
 
   return (
     <div className={cn("pb-12 w-64 border-r min-h-screen bg-background", className)}>
@@ -47,6 +49,34 @@ export function Sidebar({ className }: SidebarProps) {
                   <Link href="/dashboard/listings/new">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Create Listing
+                  </Link>
+                </Button>
+                <Button variant={pathname === "/dashboard/vendors" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
+                  <Link href="/dashboard/vendors">
+                    <Store className="mr-2 h-4 w-4" />
+                    My Vendor Profile
+                  </Link>
+                </Button>
+                <Button variant={pathname === "/dashboard/vendors/bookings" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
+                  <Link href="/dashboard/vendors/bookings">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Vendor Bookings
+                  </Link>
+                </Button>
+              </>
+            )}
+            {isAdmin && (
+              <>
+                <Button variant={pathname === "/dashboard/admin/users" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
+                  <Link href="/dashboard/admin/users">
+                    <Users className="mr-2 h-4 w-4" />
+                    Users
+                  </Link>
+                </Button>
+                <Button variant={pathname === "/dashboard/admin/bookings" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
+                  <Link href="/dashboard/admin/bookings">
+                    <Shield className="mr-2 h-4 w-4" />
+                    All Bookings
                   </Link>
                 </Button>
               </>
