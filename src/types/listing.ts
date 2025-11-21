@@ -49,8 +49,10 @@ export interface Listing {
 }
 
 export interface CreateListingData {
+  vendorId: string;
   type: ListingType;
   title: string;
+  slug?: string;
   description?: string;
   basePrice?: number;
   currency?: string;

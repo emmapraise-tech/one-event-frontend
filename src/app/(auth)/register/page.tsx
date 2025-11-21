@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { registerSchema, RegisterValues } from "@/lib/validations/auth"
 import { useAuth } from "@/hooks/useAuth"
+import { UserType } from "@/types/auth"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -36,7 +37,7 @@ export default function RegisterPage() {
       email: "",
       password: "",
       phone: "",
-      type: "CUSTOMER",
+      type: UserType.CUSTOMER,
     },
   })
 
@@ -132,15 +133,15 @@ export default function RegisterPage() {
             <div className="grid gap-2">
               <Label htmlFor="type">Account Type</Label>
               <Select
-                value={form.watch("type") || "CUSTOMER"}
-                onValueChange={(value) => form.setValue("type", value as "CUSTOMER" | "VENDOR")}
+                value={form.watch("type") || UserType.CUSTOMER}
+                onValueChange={(value) => form.setValue("type", value as UserType)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select account type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CUSTOMER">Customer</SelectItem>
-                  <SelectItem value="VENDOR">Vendor</SelectItem>
+                  <SelectItem value={UserType.CUSTOMER}>Customer</SelectItem>
+                  <SelectItem value={UserType.VENDOR}>Vendor</SelectItem>
                 </SelectContent>
               </Select>
             </div>
