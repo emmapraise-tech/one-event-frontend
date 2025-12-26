@@ -45,12 +45,12 @@ export function Sidebar({ className }: SidebarProps) {
                     My Listings
                   </Link>
                 </Button>
-                <Button variant={pathname === "/dashboard/listings/new" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
+                {/* <Button variant={pathname === "/dashboard/listings/new" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
                   <Link href="/dashboard/listings/new">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Create Listing
                   </Link>
-                </Button>
+                </Button> */}
                 <Button variant={pathname === "/dashboard/vendors" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
                   <Link href="/dashboard/vendors">
                     <Store className="mr-2 h-4 w-4" />

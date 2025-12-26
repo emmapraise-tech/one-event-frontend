@@ -10,7 +10,7 @@ interface PopularVenueCardProps {
 
 export function PopularVenueCard({ listing }: PopularVenueCardProps) {
   return (
-    <Link href={`/dashboard/listings/${listing.slug}`}>
+    <Link href={`/listings/${listing.slug}`}>
       <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow min-w-[280px]">
         <div className="aspect-video w-full relative">
           <ListingImage 

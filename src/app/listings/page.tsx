@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, Search, Calendar, Building2, Map } from "lucide-react"
+import { Loader2, Search, Calendar, Building2, Map, } from "lucide-react"
 import { ListingStatus, ListingType } from "@/types/listing"
 
 export default function ListingsLandingPage() {

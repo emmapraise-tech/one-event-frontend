@@ -55,7 +55,7 @@ export default function CreateListingPage() {
 			addressLine: '',
 			city: '',
 			state: '',
-			country: '',
+			country: 'Nigeria',
 		},
 	});
 
@@ -175,16 +175,16 @@ export default function CreateListingPage() {
 							</div>
 							<div className="grid gap-2">
 								<Label htmlFor="currency">Currency</Label>
-								<Input id="currency" {...form.register('currency')} />
+								<Input id="currency" readOnly {...form.register('currency')} />
 							</div>
 						</div>
 
 						<div className="grid gap-2">
 							<Label htmlFor="addressLine">Address Line</Label>
-							<Input id="addressLine" {...form.register('addressLine')} />
+							<Textarea id="addressLine" {...form.register('addressLine')} />
 						</div>
 
-						<div className="grid gap-4 sm:grid-cols-3">
+						<div className="grid gap-4 sm:grid-cols-2">
 							<div className="grid gap-2">
 								<Label htmlFor="city">City</Label>
 								<Input id="city" {...form.register('city')} />
@@ -193,10 +193,10 @@ export default function CreateListingPage() {
 								<Label htmlFor="state">State</Label>
 								<Input id="state" {...form.register('state')} />
 							</div>
-							<div className="grid gap-2">
+							{/* <div className="grid gap-2">
 								<Label htmlFor="country">Country</Label>
 								<Input id="country" {...form.register('country')} />
-							</div>
+							</div> */}
 						</div>
 
 						<div className="flex gap-2">
