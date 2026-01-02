@@ -22,8 +22,13 @@ export const bookingService = {
     return response.data.data;
   },
 
-  async findAll(): Promise<Booking[]> {
+  async findAllMyBookings(): Promise<Booking[]> {
     const response = await api.get<ApiResponse<Booking[]>>('/bookings');
+    return response.data.data;
+  },
+
+  async findAll(): Promise<Booking[]> {
+    const response = await api.get<ApiResponse<Booking[]>>('/admin/bookings');
     return response.data.data;
   },
 

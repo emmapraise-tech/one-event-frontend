@@ -6,12 +6,12 @@ import {
   CheckAvailabilityData,
 } from '@/types/booking';
 
-export function useBookings() {
+export function useMyBookings() {
   const queryClient = useQueryClient();
 
   const { data: bookings, isLoading, error } = useQuery({
     queryKey: ['bookings'],
-    queryFn: bookingService.findAll,
+    queryFn: bookingService.findAllMyBookings,
   });
 
   const createBookingMutation = useMutation({
@@ -54,6 +54,8 @@ export function useListingBookings(listingId: string) {
     enabled: !!listingId,
   });
 }
+
+
 
 export function useCheckAvailability() {
   const queryClient = useQueryClient();

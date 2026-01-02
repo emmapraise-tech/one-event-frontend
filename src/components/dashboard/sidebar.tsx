@@ -15,6 +15,7 @@ export function Sidebar({ className }: SidebarProps) {
   const { user, logout } = useAuth()
 
   const isVendor = user?.type === UserType.VENDOR || user?.type === UserType.ADMIN
+  const isVendorOnly = user?.type === UserType.VENDOR;
   const isAdmin = user?.type === UserType.ADMIN
 
   return (
@@ -31,13 +32,13 @@ export function Sidebar({ className }: SidebarProps) {
                 Dashboard
               </Link>
             </Button>
-            <Button variant={pathname === "/dashboard/bookings" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
-              <Link href="/dashboard/bookings">
+            <Button variant={pathname === "/dashboard/my-bookings" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
+              <Link href="/dashboard/my-bookings">
                 <Calendar className="mr-2 h-4 w-4" />
-                Bookings
+                My Bookings
               </Link>
             </Button>
-            {isVendor && (
+            {isVendorOnly && (
               <>
                 <Button variant={pathname === "/dashboard/listings" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
                   <Link href="/dashboard/listings">
@@ -45,12 +46,6 @@ export function Sidebar({ className }: SidebarProps) {
                     My Listings
                   </Link>
                 </Button>
-                {/* <Button variant={pathname === "/dashboard/listings/new" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
-                  <Link href="/dashboard/listings/new">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Create Listing
-                  </Link>
-                </Button> */}
                 <Button variant={pathname === "/dashboard/vendors" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
                   <Link href="/dashboard/vendors">
                     <Store className="mr-2 h-4 w-4" />
@@ -67,6 +62,12 @@ export function Sidebar({ className }: SidebarProps) {
             )}
             {isAdmin && (
               <>
+                <Button variant={pathname === "/dashboard/bookings" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
+                  <Link href="/dashboard/bookings">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Bookings
+                  </Link>
+                </Button>
                 <Button variant={pathname === "/dashboard/admin/users" ? "secondary" : "ghost"} className="w-full justify-start" asChild>
                   <Link href="/dashboard/admin/users">
                     <Users className="mr-2 h-4 w-4" />

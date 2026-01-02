@@ -1,5 +1,6 @@
 "use client"
 
+import { useMyBookings } from "@/hooks/useMyBookings"
 import { useAuth } from "@/hooks/useAuth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -18,11 +19,9 @@ import {
 } from "@/components/ui/dialog"
 import { useCreatePayment } from "@/hooks/usePayments"
 import { useState } from "react"
-import {useAdminBookings} from "@/hooks/useAdminBookings";
-import Link from "next/link";
 
 export default function BookingsPage() {
-  const { bookings, isLoading, error, cancelBooking, isCancelling } = useAdminBookings();
+  const { bookings, isLoading, error, cancelBooking, isCancelling } = useMyBookings()
   const { user } = useAuth()
   const { createPayment, isCreating } = useCreatePayment()
   const [selectedBooking, setSelectedBooking] = useState<string | null>(null)
@@ -70,9 +69,9 @@ export default function BookingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">All Bookings</h1>
+        <h1 className="text-3xl font-bold tracking-tight">My Bookings</h1>
         <p className="text-muted-foreground">
-          Manage all events bookings
+          Manage your event bookings and payments
         </p>
       </div>
 
@@ -83,7 +82,7 @@ export default function BookingsPage() {
           description="Your upcoming event bookings will appear here once you make a reservation."
           action={
             <Button asChild>
-              <Link href="/listings">Browse Available Venues</Link>
+              <a href="/listings">Browse Available Venues</a>
             </Button>
           }
         />

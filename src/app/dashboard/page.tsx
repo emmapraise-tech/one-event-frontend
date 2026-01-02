@@ -1,7 +1,7 @@
 "use client"
 
 import { useAuth } from "@/hooks/useAuth"
-import { useBookings } from "@/hooks/useBookings"
+import { useMyBookings } from "@/hooks/useMyBookings"
 import { useListings } from "@/hooks/useListings"
 import { useVendors } from "@/hooks/useVendors"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,7 @@ import { BookingStatus } from "@/types/booking"
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuth()
-  const { bookings } = useBookings()
+  const { bookings } = useMyBookings()
   const { listings } = useListings()
   const { vendor } = useVendors()
 
