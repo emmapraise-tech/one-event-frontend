@@ -20,8 +20,8 @@ export interface ListingImage {
   listingId: string;
   url: string;
   alt?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Listing {
@@ -43,8 +43,8 @@ export interface Listing {
   rating: number;
   reviewCount: number;
   images?: ListingImage[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
   vendor?: Vendor;
 }
 
