@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation"
 import { useListingBySlug } from "@/hooks/useListings"
-import { useBookings } from "@/hooks/useBookings"
+import { useMyBookings } from "@/hooks/useMyBookings"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -43,7 +43,7 @@ export default function ListingDetailPage() {
   const router = useRouter()
   const { user } = useAuth()
   const { data: listing, isLoading } = useListingBySlug(slug)
-  const { createBooking, isCreating } = useBookings()
+  const { createBooking, isCreating } = useMyBookings()
   const [showBookingDialog, setShowBookingDialog] = useState(false)
 
   const form = useForm<BookingFormData>({
