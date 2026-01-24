@@ -340,7 +340,7 @@ export default function Home() {
 								},
 								{
 									title: '2. Book',
-									desc: 'Check availability instantly and secure your date with a small deposit.',
+									desc: 'Check availability instantly and Lock your date with a 50% deposit.',
 									icon: CalendarCheck,
 								},
 								{

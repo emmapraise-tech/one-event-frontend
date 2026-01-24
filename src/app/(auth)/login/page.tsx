@@ -10,9 +10,17 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 
 export default function LoginPage() {
+	return (
+		<Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+			<LoginForm />
+		</Suspense>
+	);
+}
+
+function LoginForm() {
 	const { login, isLoggingIn, loginError } = useAuth();
 	const [showPassword, setShowPassword] = useState(false);
 

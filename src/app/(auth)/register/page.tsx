@@ -11,10 +11,18 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Separator } from '@/components/ui/separator';
 
 export default function RegisterPage() {
+	return (
+		<Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+			<RegisterForm />
+		</Suspense>
+	);
+}
+
+function RegisterForm() {
 	const { register, isRegistering, registerError } = useAuth();
 	const [showPassword, setShowPassword] = useState(false);
 

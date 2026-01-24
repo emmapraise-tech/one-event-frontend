@@ -8,12 +8,27 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { SidebarProvider } from '@/providers/sidebar-provider';
 import { DashboardFooter } from '@/components/dashboard/footer';
+import { Suspense } from 'react';
 
 export default function DashboardLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
+	return (
+		<Suspense
+			fallback={
+				<div className="flex h-screen items-center justify-center bg-neutral-50">
+					<Loader2 className="h-8 w-8 animate-spin text-primary-blue" />
+				</div>
+			}
+		>
+			<DashboardContent>{children}</DashboardContent>
+		</Suspense>
+	);
+}
+
+function DashboardContent({ children }: { children: React.ReactNode }) {
 	const { user, isLoading } = useAuth();
 	const router = useRouter();
 
