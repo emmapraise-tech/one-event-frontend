@@ -1,8 +1,10 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+
 import {
 	Search,
-	Calendar,
+	Calendar as CalendarIcon,
 	CalendarCheck,
 	MapPin,
 	CheckCircle2,
@@ -13,8 +15,6 @@ import {
 	Building2,
 	PartyPopper,
 	Music,
-	Utensils,
-	Camera,
 	Users,
 	Briefcase,
 	Sun,
@@ -22,8 +22,19 @@ import {
 import Link from 'next/link';
 import { VenueListingCard } from '@/components/listings/venue-listing-card';
 import { Listing, ListingType, ListingStatus } from '@/types/listing';
+import { useState } from 'react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from '@/components/ui/popover';
 
 export default function Home() {
+	const [date, setDate] = useState<Date>();
+
 	// Mock Data for Featured Venues
 	const featuredVenues: Listing[] = [
 		{
@@ -178,17 +189,32 @@ export default function Home() {
 
 							<div className="flex-1.5 px-6 border-b md:border-b-0 md:border-r border-gray-100 py-4 md:py-3 flex items-center gap-4">
 								<div className="h-10 w-10 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-blue-600">
-									<Calendar className="h-5 w-5" />
+									<CalendarIcon className="h-5 w-5" />
 								</div>
 								<div className="flex flex-col items-start w-full">
 									<label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">
 										Date
 									</label>
-									<input
-										type="text"
-										placeholder="Add dates"
-										className="w-full text-gray-900 font-semibold outline-none placeholder:text-gray-400 text-sm bg-transparent"
-									/>
+									<Popover>
+										<PopoverTrigger asChild>
+											<button
+												className={cn(
+													'w-full text-left font-semibold outline-none text-sm bg-transparent truncate',
+													!date ? 'text-gray-400' : 'text-gray-900',
+												)}
+											>
+												{date ? format(date, 'PPP') : 'Add dates'}
+											</button>
+										</PopoverTrigger>
+										<PopoverContent className="w-auto p-0" align="start">
+											<Calendar
+												mode="single"
+												selected={date}
+												onSelect={setDate}
+												initialFocus
+											/>
+										</PopoverContent>
+									</Popover>
 								</div>
 							</div>
 
@@ -323,8 +349,8 @@ export default function Home() {
 								Three Steps to Your Event
 							</h2>
 							<p className="text-neutral-500 max-w-lg mx-auto text-lg">
-								We've simplified the process so you can focus on planning the
-								actual event details.
+								We&apos;ve simplified the process so you can focus on planning
+								the actual event details.
 							</p>
 						</div>
 
@@ -432,7 +458,7 @@ export default function Home() {
 										))}
 									</div>
 									<p className="text-neutral-700 text-lg mb-8 leading-relaxed italic font-medium">
-										"{t.quote}"
+										&quot;{t.quote}&quot;
 									</p>
 									<div className="flex items-center gap-4">
 										<div
