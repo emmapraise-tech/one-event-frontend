@@ -1,89 +1,54 @@
-"use client"
+'use client';
 
-import { useAuth } from "@/hooks/useAuth"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { Loader2 } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
+import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { Loader2 } from 'lucide-react';
+import { SettingsSidebar } from '@/components/dashboard/settings/SettingsSidebar';
+import { ProfileSettings } from '@/components/dashboard/settings/ProfileSettings';
+import { EmptyState } from '@/components/ui/empty-state'; // Optional reuse
 
 export default function SettingsPage() {
-  const { user, isLoading } = useAuth()
+	const { user, isLoading } = useAuth();
+	const [activeTab, setActiveTab] = useState('profile');
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    )
-  }
+	if (isLoading) {
+		return (
+			<div className="flex h-screen items-center justify-center">
+				<Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+			</div>
+		);
+	}
 
-  if (!user) {
-    return null
-  }
+	return (
+		<div className="space-y-8">
+			{/* Header */}
+			<div>
+				<h1 className="text-3xl font-bold tracking-tight text-gray-900">
+					Settings
+				</h1>
+				<p className="text-muted-foreground mt-1">
+					Manage your profile, security, payments, and notifications.
+				</p>
+			</div>
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="h2 text-foreground">Settings</h1>
-        <p className="body text-muted-foreground mt-2">
-          Manage your account settings and preferences
-        </p>
-      </div>
+			<div className="flex flex-col lg:flex-row gap-8 items-start">
+				{/* Sidebar Navigation */}
+				<SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Appearance</CardTitle>
-          <CardDescription>
-            Customize the appearance of the application. Choose between light, dark, or system theme.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <label className="small text-foreground">Theme</label>
-              <p className="caption text-muted-foreground">
-                Select your preferred theme mode
-              </p>
-            </div>
-            <ThemeToggle />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Information</CardTitle>
-          <CardDescription>
-            Your account details and information
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label className="small text-muted-foreground">Email</label>
-            <p className="body text-foreground">{user.email}</p>
-          </div>
-          <Separator />
-          <div className="space-y-2">
-            <label className="small text-muted-foreground">Name</label>
-            <p className="body text-foreground">
-              {user.firstName && user.lastName
-                ? `${user.firstName} ${user.lastName}`
-                : user.firstName || "Not set"}
-            </p>
-          </div>
-          <Separator />
-          <div className="space-y-2">
-            <label className="small text-muted-foreground">Phone</label>
-            <p className="body text-foreground">{user.phone || "Not set"}</p>
-          </div>
-          <Separator />
-          <div className="space-y-2">
-            <label className="small text-muted-foreground">Account Type</label>
-            <p className="body text-foreground capitalize">{user.type.toLowerCase()}</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+				{/* Content Area */}
+				<div className="flex-1 w-full">
+					{activeTab === 'profile' ? (
+						<ProfileSettings />
+					) : (
+						<div className="rounded-xl border border-gray-100 bg-white p-12 text-center text-muted-foreground">
+							<h3 className="text-lg font-semibold text-gray-900">
+								Coming Soon
+							</h3>
+							<p>The {activeTab} settings panel is under construction.</p>
+						</div>
+					)}
+				</div>
+			</div>
+		</div>
+	);
 }
-

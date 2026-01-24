@@ -70,7 +70,11 @@ export function Sidebar() {
 
 			<nav className="flex-1 py-6 px-3 space-y-1">
 				{sidebarItems.map((item) => {
-					const isActive = pathname === item.href;
+					// Use startsWith for nested routes, but strict check for dashboard root
+					const isActive =
+						item.href === '/dashboard'
+							? pathname === item.href
+							: pathname.startsWith(item.href);
 
 					return (
 						<Link
@@ -80,7 +84,7 @@ export function Sidebar() {
 								'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
 								isActive
 									? 'bg-brand-blue text-white shadow-sm'
-									: 'text-neutral-600 hover:bg-neutral-50 hover:text-primary-blue'
+									: 'text-neutral-600 hover:bg-neutral-50 hover:text-primary-blue',
 							)}
 						>
 							<item.icon
@@ -88,7 +92,7 @@ export function Sidebar() {
 									'h-5 w-5',
 									isActive
 										? 'text-white'
-										: 'text-neutral-500 group-hover:text-primary-blue'
+										: 'text-neutral-500 group-hover:text-primary-blue',
 								)}
 							/>
 							{item.title}

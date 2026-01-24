@@ -1,29 +1,19 @@
 'use client';
 
-import { useState } from 'react';
 import { useListings } from '@/hooks/useListings';
 import { useVendors } from '@/hooks/useVendors';
 import { useAuth } from '@/hooks/useAuth';
 import { ListingCard } from '@/components/listings/listing-card';
-import { CreateListingForm } from '@/components/listings/create-listing-form';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '@/components/ui/dialog';
 import { Loader2, Plus, Store } from 'lucide-react';
 import { UserType } from '@/types/auth';
+import Link from 'next/link';
 
 export default function ListingsPage() {
 	const { user } = useAuth();
 	const { vendor } = useVendors();
 	const { listings, isLoading, error } = useListings();
-	const [isCreateOpen, setIsCreateOpen] = useState(false);
 
 	// Filter listings for vendors to show only their own
 	const isVendor =
@@ -36,7 +26,7 @@ export default function ListingsPage() {
 	if (isLoading) {
 		return (
 			<div className="flex h-full items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin" />
+				<Loader2 className="h-8 w-8 animate-spin text-blue-600" />
 			</div>
 		);
 	}
@@ -50,36 +40,25 @@ export default function ListingsPage() {
 	}
 
 	return (
-		<div className="space-y-6">
-			<div className="flex items-center justify-between">
+		<div className="space-y-8">
+			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight">
+					<h1 className="text-3xl font-bold tracking-tight text-gray-900">
 						{isVendor ? 'My Listings' : 'Browse Services'}
 					</h1>
-					<p className="text-muted-foreground">
+					<p className="text-muted-foreground mt-1">
 						{isVendor
 							? 'Manage your service listings'
 							: 'Find the perfect service providers for your event.'}
 					</p>
 				</div>
 				{isVendor && (
-					<Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-						<DialogTrigger asChild>
-							<Button>
-								<Plus className="mr-2 h-4 w-4" />
-								Create Listing
-							</Button>
-						</DialogTrigger>
-						<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
-							<DialogHeader>
-								<DialogTitle>Create New Listing</DialogTitle>
-								<DialogDescription>
-									Add a new service listing to your vendor profile
-								</DialogDescription>
-							</DialogHeader>
-							<CreateListingForm onSuccess={() => setIsCreateOpen(false)} />
-						</DialogContent>
-					</Dialog>
+					<Link href="/dashboard/listings/new">
+						<Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm h-10 px-6 font-medium">
+							<Plus className="mr-2 h-4 w-4" />
+							Create New Listing
+						</Button>
+					</Link>
 				)}
 			</div>
 
@@ -91,7 +70,7 @@ export default function ListingsPage() {
 
 			{vendorListings?.length === 0 && (
 				<EmptyState
-					icon={<Store className="h-16 w-16" />}
+					icon={<Store className="h-12 w-12 text-gray-300" />}
 					title={isVendor ? 'No listings yet' : 'No listings available'}
 					description={
 						isVendor
@@ -100,23 +79,12 @@ export default function ListingsPage() {
 					}
 					action={
 						isVendor ? (
-							<Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-								<DialogTrigger asChild>
-									<Button>
-										<Plus className="mr-2 h-4 w-4" />
-										Create Your First Listing
-									</Button>
-								</DialogTrigger>
-								<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
-									<DialogHeader>
-										<DialogTitle>Create New Listing</DialogTitle>
-										<DialogDescription>
-											Add a new service listing to your vendor profile
-										</DialogDescription>
-									</DialogHeader>
-									<CreateListingForm onSuccess={() => setIsCreateOpen(false)} />
-								</DialogContent>
-							</Dialog>
+							<Link href="/dashboard/listings/new">
+								<Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm mt-4">
+									<Plus className="mr-2 h-4 w-4" />
+									Create Your First Listing
+								</Button>
+							</Link>
 						) : null
 					}
 				/>

@@ -1,206 +1,221 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* One Event Color Palette */
-  --primary-blue: #1E3A8A;
-  --primary-blue-hover: #1D4ED8;
-  --primary-soft-blue: #EFF6FF;
+	/* One Event Color Palette */
+	--primary-blue: #1e3a8a;
+	--primary-blue-hover: #1d4ed8;
+	--primary-soft-blue: #eff6ff;
 
-  --accent-gold: #F59E0B;
-  --accent-gold-hover: #D97706;
-  --accent-soft-gold: #FEF3C7;
+	--accent-gold: #f59e0b;
+	--accent-gold-hover: #d97706;
+	--accent-soft-gold: #fef3c7;
 
-  --neutral-white: #FFFFFF;
-  --neutral-bg: #F9FAFB;
-  --neutral-border: #E5E7EB;
-  --neutral-text-primary: #111827;
-  --neutral-text-muted: #6B7280;
+	--neutral-white: #ffffff;
+	--neutral-bg: #f9fafb;
+	--neutral-border: #e5e7eb;
+	--neutral-text-primary: #111827;
+	--neutral-text-muted: #6b7280;
 
-  --status-success: #16A34A;
-  --status-warning: #FACC15;
-  --status-error: #DC2626;
-  --status-info: #2563EB;
+	--status-success: #16a34a;
+	--status-warning: #facc15;
+	--status-error: #dc2626;
+	--status-info: #2563eb;
 
-  /* Semantic Mappings for Shadcn/Tailwind */
-  --background: 210 20% 98%; /* #F9FAFB */
-  --foreground: 220 39% 11%; /* #111827 */
+	/* Semantic Mappings for Shadcn/Tailwind */
+	--background: hsl(210 20% 98%); /* #F9FAFB */
+	--foreground: hsl(220 39% 11%); /* #111827 */
 
-  --card: 0 0% 100%; /* #FFFFFF */
-  --card-foreground: 220 39% 11%; /* #111827 */
+	--card: hsl(0 0% 100%); /* #FFFFFF */
+	--card-foreground: hsl(220 39% 11%); /* #111827 */
 
-  --popover: 0 0% 100%; /* #FFFFFF */
-  --popover-foreground: 220 39% 11%; /* #111827 */
+	--popover: hsl(0 0% 100%); /* #FFFFFF */
+	--popover-foreground: hsl(220 39% 11%); /* #111827 */
 
-  --primary: 224 64% 33%; /* #1E3A8A */
-  --primary-foreground: 0 0% 100%; /* #FFFFFF */
+	--primary: hsl(224 64% 33%); /* #1E3A8A */
+	--primary-foreground: hsl(0 0% 100%); /* #FFFFFF */
 
-  --secondary: 38 92% 50%; /* #F59E0B Accent Gold as active secondary */
-  --secondary-foreground: 220 39% 11%; /* #111827 */
+	--secondary: hsl(38 92% 50%); /* #F59E0B Accent Gold as active secondary */
+	--secondary-foreground: hsl(220 39% 11%); /* #111827 */
 
-  --muted: 210 40% 96%;
-  --muted-foreground: 220 9% 46%; /* #6B7280 */
+	--muted: hsl(210 40% 96%);
+	--muted-foreground: hsl(220 9% 46%); /* #6B7280 */
 
-  --accent: 38 92% 50%; /* #F59E0B */
-  --accent-foreground: 220 39% 11%;
+	--accent: hsl(38 92% 50%); /* #F59E0B */
+	--accent-foreground: hsl(220 39% 11%);
 
-  --destructive: 0 72% 51%; /* #DC2626 */
-  --destructive-foreground: 0 0% 100%;
+	--destructive: hsl(0 72% 51%); /* #DC2626 */
+	--destructive-foreground: hsl(0 0% 100%);
 
-  --border: 214 32% 91%; /* #E5E7EB - converted to HSL approx 210 20 92 or keep existing match */
-  --input: 214 32% 91%;
-  --ring: 224 64% 33%; /* Match Primary Blue */
+	--border: hsl(214 32% 91%); /* #E5E7EB */
+	--input: hsl(214 32% 91%);
+	--ring: hsl(224 64% 33%); /* Match Primary Blue */
 
-  --radius: 0.75rem; /* 12px primarily */
+	--radius: 0.75rem; /* 12px primarily */
 }
 
 .dark {
-  /* Minimal Dark Mode defaults largely kept for safety, but can be overridden if detailed dark mode spec provided later. 
+	/* Minimal Dark Mode defaults largely kept for safety, but can be overridden if detailed dark mode spec provided later. 
      Currently adhering to Light Mode heavy spec. */
-  --background: 220 39% 11%;
-  --foreground: 0 0% 98%;
-  
-  --card: 220 39% 11%;
-  --card-foreground: 0 0% 98%;
-  
-  --popover: 220 39% 11%;
-  --popover-foreground: 0 0% 98%;
-  
-  --primary: 224 64% 33%;
-  --primary-foreground: 0 0% 98%;
-  
-  --secondary: 38 92% 50%;
-  --secondary-foreground: 0 0% 98%;
-  
-  --muted: 217 19% 27%;
-  --muted-foreground: 215 20% 65%;
-  
-  --accent: 38 92% 50%;
-  --accent-foreground: 0 0% 98%;
-  
-  --destructive: 0 62% 30%;
-  --destructive-foreground: 0 0% 98%;
-  
-  --border: 217 19% 27%;
-  --input: 217 19% 27%;
-  --ring: 224 64% 33%;
+	--background: hsl(220 39% 11%);
+	--foreground: hsl(0 0% 98%);
+
+	--card: hsl(220 39% 11%);
+	--card-foreground: hsl(0 0% 98%);
+
+	--popover: hsl(220 39% 11%);
+	--popover-foreground: hsl(0 0% 98%);
+
+	--primary: hsl(224 64% 33%);
+	--primary-foreground: hsl(0 0% 98%);
+
+	--secondary: hsl(38 92% 50%);
+	--secondary-foreground: hsl(0 0% 98%);
+
+	--muted: hsl(217 19% 27%);
+	--muted-foreground: hsl(215 20% 65%);
+
+	--accent: hsl(38 92% 50%);
+	--accent-foreground: hsl(0 0% 98%);
+
+	--destructive: hsl(0 62% 30%);
+	--destructive-foreground: hsl(0 0% 98%);
+
+	--border: hsl(217 19% 27%);
+	--input: hsl(217 19% 27%);
+	--ring: hsl(224 64% 33%);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
 
-  /* Radius */
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
 
-  /* One Event Specific Colors */
-  --color-brand-blue: #1E3A8A;
-  --color-brand-blue-hover: #1D4ED8;
-  --color-brand-blue-soft: #EFF6FF;
-  
-  --color-brand-gold: #F59E0B;
-  --color-brand-gold-hover: #D97706;
-  --color-brand-gold-soft: #FEF3C7;
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+
+	/* Radius */
+	--radius-xl: calc(var(--radius) + 4px);
+	--radius-lg: var(--radius);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-sm: calc(var(--radius) - 4px);
+
+	/* One Event Specific Colors */
+	--color-brand-blue: #1e3a8a;
+	--color-brand-blue-hover: #1d4ed8;
+	--color-brand-blue-soft: #eff6ff;
+
+	--color-brand-gold: #f59e0b;
+	--color-brand-gold-hover: #d97706;
+	--color-brand-gold-soft: #fef3c7;
 }
 
 body {
-  background-color: var(--neutral-bg);
-  color: var(--neutral-text-primary);
-  font-family: var(--font-inter), sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	background-color: var(--neutral-bg);
+	color: var(--neutral-text-primary);
+	font-family: var(--font-inter), sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 @layer base {
-  /* Typography Defaults per Style Guide */
-  h1, .h1 {
-    font-family: var(--font-inter), sans-serif;
-    font-size: 2.5rem; /* 40px */
-    line-height: 1.2;
-    font-weight: 700;
-    color: var(--primary-blue);
-  }
-  @media (min-width: 1024px) {
-    h1, .h1 { font-size: 3rem; /* 48px */ }
-  }
+	/* Typography Defaults per Style Guide */
+	h1,
+	.h1 {
+		font-family: var(--font-inter), sans-serif;
+		font-size: 2.5rem; /* 40px */
+		line-height: 1.2;
+		font-weight: 700;
+		color: var(--primary-blue);
+	}
+	@media (min-width: 1024px) {
+		h1,
+		.h1 {
+			font-size: 3rem; /* 48px */
+		}
+	}
 
-  h2, .h2 {
-    font-family: var(--font-inter), sans-serif;
-    font-size: 2rem; /* 32px */
-    line-height: 1.25;
-    font-weight: 600;
-    color: var(--neutral-text-primary);
-  }
-  @media (min-width: 1024px) {
-    h2, .h2 { font-size: 2.25rem; /* 36px */ }
-  }
+	h2,
+	.h2 {
+		font-family: var(--font-inter), sans-serif;
+		font-size: 2rem; /* 32px */
+		line-height: 1.25;
+		font-weight: 600;
+		color: var(--neutral-text-primary);
+	}
+	@media (min-width: 1024px) {
+		h2,
+		.h2 {
+			font-size: 2.25rem; /* 36px */
+		}
+	}
 
-  h3, .h3 {
-    font-family: var(--font-inter), sans-serif;
-    font-size: 1.5rem; /* 24px */
-    line-height: 1.33;
-    font-weight: 600;
-    color: var(--neutral-text-primary);
-  }
-  @media (min-width: 1024px) {
-    h3, .h3 { font-size: 1.75rem; /* 28px */ }
-  }
+	h3,
+	.h3 {
+		font-family: var(--font-inter), sans-serif;
+		font-size: 1.5rem; /* 24px */
+		line-height: 1.33;
+		font-weight: 600;
+		color: var(--neutral-text-primary);
+	}
+	@media (min-width: 1024px) {
+		h3,
+		.h3 {
+			font-size: 1.75rem; /* 28px */
+		}
+	}
 
-  h4, .h4 {
-    font-size: 1.25rem; /* 20px */
-    line-height: 1.4;
-    font-weight: 500;
-    color: var(--neutral-text-primary);
-  }
+	h4,
+	.h4 {
+		font-size: 1.25rem; /* 20px */
+		line-height: 1.4;
+		font-weight: 500;
+		color: var(--neutral-text-primary);
+	}
 
-  p, .body-default {
-    font-size: 1rem; /* 16px */
-    line-height: 1.5;
-    font-weight: 400;
-    color: var(--neutral-text-primary);
-  }
+	p,
+	.body-default {
+		font-size: 1rem; /* 16px */
+		line-height: 1.5;
+		font-weight: 400;
+		color: var(--neutral-text-primary);
+	}
 
-  .body-large {
-    font-size: 1.125rem; /* 18px */
-    line-height: 1.5;
-    font-weight: 400;
-  }
+	.body-large {
+		font-size: 1.125rem; /* 18px */
+		line-height: 1.5;
+		font-weight: 400;
+	}
 
-  .small-text, small {
-    font-size: 0.875rem; /* 14px */
-    line-height: 1.4;
-    font-weight: 400;
-    color: var(--neutral-text-muted);
-  }
+	.small-text,
+	small {
+		font-size: 0.875rem; /* 14px */
+		line-height: 1.4;
+		font-weight: 400;
+		color: var(--neutral-text-muted);
+	}
 }

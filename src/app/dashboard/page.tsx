@@ -65,7 +65,7 @@ export default function DashboardPage() {
 	const userName = user?.firstName || 'Sarah';
 
 	return (
-		<div className="space-y-8 max-w-7xl mx-auto">
+		<div className="space-y-8">
 			{/* Header Section */}
 			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 				<div>
@@ -76,10 +76,12 @@ export default function DashboardPage() {
 						Here's what's happening with your venues today.
 					</p>
 				</div>
-				<Button className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold shadow-sm h-10 px-6">
-					<Plus className="h-4 w-4 mr-2" />
-					Add New Listing
-				</Button>
+				<a href="/dashboard/listings/new">
+					<Button className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold shadow-sm h-10 px-6">
+						<Plus className="h-4 w-4 mr-2" />
+						Add New Listing
+					</Button>
+				</a>
 			</div>
 
 			{/* Stats Grid */}
