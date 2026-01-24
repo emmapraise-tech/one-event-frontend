@@ -17,6 +17,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 	const [isMounted, setIsMounted] = useState(false);
 
 	useEffect(() => {
+		// eslint-disable-next-line
 		setIsMounted(true);
 		// Load preference from local storage
 		const stored = localStorage.getItem('sidebar-collapsed');
