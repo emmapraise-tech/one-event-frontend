@@ -31,7 +31,7 @@ export default function BookingConfirmedPage() {
 			// Generate a random-ish ref code if not already existing,
 			// or just static for demo since it's a new load
 			setRefCode(
-				'#OE-' + Math.floor(100000 + Math.random() * 900000).toString()
+				'#OE-' + Math.floor(100000 + Math.random() * 900000).toString(),
 			);
 		}
 	}, []);
@@ -58,23 +58,27 @@ export default function BookingConfirmedPage() {
 		<div className="min-h-screen bg-neutral-bg py-12 px-4">
 			<div className="container mx-auto max-w-3xl">
 				{/* Success Header */}
-				<div className="text-center mb-8">
-					<div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-100 mb-6">
-						<CheckCircle className="h-10 w-10 text-green-600" />
+				<div className="text-center mb-10">
+					<div className="inline-flex h-24 w-24 items-center justify-center rounded-full bg-green-100 mb-6 relative animate-in zoom-in-50 duration-500">
+						<div className="absolute inset-0 bg-green-200 rounded-full animate-ping opacity-25"></div>
+						<div className="absolute -top-2 -right-2">
+							<Sparkles className="h-8 w-8 text-brand-gold animate-bounce" />
+						</div>
+						<CheckCircle className="h-12 w-12 text-green-600 relative z-10" />
 					</div>
-					<h1 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-2">
+					<h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-3 tracking-tight">
 						Booking Confirmed!
 					</h1>
-					<p className="text-neutral-500 text-lg">
-						Your reservation at{' '}
-						<span className="font-semibold text-neutral-900">
+					<p className="text-neutral-500 text-lg md:text-xl max-w-xl mx-auto leading-relaxed">
+						Get ready to celebrate! Your reservation at{' '}
+						<span className="font-bold text-neutral-900">
 							{bookingData.venueName}
 						</span>{' '}
-						is secured.
+						is officially secured.
 					</p>
-					<p className="text-sm text-neutral-400 mt-2">
-						A confirmation email has been sent to{' '}
-						<span className="font-medium text-neutral-600">
+					<p className="text-sm text-neutral-400 mt-4 bg-neutral-50 inline-block px-4 py-1 rounded-full border border-neutral-100">
+						Confirmation sent to{' '}
+						<span className="font-semibold text-neutral-700">
 							alex.morgan@example.com
 						</span>
 					</p>
@@ -101,7 +105,7 @@ export default function BookingConfirmedPage() {
 				</div>
 
 				{/* Main Card */}
-				<Card className="overflow-hidden border-neutral-200 shadow-lg">
+				<Card className="overflow-hidden border-neutral-200 shadow-2xl rounded-3xl ring-1 ring-neutral-200/50">
 					{/* Venue Image Banner */}
 					<div className="relative h-64 w-full">
 						<Image
@@ -291,16 +295,22 @@ export default function BookingConfirmedPage() {
 				{/* Footer Actions */}
 				<div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
 					<div className="flex gap-4 w-full sm:w-auto">
-						<Button variant="outline" className="flex-1 sm:flex-none gap-2">
+						<Button
+							variant="outline"
+							className="flex-1 sm:flex-none gap-2 h-12 rounded-xl border-neutral-200 text-neutral-700 hover:bg-neutral-50"
+						>
 							<Calendar className="h-4 w-4" />
 							Add to Calendar
 						</Button>
-						<Button variant="outline" className="flex-1 sm:flex-none gap-2">
+						<Button
+							variant="outline"
+							className="flex-1 sm:flex-none gap-2 h-12 rounded-xl border-neutral-200 text-neutral-700 hover:bg-neutral-50"
+						>
 							<Download className="h-4 w-4" />
 							Receipt
 						</Button>
 					</div>
-					<Button className="w-full sm:w-auto gap-2 bg-brand-blue hover:bg-brand-blue-hover">
+					<Button className="w-full sm:w-auto gap-2 bg-brand-gold hover:bg-brand-gold-hover text-white h-12 px-8 rounded-xl font-bold shadow-lg shadow-amber-500/20">
 						Return to Dashboard
 						<Home className="h-4 w-4" />
 					</Button>

@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { LayoutDashboard } from 'lucide-react';
-import { ListingFormData } from '../ListingWizard';
+import { ListingFormData } from '@/types/listing';
 
 interface StepProps {
 	formData: ListingFormData;

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/legacy/image';
 import { ShieldCheck, BadgeCheck, Landmark } from 'lucide-react';
+import { Logo } from '@/components/logo';
 
 export default function AuthLayout({
 	children,
@@ -10,40 +11,37 @@ export default function AuthLayout({
 	return (
 		<div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2">
 			{/* Left: Image Sidebar */}
-			<div className="relative hidden lg:block h-full min-h-screen bg-neutral-900 text-white overflow-hidden">
+			<div className="relative hidden lg:block h-full min-h-screen bg-[#0B1120] text-white overflow-hidden">
 				<div className="absolute inset-0">
 					<Image
 						src="/images/auth-sidebar.png"
 						alt="Event Venue"
 						layout="fill"
 						objectFit="cover"
-						className="opacity-60"
+						className="opacity-40"
 						priority
 					/>
-					<div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-black/10" />
+					<div className="absolute inset-0 bg-linear-to-t from-[#0B1120] via-[#0B1120]/50 to-transparent" />
 				</div>
 
 				<div className="relative z-10 h-full flex flex-col justify-between p-12">
-					<div className="flex items-center gap-2 font-bold text-xl tracking-tight">
-						<Landmark className="h-6 w-6 text-brand-gold" />
-						<span>EventSpace</span>
-					</div>
+					<Logo variant="dark" />
 
 					<div className="space-y-6 max-w-lg">
-						<h1 className="text-4xl font-bold leading-tight">
+						<h1 className="text-4xl font-bold leading-tight tracking-tight">
 							Find the perfect space for your next event
 						</h1>
-						<p className="text-lg text-neutral-300">
+						<p className="text-lg text-neutral-400 leading-relaxed">
 							Join thousands of users booking and listing top-tier event centers
 							around the globe.
 						</p>
 
 						<div className="flex items-center gap-4 pt-4">
-							<div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-sm font-medium">
+							<div className="flex items-center gap-2 bg-white/5 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-sm font-medium text-neutral-300">
 								<BadgeCheck className="h-4 w-4 text-brand-gold" />
 								Verified Venues
 							</div>
-							<div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-sm font-medium">
+							<div className="flex items-center gap-2 bg-white/5 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-sm font-medium text-neutral-300">
 								<ShieldCheck className="h-4 w-4 text-brand-gold" />
 								Secure Booking
 							</div>
@@ -56,13 +54,7 @@ export default function AuthLayout({
 			<div className="flex flex-col bg-white">
 				{/* Mobile Header */}
 				<div className="lg:hidden p-6 flex items-center justify-between border-b border-neutral-100">
-					<Link
-						href="/"
-						className="flex items-center gap-2 font-bold text-lg tracking-tight text-neutral-900"
-					>
-						<Landmark className="h-5 w-5 text-brand-blue" />
-						<span>EventSpace</span>
-					</Link>
+					<Logo />
 				</div>
 
 				{/* Form Area */}

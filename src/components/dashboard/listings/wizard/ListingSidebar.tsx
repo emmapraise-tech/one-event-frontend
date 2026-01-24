@@ -1,8 +1,8 @@
-import { Zap, HelpCircle } from 'lucide-react';
+import { Zap, HelpCircle, CheckCircle2, Circle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ListingFormData } from './ListingWizard';
+import { ListingFormData } from '@/types/listing';
 
 interface ListingSidebarProps {
 	currentStep: number;

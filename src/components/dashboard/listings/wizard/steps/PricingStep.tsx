@@ -10,7 +10,7 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { DollarSign, ChevronLeft, ChevronRight, Info } from 'lucide-react';
-import { ListingFormData } from '../ListingWizard';
+import { ListingFormData } from '@/types/listing';
 
 interface StepProps {
 	formData: ListingFormData;

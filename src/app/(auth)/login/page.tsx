@@ -51,9 +51,11 @@ export default function LoginPage() {
 			</div>
 
 			{/* Header */}
-			<div>
-				<h2 className="text-2xl font-bold text-neutral-900">Welcome back</h2>
-				<p className="text-neutral-500 mt-1">
+			<div className="text-center md:text-left">
+				<h2 className="text-3xl font-bold text-neutral-900 tracking-tight">
+					Welcome back
+				</h2>
+				<p className="text-neutral-500 mt-2 text-base">
 					Enter your details to access your account.
 				</p>
 			</div>
@@ -77,7 +79,7 @@ export default function LoginPage() {
 							id="email"
 							type="email"
 							placeholder="name@example.com"
-							className="h-11"
+							className="h-12 bg-neutral-50 border-neutral-200 focus:bg-white transition-all rounded-xl"
 							{...form.register('email')}
 						/>
 						{form.formState.errors.email && (
@@ -102,7 +104,7 @@ export default function LoginPage() {
 								id="password"
 								type={showPassword ? 'text' : 'password'}
 								placeholder="Enter your password"
-								className="h-11 pr-10"
+								className="h-12 bg-neutral-50 border-neutral-200 focus:bg-white transition-all rounded-xl pr-10"
 								{...form.register('password')}
 							/>
 							<button
@@ -137,7 +139,7 @@ export default function LoginPage() {
 
 				<Button
 					type="submit"
-					className="w-full h-11 bg-brand-blue hover:bg-brand-blue-hover text-white"
+					className="w-full h-12 bg-brand-gold hover:bg-brand-gold-hover text-white rounded-xl font-bold shadow-lg shadow-amber-500/20 text-base"
 					disabled={isLoggingIn}
 				>
 					{isLoggingIn ? 'Signing in...' : 'Sign In'}

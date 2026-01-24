@@ -69,8 +69,16 @@ export default function BookingSummaryPage() {
 	return (
 		<div className="min-h-screen bg-gray-50">
 			{/* Breadcrumbs */}
-			<div className="bg-white py-4 border-b border-neutral-100 mb-8">
+			<div className="bg-white/50 backdrop-blur-sm py-4 border-b border-neutral-100 mb-8 sticky top-16 z-30">
 				<div className="container mx-auto px-4 flex items-center gap-2 text-sm text-neutral-500">
+					<Button
+						variant="ghost"
+						size="icon"
+						className="mr-2 h-8 w-8 hover:bg-neutral-100 rounded-full"
+						onClick={() => router.back()}
+					>
+						<ChevronRight className="h-4 w-4 rotate-180 text-neutral-900" />
+					</Button>
 					<Link href="/" className="hover:text-neutral-900 transition-colors">
 						Home
 					</Link>
@@ -108,7 +116,7 @@ export default function BookingSummaryPage() {
 					{/* Main Content - Left Column */}
 					<div className="lg:col-span-2 space-y-6">
 						{/* Venue Details Card */}
-						<Card className="overflow-hidden border-neutral-200">
+						<Card className="overflow-hidden border-neutral-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
 							<CardContent className="p-0 flex flex-col md:flex-row">
 								<div className="relative w-full md:w-1/3 h-48 md:h-auto">
 									<Image
@@ -183,7 +191,7 @@ export default function BookingSummaryPage() {
 						</Card>
 
 						{/* Selected Services */}
-						<Card className="border-neutral-200">
+						<Card className="border-neutral-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
 							<div className="p-6 border-b border-neutral-100 flex justify-between items-center">
 								<h3 className="font-bold text-lg text-neutral-900">
 									Selected Services
@@ -237,7 +245,7 @@ export default function BookingSummaryPage() {
 						</Card>
 
 						{/* Contact Information */}
-						<Card className="border-neutral-200">
+						<Card className="border-neutral-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
 							<div className="p-6 border-b border-neutral-100 flex justify-between items-center">
 								<h3 className="font-bold text-lg text-neutral-900">
 									Contact Information
@@ -298,7 +306,7 @@ export default function BookingSummaryPage() {
 					{/* Sidebar - Price Breakdown */}
 					<div className="lg:col-span-1">
 						<div className="sticky top-24 space-y-4">
-							<Card className="border-neutral-200 shadow-lg">
+							<Card className="border-neutral-200 shadow-xl rounded-2xl overflow-hidden">
 								<CardContent className="p-6 space-y-6">
 									<h3 className="font-bold text-lg text-neutral-900">
 										Price Breakdown

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ListingType } from '@/types/listing';
+import { ListingType, ListingFormData } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { ListingSidebar } from './ListingSidebar';
@@ -13,33 +13,6 @@ import { SpecificationStep } from './steps/SpecificationStep';
 import { MediaStep } from './steps/MediaStep';
 import { PricingStep } from './steps/PricingStep';
 import { cn } from '@/lib/utils';
-
-export interface ListingFormData {
-	type: ListingType;
-	title: string;
-	slug: string;
-	description: string;
-	// Pricing
-	priceStrategy: 'daily' | 'weekday_weekend';
-	basePrice?: number; // Used for "Single Daily Price"
-	weekdayPrice?: number;
-	weekendPrice?: number;
-	currency: string;
-	addressLine: string;
-	city: string;
-	state: string;
-	country: string;
-
-	// Specs
-	totalArea?: number;
-	seatedCapacity?: number;
-	standingCapacity?: number;
-	amenities: string[];
-
-	// Media
-	imageUrls: string[]; // For preview
-	imageFiles: File[]; // For upload
-}
 
 const initialData: ListingFormData = {
 	type: ListingType.VENUE,

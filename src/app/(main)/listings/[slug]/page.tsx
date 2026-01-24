@@ -51,7 +51,7 @@ export default function ListingDetailPage() {
 		<div className="min-h-screen bg-neutral-bg pb-20">
 			{/* Breadcrumbs (Simple) */}
 			{/* Breadcrumbs */}
-			<div className="bg-white py-4 border-b border-neutral-100">
+			<div className="bg-white/50 backdrop-blur-sm py-4 border-b border-neutral-100 sticky top-16 z-30">
 				<div className="container mx-auto px-4 flex items-center gap-2 text-sm text-neutral-500">
 					<Link href="/" className="hover:text-neutral-900 transition-colors">
 						Home
@@ -261,13 +261,15 @@ export default function ListingDetailPage() {
 
 					{/* Right Sidebar */}
 					<div>
-						<BookingSidebar
-							basePrice={listing.basePrice || 0}
-							currency={listing.currency || 'NGN'}
-							venueName={listing.title}
-							venueAddress={listing.addressLine}
-							venueImage={listing.images?.[0]?.url}
-						/>
+						<div className="sticky top-32">
+							<BookingSidebar
+								basePrice={listing.basePrice || 0}
+								currency={listing.currency || 'NGN'}
+								venueName={listing.title}
+								venueAddress={listing.addressLine}
+								venueImage={listing.images?.[0]?.url}
+							/>
+						</div>
 					</div>
 				</div>
 			</div>

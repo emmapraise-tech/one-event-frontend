@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Image as ImageIcon, Upload, X } from 'lucide-react';
-import { ListingFormData } from '../ListingWizard';
+import { ListingFormData } from '@/types/listing';
 import { cn } from '@/lib/utils';
 
 interface StepProps {

@@ -50,29 +50,29 @@ export default function ListingsLandingPage() {
 		activeListings = activeListings.filter(
 			(listing) =>
 				listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				listing.city?.toLowerCase().includes(searchQuery.toLowerCase())
+				listing.city?.toLowerCase().includes(searchQuery.toLowerCase()),
 		);
 	}
 
 	return (
 		<div className="bg-neutral-bg min-h-screen pb-20">
 			{/* Hero Search Section */}
-			<div className="bg-white border-b border-neutral-200">
-				<div className="container mx-auto px-4 py-12 lg:py-16">
+			<div className="bg-white/50 backdrop-blur-sm border-b border-neutral-200">
+				<div className="container mx-auto px-4 py-8 lg:py-12">
 					<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
 						<div className="max-w-xl shrink-0">
-							<h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-4 tracking-tight">
+							<h1 className="text-3xl md:text-5xl font-bold text-neutral-900 mb-4 tracking-tight">
 								Find the{' '}
 								<span className="text-primary-blue">perfect venue</span>
 							</h1>
-							<p className="text-neutral-500 text-lg">
+							<p className="text-neutral-500 text-base md:text-lg">
 								Discover and book premium event centers in Lagos, Abuja, and
-								across Nigeria. From intimate weddings to corporate conferences.
+								across Nigeria.
 							</p>
 						</div>
 
 						{/* Search Bar Strip */}
-						<div className="w-full max-w-3xl bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-neutral-100 p-2">
+						<div className="w-full max-w-3xl bg-white rounded-2xl shadow-xl shadow-black/5 border border-neutral-100 p-2">
 							<div className="flex flex-col md:flex-row gap-2">
 								{/* Location Input */}
 								<div className="flex-1 relative border-b md:border-b-0 md:border-r border-neutral-100 px-2 py-2 md:py-0">
@@ -103,7 +103,7 @@ export default function ListingsLandingPage() {
 												<span
 													className={cn(
 														'text-sm font-medium w-full text-left truncate',
-														!date && 'text-neutral-300'
+														!date && 'text-neutral-300',
 													)}
 												>
 													{date ? format(date, 'PPP') : <span>Add dates</span>}
@@ -186,7 +186,7 @@ export default function ListingsLandingPage() {
 
 				<div className="grid lg:grid-cols-4 gap-8">
 					{/* Filters Sidebar - Desktop */}
-					<div className="hidden lg:block lg:col-span-1 space-y-8">
+					<div className="hidden lg:block lg:col-span-1 space-y-8 sticky top-28 self-start h-fit overflow-y-auto max-h-[calc(100vh-8rem)] pr-2">
 						<div className="flex items-center justify-between pointer-events-none opacity-50">
 							{/* Placeholder for "Reset all" functionality */}
 							<h3 className="font-bold text-neutral-900">Filters</h3>

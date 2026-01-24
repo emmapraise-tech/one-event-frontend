@@ -15,10 +15,13 @@ import {
 	Music,
 	Utensils,
 	Camera,
+	Users,
+	Briefcase,
+	Sun,
 } from 'lucide-react';
 import Link from 'next/link';
 import { VenueListingCard } from '@/components/listings/venue-listing-card';
-import { Listing } from '@/types/listing';
+import { Listing, ListingType, ListingStatus } from '@/types/listing';
 
 export default function Home() {
 	// Mock Data for Featured Venues
@@ -34,10 +37,18 @@ export default function Home() {
 			currency: 'NGN',
 			rating: 4.8,
 			reviewCount: 120,
-			images: ['/images/venue-1.jpg'],
-			status: 'ACTIVE',
-			type: 'VENUE',
-			hostId: 'host1',
+			images: [
+				{
+					id: 'img1',
+					listingId: '1',
+					url: '/images/venue_grand_horizon.png',
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			],
+			status: ListingStatus.ACTIVE,
+			type: ListingType.VENUE,
+			vendorId: 'host1',
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		},
@@ -52,10 +63,18 @@ export default function Home() {
 			currency: 'NGN',
 			rating: 4.6,
 			reviewCount: 85,
-			images: ['/images/venue-2.jpg', '/images/venue-2.jpg'],
-			status: 'ACTIVE',
-			type: 'VENUE',
-			hostId: 'host2',
+			images: [
+				{
+					id: 'img2',
+					listingId: '2',
+					url: '/images/venue_city_view_loft.png',
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			],
+			status: ListingStatus.ACTIVE,
+			type: ListingType.VENUE,
+			vendorId: 'host2',
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		},
@@ -70,10 +89,18 @@ export default function Home() {
 			currency: 'NGN',
 			rating: 4.9,
 			reviewCount: 200,
-			images: [],
-			status: 'ACTIVE',
-			type: 'VENUE',
-			hostId: 'host3',
+			images: [
+				{
+					id: 'img3',
+					listingId: '3',
+					url: '/images/venue_garden_terrace.png',
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			],
+			status: ListingStatus.ACTIVE,
+			type: ListingType.VENUE,
+			vendorId: 'host3',
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		},
@@ -88,10 +115,18 @@ export default function Home() {
 			currency: 'NGN',
 			rating: 4.7,
 			reviewCount: 95,
-			images: [],
-			status: 'ACTIVE',
-			type: 'VENUE',
-			hostId: 'host4',
+			images: [
+				{
+					id: 'img4',
+					listingId: '4',
+					url: '/images/venue_lakeside_pavilion.png',
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			],
+			status: ListingStatus.ACTIVE,
+			type: ListingType.VENUE,
+			vendorId: 'host4',
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		},
@@ -101,68 +136,111 @@ export default function Home() {
 		<div className="flex min-h-screen flex-col">
 			<main className="flex-1">
 				{/* HERO SECTION */}
-				<section className="relative min-h-[600px] flex items-center justify-center bg-[#111827] text-white overflow-hidden pt-20">
-					{/* Background Gradient / Blur */}
-					<div className="absolute inset-0 bg-[#0F172A]">
-						<div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px]" />
-						<div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px]" />
+				<section className="relative min-h-[650px] flex items-center justify-center bg-neutral-900 text-white overflow-hidden pt-20">
+					{/* Background Image & Overlay */}
+					<div className="absolute inset-0">
+						<div className="absolute inset-0 bg-[url('/images/hero_background.png')] bg-cover bg-center" />
+						<div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+						{/* Subtle animated gradient overlay for depth */}
+						<div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/30" />
 					</div>
 
 					<div className="container relative z-10 px-4 text-center">
-						<h1 className="text-white text-4xl md:text-6xl font-bold mb-6 tracking-tight leading-tight">
+						<h1 className="text-white text-4xl md:text-7xl font-bold mb-8 tracking-tight leading-tight drop-shadow-xl">
 							Find the Perfect Venue
 							<br />
-							for Your Next Celebration
+							<span className="text-transparent bg-clip-text bg-linear-to-r from-blue-200 to-amber-200">
+								for Your Next Celebration
+							</span>
 						</h1>
-						<p className="text-white text-lg md:text-xl mb-10 max-w-2xl mx-auto">
+						<p className="text-neutral-200 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed drop-shadow-md font-medium">
 							From intimate gatherings in Lagos to grand weddings in Abuja.
 							Discover, compare, and book verified event centers across Nigeria.
 						</p>
 
 						{/* Search Bar */}
-						<div className="bg-white rounded-lg p-2 max-w-3xl mx-auto flex flex-col md:flex-row gap-2 shadow-xl">
-							<div className="flex-1 flex items-center px-4 border-b md:border-b-0 md:border-r border-gray-200 py-3 md:py-0">
-								<MapPin className="h-5 w-5 text-gray-400 mr-3" />
-								<input
-									type="text"
-									placeholder="Location or Venue Name"
-									className="w-full text-gray-900 outline-none placeholder:text-gray-400"
-								/>
+						<div className="bg-white/95 backdrop-blur-md rounded-2xl p-2 max-w-5xl mx-auto flex flex-col md:flex-row shadow-2xl hover:shadow-black/20 transition-shadow ring-1 ring-white/20">
+							<div className="flex-2 px-6 border-b md:border-b-0 md:border-r border-gray-100 py-4 md:py-3 flex items-center gap-4">
+								<div className="h-10 w-10 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-blue-600">
+									<MapPin className="h-5 w-5" />
+								</div>
+								<div className="flex flex-col items-start w-full">
+									<label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">
+										Location
+									</label>
+									<input
+										type="text"
+										placeholder="Where are you going?"
+										className="w-full text-gray-900 font-semibold outline-none placeholder:text-gray-400 text-sm bg-transparent"
+									/>
+								</div>
 							</div>
-							<div className="flex-1 flex items-center px-4 border-b md:border-b-0 border-gray-200 py-3 md:py-0">
-								<Calendar className="h-5 w-5 text-gray-400 mr-3" />
-								<input
-									type="text"
-									placeholder="Date"
-									className="w-full text-gray-900 outline-none placeholder:text-gray-400"
-								/>
+
+							<div className="flex-1.5 px-6 border-b md:border-b-0 md:border-r border-gray-100 py-4 md:py-3 flex items-center gap-4">
+								<div className="h-10 w-10 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-blue-600">
+									<Calendar className="h-5 w-5" />
+								</div>
+								<div className="flex flex-col items-start w-full">
+									<label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">
+										Date
+									</label>
+									<input
+										type="text"
+										placeholder="Add dates"
+										className="w-full text-gray-900 font-semibold outline-none placeholder:text-gray-400 text-sm bg-transparent"
+									/>
+								</div>
 							</div>
-							<Button className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold px-8 h-12 md:h-auto rounded-md w-full md:w-auto">
-								Search
-							</Button>
+
+							<div className="flex-1.5 px-6 border-b md:border-b-0 border-gray-100 py-4 md:py-3 flex items-center gap-4">
+								<div className="h-10 w-10 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-blue-600">
+									<Users className="h-5 w-5" />
+								</div>
+								<div className="flex flex-col items-start w-full">
+									<label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">
+										Guests
+									</label>
+									<input
+										type="number"
+										placeholder="Add guests"
+										className="w-full text-gray-900 font-semibold outline-none placeholder:text-gray-400 text-sm bg-transparent"
+									/>
+								</div>
+							</div>
+
+							<div className="p-2">
+								<Button className="h-full w-full md:w-auto bg-brand-gold hover:bg-brand-gold-hover text-white font-bold px-8 rounded-xl shadow-lg hover:shadow-amber-500/25 transition-all text-base transform active:scale-95">
+									<Search className="h-5 w-5 md:mr-2" />
+									<span className="md:inline hidden">Search</span>
+									<span className="md:hidden inline">Search Venues</span>
+								</Button>
+							</div>
 						</div>
 
 						{/* Trust Badges */}
-						<div className="flex justify-center gap-6 mt-10 text-xs font-semibold text-brand-gold uppercase tracking-wider">
-							<div className="flex items-center gap-1.5">
-								<CheckCircle2 className="h-4 w-4" /> Verified Vendors
+						<div className="flex flex-wrap justify-center gap-6 md:gap-12 mt-12 text-xs font-bold text-white/80 uppercase tracking-widest drop-shadow-sm">
+							<div className="flex items-center gap-2">
+								<CheckCircle2 className="h-5 w-5 text-brand-gold" /> Verified
+								Vendors
 							</div>
-							<div className="flex items-center gap-1.5">
-								<CheckCircle2 className="h-4 w-4" /> Secure Payments
+							<div className="flex items-center gap-2">
+								<CheckCircle2 className="h-5 w-5 text-brand-gold" /> Secure
+								Payments
 							</div>
-							<div className="flex items-center gap-1.5">
-								<CheckCircle2 className="h-4 w-4" /> 24/7 Support
+							<div className="flex items-center gap-2">
+								<CheckCircle2 className="h-5 w-5 text-brand-gold" /> 24/7
+								Support
 							</div>
 						</div>
 					</div>
 				</section>
 
 				{/* EXPLORE BY CATEGORY */}
-				<section className="bg-neutral-50 py-20 px-4">
+				<section className="bg-white py-20 px-4">
 					<div className="container mx-auto">
-						<div className="flex justify-between items-end mb-10">
+						<div className="flex justify-between items-end mb-12">
 							<div>
-								<h2 className="text-2xl font-bold text-neutral-900 mb-2">
+								<h2 className="text-3xl font-bold text-neutral-900 mb-2 tracking-tight">
 									Explore by Category
 								</h2>
 								<p className="text-neutral-500">
@@ -171,29 +249,30 @@ export default function Home() {
 							</div>
 							<Link
 								href="/listings"
-								className="text-primary-blue text-sm font-semibold hover:underline flex items-center"
+								className="text-primary-blue text-sm font-semibold hover:underline flex items-center group"
 							>
-								View all categories <ChevronRight className="h-4 w-4 ml-1" />
+								View all categories{' '}
+								<ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
 							</Link>
 						</div>
 
-						<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+						<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
 							{[
 								{ name: 'Weddings', icon: Heart },
 								{ name: 'Corporate', icon: Building2 },
 								{ name: 'Parties', icon: PartyPopper },
 								{ name: 'Concerts', icon: Music },
-								{ name: 'Dining', icon: Utensils },
-								{ name: 'Studios', icon: Camera },
+								{ name: 'Networking', icon: Briefcase },
+								{ name: 'Outdoor', icon: Sun },
 							].map((cat) => (
 								<div
 									key={cat.name}
-									className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col items-center justify-center gap-4 border border-transparent hover:border-primary-blue/20 group h-32"
+									className="bg-neutral-50 p-6 rounded-2xl transition-all cursor-pointer flex flex-col items-center justify-center gap-4 border border-transparent hover:border-primary-blue/20 hover:bg-white hover:shadow-lg group h-40"
 								>
-									<div className="h-10 w-10 bg-primary-soft-blue text-primary-blue rounded-full flex items-center justify-center group-hover:bg-primary-blue group-hover:text-white transition-colors">
-										<cat.icon className="h-5 w-5" />
+									<div className="h-12 w-12 bg-white text-neutral-600 rounded-xl shadow-sm flex items-center justify-center group-hover:bg-primary-blue group-hover:text-white transition-colors duration-300">
+										<cat.icon className="h-6 w-6" />
 									</div>
-									<span className="text-sm font-semibold text-neutral-900">
+									<span className="text-sm font-bold text-neutral-700 group-hover:text-neutral-900">
 										{cat.name}
 									</span>
 								</div>
@@ -203,31 +282,31 @@ export default function Home() {
 				</section>
 
 				{/* FEATURED EVENT CENTERS */}
-				<section className="bg-white py-20 px-4">
+				<section className="bg-neutral-50 py-20 px-4">
 					<div className="container mx-auto">
-						<div className="text-center max-w-2xl mx-auto mb-16">
-							<h2 className="text-3xl font-bold text-neutral-900 mb-4">
+						<div className="text-center max-w-2xl mx-auto mb-12">
+							<h2 className="text-3xl font-bold text-neutral-900 mb-4 tracking-tight">
 								Featured Event Centers
 							</h2>
-							<p className="text-neutral-500">
+							<p className="text-neutral-500 text-lg">
 								Top-rated venues chosen by our community. Experience premium
 								service and exceptional spaces.
 							</p>
 						</div>
 
-						<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+						<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
 							{featuredVenues.map((venue) => (
-								<div key={venue.id} className="h-[420px]">
+								<div key={venue.id} className="h-[440px]">
 									<VenueListingCard listing={venue} />
 								</div>
 							))}
 						</div>
 
-						<div className="mt-12 text-center">
+						<div className="mt-16 text-center">
 							<Link href="/listings">
 								<Button
 									variant="outline"
-									className="border-neutral-200 text-neutral-900 hover:border-primary-blue hover:text-primary-blue px-8 h-12"
+									className="border-neutral-200 text-neutral-900 hover:border-primary-blue hover:text-primary-blue px-10 h-14 text-base font-semibold rounded-full"
 								>
 									View All Venues
 								</Button>
@@ -237,21 +316,21 @@ export default function Home() {
 				</section>
 
 				{/* THREE STEPS */}
-				<section className="bg-white py-20 px-4 border-t border-neutral-100">
+				<section className="bg-white py-20 px-4">
 					<div className="container mx-auto">
 						<div className="text-center mb-16">
-							<h2 className="text-2xl font-bold text-neutral-900 mb-4">
+							<h2 className="text-3xl font-bold text-neutral-900 mb-4 tracking-tight">
 								Three Steps to Your Event
 							</h2>
-							<p className="text-neutral-500 max-w-lg mx-auto">
+							<p className="text-neutral-500 max-w-lg mx-auto text-lg">
 								We've simplified the process so you can focus on planning the
 								actual event details.
 							</p>
 						</div>
 
-						<div className="grid md:grid-cols-3 gap-12 relative">
+						<div className="grid md:grid-cols-3 gap-12 relative max-w-5xl mx-auto">
 							{/* Connecting Line (Desktop) */}
-							<div className="hidden md:block absolute top-[28px] left-[15%] right-[15%] h-[2px] bg-neutral-100 z-0"></div>
+							<div className="hidden md:block absolute top-[40px] left-[15%] right-[15%] h-[2px] bg-neutral-100 z-0"></div>
 
 							{[
 								{
@@ -272,15 +351,15 @@ export default function Home() {
 							].map((step, i) => (
 								<div
 									key={i}
-									className="relative z-10 flex flex-col items-center text-center"
+									className="relative z-10 flex flex-col items-center text-center group"
 								>
-									<div className="h-14 w-14 bg-white border border-neutral-100 shadow-sm rounded-full flex items-center justify-center mb-6 text-primary-blue">
-										<step.icon className="h-6 w-6" />
+									<div className="h-20 w-20 bg-white border-2 border-neutral-100 shadow-lg rounded-2xl flex items-center justify-center mb-6 text-neutral-400 group-hover:text-primary-blue group-hover:border-primary-blue transition-all duration-300">
+										<step.icon className="h-8 w-8" />
 									</div>
-									<h3 className="font-bold text-lg mb-3 text-neutral-900">
+									<h3 className="font-bold text-xl mb-3 text-neutral-900">
 										{step.title}
 									</h3>
-									<p className="text-sm text-neutral-500 leading-relaxed max-w-xs">
+									<p className="text-neutral-500 leading-relaxed max-w-xs px-4">
 										{step.desc}
 									</p>
 								</div>
@@ -290,31 +369,36 @@ export default function Home() {
 				</section>
 
 				{/* TESTIMONIALS */}
-				<section className="bg-neutral-50 py-20 px-4">
-					<div className="container mx-auto">
-						<div className="flex justify-between items-center mb-10">
-							<h2 className="text-2xl font-bold text-neutral-900">
+				<section className="bg-blue-50 py-20 px-4 overflow-hidden relative">
+					{/* Background Pattern */}
+					<div className="absolute top-0 right-0 p-20 opacity-5">
+						<PartyPopper className="h-96 w-96 text-primary-blue" />
+					</div>
+
+					<div className="container mx-auto relative z-10">
+						<div className="flex justify-between items-center mb-12">
+							<h2 className="text-3xl font-bold text-neutral-900 tracking-tight">
 								What our users say
 							</h2>
-							<div className="flex gap-2">
+							<div className="flex gap-3">
 								<Button
 									variant="outline"
 									size="icon"
-									className="h-8 w-8 rounded-full border-neutral-200"
+									className="h-10 w-10 rounded-full border-neutral-200 bg-white hover:bg-neutral-50"
 								>
-									<ChevronLeft className="h-4 w-4" />
+									<ChevronLeft className="h-5 w-5" />
 								</Button>
 								<Button
 									variant="outline"
 									size="icon"
-									className="h-8 w-8 rounded-full bg-primary-blue text-white border-0 hover:bg-primary-blue-hover"
+									className="h-10 w-10 rounded-full bg-primary-blue text-white border-0 hover:bg-primary-blue-hover hover:scale-105 transition-transform shadow-lg shadow-blue-500/30"
 								>
-									<ChevronRight className="h-4 w-4" />
+									<ChevronRight className="h-5 w-5" />
 								</Button>
 							</div>
 						</div>
 
-						<div className="grid md:grid-cols-3 gap-6">
+						<div className="grid md:grid-cols-3 gap-8">
 							{[
 								{
 									quote:
@@ -340,33 +424,33 @@ export default function Home() {
 							].map((t, i) => (
 								<div
 									key={i}
-									className="bg-white p-8 rounded-xl shadow-sm border border-neutral-100"
+									className="bg-white p-8 rounded-2xl shadow-sm border border-neutral-100 hover:shadow-xl transition-shadow duration-300"
 								>
-									<div className="flex text-brand-gold mb-4 gap-1">
+									<div className="flex text-brand-gold mb-6 gap-1">
 										{[1, 2, 3, 4, 5].map((s) => (
-											<Star key={s} className="h-3 w-3 fill-current" />
+											<Star key={s} className="h-4 w-4 fill-current" />
 										))}
 									</div>
-									<p className="text-neutral-600 text-sm mb-6 leading-relaxed italic">
+									<p className="text-neutral-700 text-lg mb-8 leading-relaxed italic font-medium">
 										"{t.quote}"
 									</p>
-									<div className="flex items-center gap-3">
+									<div className="flex items-center gap-4">
 										<div
-											className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-xs ${
+											className={`h-12 w-12 rounded-full flex items-center justify-center font-bold text-sm shadow-inner ${
 												i === 0
 													? 'bg-blue-100 text-blue-600'
 													: i === 1
-													? 'bg-green-100 text-green-600'
-													: 'bg-purple-100 text-purple-600'
+														? 'bg-green-100 text-green-600'
+														: 'bg-purple-100 text-purple-600'
 											}`}
 										>
 											{t.initial}
 										</div>
 										<div>
-											<div className="font-bold text-sm text-neutral-900">
+											<div className="font-bold text-base text-neutral-900">
 												{t.author}
 											</div>
-											<div className="text-xs text-neutral-400">{t.role}</div>
+											<div className="text-sm text-neutral-500">{t.role}</div>
 										</div>
 									</div>
 								</div>
@@ -377,33 +461,41 @@ export default function Home() {
 
 				{/* CTA SECTION */}
 				<section className="container mx-auto px-4 py-20">
-					<div className="bg-[#1E3A8A] rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-2xl">
-						<div className="p-10 md:p-16 md:w-1/2 flex flex-col justify-center text-white">
-							<h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-								List your space on OneEvent
+					<div className="bg-[#1E3A8A] rounded-4xl overflow-hidden flex flex-col md:flex-row shadow-2xl relative">
+						{/* Background Image & Overlay */}
+						<div className="absolute inset-0">
+							<div className="absolute inset-0 bg-[url('/images/cta_background.png')] bg-cover bg-center" />
+							<div className="absolute inset-0 bg-blue-900/80 mix-blend-multiply" />
+							<div className="absolute inset-0 bg-linear-to-r from-blue-950/90 to-transparent" />
+						</div>
+
+						<div className="p-10 md:p-20 md:w-1/2 flex flex-col justify-center text-white relative z-10">
+							<h2 className="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight">
+								List your space on <br />
+								OneEvent
 							</h2>
-							<p className="text-white text-lg mb-8 leading-relaxed">
+							<p className="text-blue-100 text-lg mb-10 leading-relaxed max-w-md">
 								Turn your extra space into extra income. Join thousands of venue
 								owners across Nigeria who trust OneEvent to manage bookings and
 								payments effortlessly.
 							</p>
-							<div className="flex gap-4">
-								<Button className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold h-12 px-8">
-									Become a Host
+							<div className="flex flex-col sm:flex-row gap-4">
+								<Button className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold h-14 px-12 rounded-xl shadow-lg shadow-amber-500/20 text-lg border border-transparent">
+									Become a Partner
 								</Button>
 								<Button
 									variant="outline"
-									className="border-white/20 text-white hover:bg-white/10 h-12 px-8"
+									className="border-white/30 text-white bg-white/5 hover:bg-white/20 h-14 px-12 rounded-xl text-lg backdrop-blur-sm transition-all"
 								>
 									Learn More
 								</Button>
 							</div>
 						</div>
-						<div className="md:w-1/2 min-h-[400px] relative">
+						<div className="md:w-1/2 min-h-[500px] relative z-10">
 							{/* Image Placeholder */}
-							<div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1632&q=80')] bg-cover bg-center"></div>
-							{/* Subtle gradient for text readability if needed on mobile, but image is on side in desktop */}
-							<div className="absolute inset-0 bg-black/10"></div>
+							<div className="absolute inset-0 bg-[url('/images/venue_host.png')] bg-cover bg-center"></div>
+							{/* Gradient Overlay */}
+							<div className="absolute inset-0 bg-linear-to-r from-[#172554] via-[#172554]/50 to-transparent md:w-3/4"></div>
 						</div>
 					</div>
 				</section>

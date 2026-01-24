@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select';
 import { ListingType } from '@/types/listing';
 import { FileText } from 'lucide-react';
-import { ListingFormData } from '../ListingWizard';
+import { ListingFormData } from '@/types/listing';
 
 interface StepProps {
 	formData: ListingFormData;

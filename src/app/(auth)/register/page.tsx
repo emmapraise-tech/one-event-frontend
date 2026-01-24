@@ -10,14 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
-import {
-	AlertCircle,
-	CheckCircle2,
-	Search,
-	Store,
-	Eye,
-	EyeOff,
-} from 'lucide-react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 
@@ -36,8 +29,6 @@ export default function RegisterPage() {
 			type: UserType.CUSTOMER,
 		},
 	});
-
-	const watchedType = form.watch('type');
 
 	const onSubmit = (data: RegisterValues) => {
 		register(data);
@@ -76,12 +67,12 @@ export default function RegisterPage() {
 			</div>
 
 			{/* Header */}
-			<div>
-				<h2 className="text-2xl font-bold text-neutral-900">
+			<div className="text-center md:text-left">
+				<h2 className="text-3xl font-bold text-neutral-900 tracking-tight">
 					Create your account
 				</h2>
-				<p className="text-neutral-500 mt-1">
-					Choose your role to get started with EventSpace.
+				<p className="text-neutral-500 mt-2 text-base">
+					Sign up to start booking premium event venues.
 				</p>
 			</div>
 
@@ -97,57 +88,6 @@ export default function RegisterPage() {
 			)}
 
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-				{/* Role Selection */}
-				<div className="grid gap-4">
-					<div
-						className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-4 ${
-							watchedType === UserType.CUSTOMER
-								? 'border-brand-blue bg-blue-50/50'
-								: 'border-neutral-200 hover:border-neutral-300'
-						}`}
-						onClick={() => form.setValue('type', UserType.CUSTOMER)}
-					>
-						<div className="p-2 bg-blue-100 rounded-full text-brand-blue shrink-0">
-							<Search className="h-5 w-5" />
-						</div>
-						<div>
-							<h3 className="font-bold text-neutral-900">Customer</h3>
-							<p className="text-sm text-neutral-500">
-								I am looking for a venue to book
-							</p>
-						</div>
-						{watchedType === UserType.CUSTOMER && (
-							<div className="absolute top-4 right-4 text-brand-blue">
-								<CheckCircle2 className="h-5 w-5 fill-brand-blue text-white" />
-							</div>
-						)}
-					</div>
-
-					<div
-						className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-4 ${
-							watchedType === UserType.VENDOR
-								? 'border-brand-blue bg-blue-50/50'
-								: 'border-neutral-200 hover:border-neutral-300'
-						}`}
-						onClick={() => form.setValue('type', UserType.VENDOR)}
-					>
-						<div className="p-2 bg-neutral-100 rounded-full text-neutral-600 shrink-0">
-							<Store className="h-5 w-5" />
-						</div>
-						<div>
-							<h3 className="font-bold text-neutral-900">Vendor</h3>
-							<p className="text-sm text-neutral-500">
-								I want to list my property
-							</p>
-						</div>
-						{watchedType === UserType.VENDOR && (
-							<div className="absolute top-4 right-4 text-brand-blue">
-								<CheckCircle2 className="h-5 w-5 fill-brand-blue text-white" />
-							</div>
-						)}
-					</div>
-				</div>
-
 				{/* Inputs */}
 				<div className="space-y-4">
 					{/* First/Last Name & Phone Grid - Keeping to avoid validation errors but styling cleanly */}
@@ -157,7 +97,7 @@ export default function RegisterPage() {
 							<Input
 								id="firstName"
 								placeholder="John"
-								className="h-11"
+								className="h-12 bg-neutral-50 border-neutral-200 focus:bg-white transition-all rounded-xl"
 								{...form.register('firstName')}
 							/>
 							{form.formState.errors.firstName && (
@@ -256,7 +196,7 @@ export default function RegisterPage() {
 
 				<Button
 					type="submit"
-					className="w-full h-11 bg-brand-blue hover:bg-brand-blue-hover text-white"
+					className="w-full h-12 bg-brand-gold hover:bg-brand-gold-hover text-white rounded-xl font-bold shadow-lg shadow-amber-500/20 text-base"
 					disabled={isRegistering}
 				>
 					{isRegistering ? 'Creating Account...' : 'Create Account'}
