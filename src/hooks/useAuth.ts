@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authService } from '@/services/auth.service';
 import { LoginCredentials, RegisterData, User, UserType } from '@/types/auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
 export function useAuth() {
 	const queryClient = useQueryClient();
 	const router = useRouter();
+	const searchParams = useSearchParams();
 
 	const {
 		data: user,
@@ -24,9 +25,18 @@ export function useAuth() {
 		onSuccess: (data) => {
 			localStorage.setItem('token', data.access_token);
 			queryClient.setQueryData(['user'], data.user);
-			// Redirect customers to listings landing page, others to dashboard
+
+			// Priority 1: Check for callbackUrl in search params
+			const callbackUrl = searchParams.get('callbackUrl');
+
+			if (callbackUrl) {
+				router.push(callbackUrl);
+				return;
+			}
+
+			// Priority 2: Default redirects
 			if (data.user.type === UserType.CUSTOMER) {
-				router.push('/listings');
+				router.push('/');
 			} else {
 				router.push('/dashboard');
 			}
@@ -38,9 +48,18 @@ export function useAuth() {
 		onSuccess: (data) => {
 			localStorage.setItem('token', data.access_token);
 			queryClient.setQueryData(['user'], data.user);
-			// Redirect customers to listings landing page, others to dashboard
+
+			// Priority 1: Check for callbackUrl in search params
+			const callbackUrl = searchParams.get('callbackUrl');
+
+			if (callbackUrl) {
+				router.push(callbackUrl);
+				return;
+			}
+
+			// Priority 2: Default redirects
 			if (data.user.type === UserType.CUSTOMER) {
-				router.push('/listings');
+				router.push('/');
 			} else {
 				router.push('/dashboard');
 			}
