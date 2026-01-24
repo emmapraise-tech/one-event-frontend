@@ -6,6 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { SidebarProvider } from '@/providers/sidebar-provider';
+import { DashboardFooter } from '@/components/dashboard/footer';
 
 export default function DashboardLayout({
 	children,
@@ -34,16 +36,21 @@ export default function DashboardLayout({
 	}
 
 	return (
-		<div className="flex min-h-screen bg-neutral-50">
-			<Sidebar />
-			<div className="flex-1 flex flex-col h-screen overflow-hidden">
-				<DashboardHeader />
-				<main className="flex-1 overflow-y-auto bg-gray-50/50">
-					<div className="mx-auto p-6 md:p-8 w-full max-w-[1600px]">
-						{children}
-					</div>
-				</main>
+		<SidebarProvider>
+			<div className="flex min-h-screen bg-neutral-50">
+				<Sidebar />
+				<div className="flex-1 flex flex-col h-screen overflow-hidden">
+					<DashboardHeader />
+					<main className="flex-1 overflow-y-auto bg-gray-50/50">
+						<div className="flex flex-col min-h-full">
+							<div className="mx-auto p-6 md:p-8 w-full max-w-[1600px] flex-1">
+								{children}
+							</div>
+							<DashboardFooter />
+						</div>
+					</main>
+				</div>
 			</div>
-		</div>
+		</SidebarProvider>
 	);
 }

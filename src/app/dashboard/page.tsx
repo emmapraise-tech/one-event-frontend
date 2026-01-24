@@ -21,8 +21,8 @@ export default function DashboardPage() {
 			trend: '12%',
 			trendUp: true,
 			icon: Wallet,
-			bgColor: 'bg-blue-100',
-			iconColor: 'text-blue-600',
+			bgColor: 'bg-blue-50',
+			iconColor: 'text-primary',
 		},
 		{
 			title: 'TOTAL BOOKINGS',
@@ -30,7 +30,7 @@ export default function DashboardPage() {
 			trend: '5%',
 			trendUp: true,
 			icon: Calendar,
-			bgColor: 'bg-purple-100',
+			bgColor: 'bg-purple-50',
 			iconColor: 'text-purple-600',
 		},
 		{
@@ -39,8 +39,8 @@ export default function DashboardPage() {
 			trend: '8%',
 			trendUp: true,
 			icon: Eye,
-			bgColor: 'bg-orange-100',
-			iconColor: 'text-orange-600',
+			bgColor: 'bg-amber-50',
+			iconColor: 'text-amber-600',
 		},
 		{
 			title: 'AVG RATING',
@@ -48,8 +48,8 @@ export default function DashboardPage() {
 			trend: '0.2%',
 			trendUp: true,
 			icon: Star,
-			bgColor: 'bg-yellow-100',
-			iconColor: 'text-yellow-600',
+			bgColor: 'bg-emerald-50',
+			iconColor: 'text-emerald-600',
 		},
 	];
 
@@ -77,7 +77,7 @@ export default function DashboardPage() {
 					</p>
 				</div>
 				<a href="/dashboard/listings/new">
-					<Button className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold shadow-sm h-10 px-6">
+					<Button className="bg-primary hover:bg-primary/90 text-white shadow-sm h-10 px-6">
 						<Plus className="h-4 w-4 mr-2" />
 						Add New Listing
 					</Button>
