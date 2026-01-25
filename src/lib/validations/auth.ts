@@ -22,7 +22,7 @@ export const registerSchema = z.object({
 	phone: z
 		.string()
 		.min(10, { message: 'Phone number must be at least 10 digits' }),
-	type: z.nativeEnum(UserType).default(UserType.CUSTOMER),
+	type: z.nativeEnum(UserType),
 });
 
 export type LoginValues = z.infer<typeof loginSchema>;
