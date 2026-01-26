@@ -15,12 +15,12 @@ export function PopularVenueCard({ listing }: PopularVenueCardProps) {
         <div className="aspect-video w-full relative">
           <ListingImage 
             src={listing.images && listing.images.length > 0 ? listing.images[0].url : undefined}
-            alt={listing.images && listing.images.length > 0 ? listing.images[0].alt || listing.title : listing.title}
+            alt={listing.images && listing.images.length > 0 ? listing.images[0].alt || listing.name : listing.name}
             type={listing.type} 
           />
         </div>
         <CardContent className="p-4">
-          <h3 className="h4 mb-1">{listing.title}</h3>
+          <h3 className="h4 mb-1">{listing.name}</h3>
           <div className="flex items-center small text-neutral-500 mb-2">
             <MapPin className="h-3 w-3 mr-1" />
             {listing.city}, {listing.state}

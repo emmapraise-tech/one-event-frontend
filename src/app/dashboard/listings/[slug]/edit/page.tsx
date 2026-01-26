@@ -64,7 +64,7 @@ export default function EditListingPage() {
     if (listing) {
       form.reset({
         type: listing.type,
-        title: listing.title,
+        title: listing.name,
         slug: listing.slug,
         description: listing.description || "",
         basePrice: listing.basePrice,

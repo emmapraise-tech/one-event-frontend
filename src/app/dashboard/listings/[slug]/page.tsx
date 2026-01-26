@@ -98,7 +98,7 @@ export default function ListingDetailPage() {
           <div className="aspect-video w-full rounded-lg overflow-hidden">
             <ListingImage 
               src={listing.images && listing.images.length > 0 ? listing.images[0].url : undefined}
-              alt={listing.images && listing.images.length > 0 ? listing.images[0].alt || listing.title : listing.title}
+              alt={listing.images && listing.images.length > 0 ? listing.images[0].alt || listing.name : listing.name}
               type={listing.type} 
             />
           </div>
@@ -106,7 +106,7 @@ export default function ListingDetailPage() {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="text-2xl">{listing.title}</CardTitle>
+                  <CardTitle className="text-2xl">{listing.name}</CardTitle>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge variant={listing.status === "ACTIVE" ? "default" : "secondary"}>
                       {listing.type}

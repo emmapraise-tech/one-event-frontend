@@ -31,117 +31,22 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover';
+import { useListings } from '@/hooks/useListings';
 
 export default function Home() {
 	const [date, setDate] = useState<Date>();
 
-	// Mock Data for Featured Venues
-	const featuredVenues: Listing[] = [
-		{
-			id: '1',
-			title: 'The Grand Horizon Hall',
-			slug: 'grand-horizon-hall',
-			description: 'Luxury event center',
-			addressLine: 'Victoria Island',
-			city: 'Lagos',
-			basePrice: 5000000,
-			currency: 'NGN',
-			rating: 4.8,
-			reviewCount: 120,
-			images: [
-				{
-					id: 'img1',
-					listingId: '1',
-					url: '/images/venue_grand_horizon.png',
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-			],
-			status: ListingStatus.ACTIVE,
-			type: ListingType.VENUE,
-			vendorId: 'host1',
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		},
-		{
-			id: '2',
-			title: 'City View Loft',
-			slug: 'city-view-loft',
-			description: 'Modern loft space',
-			addressLine: 'Maitama',
-			city: 'Abuja',
-			basePrice: 2000000,
-			currency: 'NGN',
-			rating: 4.6,
-			reviewCount: 85,
-			images: [
-				{
-					id: 'img2',
-					listingId: '2',
-					url: '/images/venue_city_view_loft.png',
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-			],
-			status: ListingStatus.ACTIVE,
-			type: ListingType.VENUE,
-			vendorId: 'host2',
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		},
-		{
-			id: '3',
-			title: 'Garden Terrace',
-			slug: 'garden-terrace',
-			description: 'Beautiful outdoor space',
-			addressLine: 'Ikeja GRA',
-			city: 'Lagos',
-			basePrice: 1500000,
-			currency: 'NGN',
-			rating: 4.9,
-			reviewCount: 200,
-			images: [
-				{
-					id: 'img3',
-					listingId: '3',
-					url: '/images/venue_garden_terrace.png',
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-			],
-			status: ListingStatus.ACTIVE,
-			type: ListingType.VENUE,
-			vendorId: 'host3',
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		},
-		{
-			id: '4',
-			title: 'Lakeside Pavilion',
-			slug: 'lakeside-pavilion',
-			description: 'Waterfront venue',
-			addressLine: 'Jabi Lake',
-			city: 'Abuja',
-			basePrice: 4000000,
-			currency: 'NGN',
-			rating: 4.7,
-			reviewCount: 95,
-			images: [
-				{
-					id: 'img4',
-					listingId: '4',
-					url: '/images/venue_lakeside_pavilion.png',
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-			],
-			status: ListingStatus.ACTIVE,
-			type: ListingType.VENUE,
-			vendorId: 'host4',
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		},
-	];
+	const { listings, isLoading } = useListings();
+
+	// Use real listings if available, otherwise fallback to empty array (or keep mock for dev if preferred, but user asked to use endpoint)
+	// Filter for ACTIVE status andVENUE type
+	const featuredVenues =
+		listings
+			?.filter(
+				(l) =>
+					l.status === ListingStatus.ACTIVE && l.type === ListingType.VENUE,
+			)
+			.slice(0, 4) || [];
 
 	return (
 		<div className="flex min-h-screen flex-col">
@@ -321,11 +226,21 @@ export default function Home() {
 						</div>
 
 						<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-							{featuredVenues.map((venue) => (
-								<div key={venue.id} className="h-[440px]">
-									<VenueListingCard listing={venue} />
+							{isLoading ? (
+								<div className="col-span-4 text-center py-20">
+									Loading venues...
 								</div>
-							))}
+							) : featuredVenues.length > 0 ? (
+								featuredVenues.map((venue) => (
+									<div key={venue.id} className="h-[440px]">
+										<VenueListingCard listing={venue} />
+									</div>
+								))
+							) : (
+								<div className="col-span-4 text-center py-20 text-neutral-500">
+									No featured venues found at the moment.
+								</div>
+							)}
 						</div>
 
 						<div className="mt-16 text-center">

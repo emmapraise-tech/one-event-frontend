@@ -49,7 +49,7 @@ export default function ListingsLandingPage() {
 	if (searchQuery) {
 		activeListings = activeListings.filter(
 			(listing) =>
-				listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				listing.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
 				listing.city?.toLowerCase().includes(searchQuery.toLowerCase()),
 		);
 	}

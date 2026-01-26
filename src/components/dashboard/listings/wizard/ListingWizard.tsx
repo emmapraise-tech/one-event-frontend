@@ -13,9 +13,12 @@ import { SpecificationStep } from './steps/SpecificationStep';
 import { MediaStep } from './steps/MediaStep';
 import { PricingStep } from './steps/PricingStep';
 import { cn } from '@/lib/utils';
+import { useListings } from '@/hooks/useListings';
+import { useVendors } from '@/hooks/useVendors';
 
 const initialData: ListingFormData = {
 	type: ListingType.VENUE,
+	categories: [], // Initialize empty categories
 	title: '',
 	slug: '',
 	description: '',
@@ -43,6 +46,9 @@ export function ListingWizard() {
 	const [currentStep, setCurrentStep] = useState(1);
 	const [formData, setFormData] = useState<ListingFormData>(initialData);
 
+	const { createListing, isCreating } = useListings();
+	const { vendor } = useVendors();
+
 	const updateFormData = (data: Partial<ListingFormData>) => {
 		setFormData((prev) => ({ ...prev, ...data }));
 	};
@@ -56,6 +62,33 @@ export function ListingWizard() {
 	const handleBack = () => {
 		if (currentStep > 1) {
 			setCurrentStep((prev) => prev - 1);
+		}
+	};
+
+	const handlePublish = async () => {
+		if (!vendor) {
+			alert('Please create a vendor profile first');
+			router.push('/dashboard/vendors');
+			return;
+		}
+
+		try {
+			await createListing(
+				{ data: formData, vendorId: vendor.id },
+				{
+					onSuccess: () => {
+						alert('Listing created successfully');
+						router.push('/dashboard/listings');
+					},
+					onError: (error: Error) => {
+						alert('Failed to create listing: ' + error.message);
+						console.error(error);
+					},
+				},
+			);
+		} catch (error) {
+			console.error('Failed to create listing:', error);
+			alert('Failed to create listing');
 		}
 	};
 
@@ -89,8 +122,12 @@ export function ListingWizard() {
 					>
 						Save Draft
 					</Button>
-					<Button className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold px-6 py-6 h-auto shadow-sm shadow-orange-200">
-						Publish Listing
+					<Button
+						onClick={handlePublish}
+						disabled={isCreating}
+						className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold px-6 py-6 h-auto shadow-sm shadow-orange-200"
+					>
+						{isCreating ? 'Publishing...' : 'Publish Listing'}
 					</Button>
 				</div>
 			</div>

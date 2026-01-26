@@ -47,7 +47,7 @@ export function BookingsList({
 			filterStatus === 'ALL' || booking.status === filterStatus;
 		const matchesSearch =
 			booking.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			booking.listing?.title
+			booking.listing?.name
 				.toLowerCase()
 				.includes(searchQuery.toLowerCase()) ||
 			booking.customer?.firstName
@@ -216,7 +216,7 @@ export function BookingsList({
 										</td>
 										<td className="px-6 py-4">
 											<div className="font-medium text-gray-900">
-												{booking.listing?.title}
+												{booking.listing?.name}
 											</div>
 										</td>
 										<td className="px-6 py-4">

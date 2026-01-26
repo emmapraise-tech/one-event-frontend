@@ -57,7 +57,7 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 					{listing.images && listing.images.length > 0 ? (
 						<img
 							src={listing.images[0].url}
-							alt={listing.title}
+							alt={listing.name}
 							className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
 						/>
 					) : (
@@ -73,7 +73,7 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 				{/* Title & Rating */}
 				<div className="flex justify-between items-start mb-2">
 					<h3 className="font-bold text-lg text-neutral-900 line-clamp-1 group-hover:text-primary-blue transition-colors">
-						{listing.title}
+						{listing.name}
 					</h3>
 					<div className="flex items-center gap-1 text-sm font-semibold text-neutral-900">
 						<Star className="h-3.5 w-3.5 fill-accent-gold text-accent-gold" />

@@ -9,6 +9,16 @@ export enum ListingType {
 	OTHER = 'OTHER',
 }
 
+export enum ListingCategory {
+	WEDDING = 'WEDDING',
+	CORPORATE = 'CORPORATE',
+	PARTY = 'PARTY',
+	CONCERT = 'CONCERT',
+	NETWORKING = 'NETWORKING',
+	OUTDOOR = 'OUTDOOR',
+	OTHER = 'OTHER',
+}
+
 export enum ListingStatus {
 	ACTIVE = 'ACTIVE',
 	INACTIVE = 'INACTIVE',
@@ -28,7 +38,7 @@ export interface Listing {
 	id: string;
 	vendorId: string;
 	type: ListingType;
-	title: string;
+	name: string;
 	slug: string;
 	description?: string;
 	status: ListingStatus;
@@ -51,8 +61,9 @@ export interface Listing {
 export interface CreateListingData {
 	vendorId: string;
 	type: ListingType;
-	title: string;
+	name: string;
 	slug?: string;
+	category: ListingCategory[];
 	description?: string;
 	basePrice?: number;
 	currency?: string;
@@ -64,6 +75,7 @@ export interface CreateListingData {
 
 export interface ListingFormData {
 	type: ListingType;
+	categories: ListingCategory[];
 	title: string;
 	slug: string;
 	description: string;
