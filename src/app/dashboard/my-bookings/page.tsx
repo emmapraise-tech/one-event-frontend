@@ -93,7 +93,7 @@ export default function BookingsPage() {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <CardTitle>{booking.listing?.title || "Unknown Listing"}</CardTitle>
+                    <CardTitle>{booking.listing?.name || "Unknown Listing"}</CardTitle>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
                       <span>

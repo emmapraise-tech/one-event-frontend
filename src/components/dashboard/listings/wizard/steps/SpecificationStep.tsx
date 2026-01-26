@@ -126,7 +126,6 @@ export function SpecificationStep({
 							<div
 								key={amenity}
 								className="flex items-center space-x-3 group cursor-pointer"
-								onClick={() => toggleAmenity(amenity)}
 							>
 								<Checkbox
 									id={`amenity-${amenity}`}

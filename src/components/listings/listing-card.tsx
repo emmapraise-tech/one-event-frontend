@@ -24,14 +24,14 @@ export function ListingCard({ listing }: ListingCardProps) {
       <div className="aspect-video w-full relative">
         <ListingImage 
           src={listing.images && listing.images.length > 0 ? listing.images[0].url : undefined}
-          alt={listing.images && listing.images.length > 0 ? listing.images[0].alt || listing.title : listing.title}
+          alt={listing.images && listing.images.length > 0 ? listing.images[0].alt || listing.name : listing.name}
           type={listing.type} 
         />
       </div>
       <CardHeader>
         <div className="flex justify-between items-start">
           <div className="space-y-1">
-            <CardTitle className="line-clamp-1">{listing.title}</CardTitle>
+            <CardTitle className="line-clamp-1">{listing.name}</CardTitle>
             <div className="flex items-center text-sm text-muted-foreground">
               <MapPin className="mr-1 h-3 w-3" />
               {listing.city}, {listing.state}

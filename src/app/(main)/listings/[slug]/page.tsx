@@ -65,7 +65,7 @@ export default function ListingDetailPage() {
 					</Link>
 					<ChevronRight className="h-4 w-4 text-neutral-400" />
 					<span className="text-neutral-900 font-medium truncate max-w-[300px]">
-						{listing.title}
+						{listing.name}
 					</span>
 				</div>
 			</div>
@@ -75,7 +75,7 @@ export default function ListingDetailPage() {
 				<div className="mb-6">
 					<div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
 						<h1 className="text-3xl lg:text-4xl font-bold text-neutral-900 leading-tight">
-							{listing.title}
+							{listing.name}
 						</h1>
 						<div className="flex gap-3 shrink-0">
 							<Button
@@ -129,7 +129,7 @@ export default function ListingDetailPage() {
 
 				{/* Image Grid */}
 				<div className="mb-10">
-					<ImageGrid images={listing.images || []} title={listing.title} />
+					<ImageGrid images={listing.images || []} title={listing.name} />
 				</div>
 
 				<div className="grid gap-12 lg:grid-cols-3">
@@ -176,10 +176,19 @@ export default function ListingDetailPage() {
 							<h2 className="text-xl font-semibold text-neutral-text-primary mb-4">
 								About this space
 							</h2>
-							<p className="text-neutral-text-muted leading-relaxed">
-								{listing.description ||
-									'A luxurious space perfect for traditional weddings, corporate events, and vibrant Owambe celebrations. The Grand Lekki Ballroom features 20-foot ceilings, crystal chandeliers, and floor-to-ceiling windows offering views of the Lekki skyline.'}
-							</p>
+							{listing.description ? (
+								<div
+									className="prose prose-neutral max-w-none w-full min-w-0 break-words text-neutral-text-muted leading-relaxed prose-headings:font-semibold prose-headings:text-neutral-text-primary prose-a:text-primary-blue prose-a:no-underline hover:prose-a:underline prose-strong:text-neutral-text-primary prose-strong:font-semibold prose-img:rounded-xl prose-img:max-w-full"
+									dangerouslySetInnerHTML={{ __html: listing.description }}
+								/>
+							) : (
+								<p className="text-neutral-text-muted leading-relaxed">
+									A luxurious space perfect for traditional weddings, corporate
+									events, and vibrant Owambe celebrations. The Grand Lekki
+									Ballroom features 20-foot ceilings, crystal chandeliers, and
+									floor-to-ceiling windows offering views of the Lekki skyline.
+								</p>
+							)}
 							<Button
 								variant="link"
 								className="px-0 font-semibold text-primary-blue mt-2 hover:text-primary-blue-hover"
@@ -265,7 +274,7 @@ export default function ListingDetailPage() {
 							<BookingSidebar
 								basePrice={listing.basePrice || 0}
 								currency={listing.currency || 'NGN'}
-								venueName={listing.title}
+								venueName={listing.name}
 								venueAddress={listing.addressLine}
 								venueImage={listing.images?.[0]?.url}
 							/>

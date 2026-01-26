@@ -72,13 +72,12 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
 		createListing(
 			{
 				...data,
-				vendorId: vendor.id,
-			},
+			} as any,
 			{
 				onSuccess: () => {
 					onSuccess();
 				},
-			}
+			},
 		);
 	};
 
@@ -116,7 +115,8 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
 			<div className="grid gap-2">
 				<Label htmlFor="title">Title</Label>
 				<Input
-					id="title" placeholder='Adekite Event Center'
+					id="title"
+					placeholder="Adekite Event Center"
 					{...form.register('title')}
 					onChange={(e) => {
 						form.register('title').onChange(e);
@@ -132,7 +132,11 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
 
 			<div className="grid gap-2">
 				<Label htmlFor="slug">Slug (URL-friendly identifier)</Label>
-				<Input id="slug" placeholder='adekite-event-center' {...form.register('slug')} />
+				<Input
+					id="slug"
+					placeholder="adekite-event-center"
+					{...form.register('slug')}
+				/>
 				{form.formState.errors.slug && (
 					<p className="text-sm text-destructive">
 						{form.formState.errors.slug.message}
@@ -142,7 +146,12 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
 
 			<div className="grid gap-2">
 				<Label htmlFor="description">Description</Label>
-				<Textarea id="description" placeholder='Adekite Event Center is a venue for events' {...form.register('description')} rows={4} />
+				<Textarea
+					id="description"
+					placeholder="Adekite Event Center is a venue for events"
+					{...form.register('description')}
+					rows={4}
+				/>
 			</div>
 
 			<div className="grid gap-4 sm:grid-cols-2">
@@ -151,7 +160,7 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
 					<Input
 						id="basePrice"
 						type="number"
-						placeholder='100000'
+						placeholder="100000"
 						step="0.01"
 						{...form.register('basePrice', { valueAsNumber: true })}
 					/>
@@ -164,17 +173,21 @@ export function CreateListingForm({ onSuccess }: CreateListingFormProps) {
 
 			<div className="grid gap-2">
 				<Label htmlFor="addressLine">Address Line</Label>
-				<Textarea id="addressLine" placeholder='No. 12 Salvation street, Ikeja' {...form.register('addressLine')} />
+				<Textarea
+					id="addressLine"
+					placeholder="No. 12 Salvation street, Ikeja"
+					{...form.register('addressLine')}
+				/>
 			</div>
 
 			<div className="grid gap-4 sm:grid-cols-2">
 				<div className="grid gap-2">
 					<Label htmlFor="city">City</Label>
-					<Input id="city" placeholder='Ikeja' {...form.register('city')} />
+					<Input id="city" placeholder="Ikeja" {...form.register('city')} />
 				</div>
 				<div className="grid gap-2">
 					<Label htmlFor="state">State</Label>
-					<Input id="state" placeholder='Lagos' {...form.register('state')} />
+					<Input id="state" placeholder="Lagos" {...form.register('state')} />
 				</div>
 			</div>
 

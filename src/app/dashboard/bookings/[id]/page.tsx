@@ -250,7 +250,7 @@ export default function BookingDetailsPage({ params }: PageProps) {
 								<div className="flex-1 space-y-6">
 									<div>
 										<h3 className="text-lg font-bold text-gray-900 leading-tight">
-											{booking.listing?.title}
+											{booking.listing?.name}
 										</h3>
 										<div className="flex items-start gap-2 mt-2 text-muted-foreground">
 											<MapPin className="h-4 w-4 mt-0.5 shrink-0" />
