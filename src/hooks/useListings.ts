@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { listingService } from '@/services/listing.service';
 import { CreateListingData, ListingType, ListingStatus } from '@/types/listing';
+import { vendorService } from '@/services/vendor.service';
 
 export function useListings() {
 	const queryClient = useQueryClient();

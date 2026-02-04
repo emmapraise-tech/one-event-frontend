@@ -15,6 +15,7 @@ import { PricingStep } from './steps/PricingStep';
 import { cn } from '@/lib/utils';
 import { useListings } from '@/hooks/useListings';
 import { useVendors } from '@/hooks/useVendors';
+import { toast } from 'sonner';
 
 const initialData: ListingFormData = {
 	type: ListingType.VENUE,
@@ -27,8 +28,10 @@ const initialData: ListingFormData = {
 	addressLine: '',
 	city: '',
 	state: '',
+	zipCode: '',
 	country: 'Nigeria',
 	amenities: [],
+	addOns: [],
 	imageUrls: [],
 	imageFiles: [],
 };
@@ -73,22 +76,27 @@ export function ListingWizard() {
 		}
 
 		try {
+			toast.loading('Publishing your listing...', { id: 'publish-listing' });
 			await createListing(
 				{ data: formData, vendorId: vendor.id },
 				{
 					onSuccess: () => {
-						alert('Listing created successfully');
+						toast.success('Listing published successfully!', {
+							id: 'publish-listing',
+						});
 						router.push('/dashboard/listings');
 					},
 					onError: (error: Error) => {
-						alert('Failed to create listing: ' + error.message);
+						toast.error('Failed to publish: ' + error.message, {
+							id: 'publish-listing',
+						});
 						console.error(error);
 					},
 				},
 			);
 		} catch (error) {
 			console.error('Failed to create listing:', error);
-			alert('Failed to create listing');
+			toast.error('An unexpected error occurred', { id: 'publish-listing' });
 		}
 	};
 

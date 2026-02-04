@@ -9,11 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Plus, Store } from 'lucide-react';
 import { UserType } from '@/types/auth';
 import Link from 'next/link';
+import { useVendorListings } from '@/hooks/useVendorListings';
 
 export default function ListingsPage() {
 	const { user } = useAuth();
 	const { vendor } = useVendors();
-	const { listings, isLoading, error } = useListings();
+	const { listings, isLoading, error } = useVendorListings();
 
 	// Filter listings for vendors to show only their own
 	const isVendor =

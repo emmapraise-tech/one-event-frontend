@@ -20,16 +20,21 @@ import {
 	ShieldCheck,
 	Calendar,
 	ChevronRight,
+	Sparkles,
 } from 'lucide-react';
+import { useState } from 'react';
 import { ImageGrid } from '@/components/listing/image-grid';
 import { BookingSidebar } from '@/components/listing/booking-sidebar';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AMENITY_MAP } from '@/constants/amenities';
 
 export default function ListingDetailPage() {
 	const params = useParams();
 	const slug = params.slug as string;
 	const { data: listing, isLoading } = useListingBySlug(slug);
+	const [showFullDescription, setShowFullDescription] = useState(false);
+	const [showAllAmenities, setShowAllAmenities] = useState(false);
 
 	if (isLoading) {
 		return (
@@ -48,11 +53,11 @@ export default function ListingDetailPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-neutral-bg pb-20">
+		<div className="min-h-screen bg-neutral-bg pb-10">
 			{/* Breadcrumbs (Simple) */}
-			{/* Breadcrumbs */}
-			<div className="bg-white/50 backdrop-blur-sm py-4 border-b border-neutral-100 sticky top-16 z-30">
-				<div className="container mx-auto px-4 flex items-center gap-2 text-sm text-neutral-500">
+			<div className="container mx-auto px-4 pt-6 pb-12">
+				{/* Breadcrumbs */}
+				<div className="flex items-center gap-2 text-sm text-neutral-500 mb-4">
 					<Link href="/" className="hover:text-neutral-900 transition-colors">
 						Home
 					</Link>
@@ -68,9 +73,6 @@ export default function ListingDetailPage() {
 						{listing.name}
 					</span>
 				</div>
-			</div>
-
-			<div className="container mx-auto px-4 py-8">
 				{/* Title Header */}
 				<div className="mb-6">
 					<div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -128,20 +130,28 @@ export default function ListingDetailPage() {
 				</div>
 
 				{/* Image Grid */}
-				<div className="mb-10">
+				<div className="mb-8">
 					<ImageGrid images={listing.images || []} title={listing.name} />
 				</div>
 
-				<div className="grid gap-12 lg:grid-cols-3">
-					<div className="lg:col-span-2 space-y-10">
+				<div className="grid gap-8 lg:grid-cols-3">
+					<div className="lg:col-span-2 space-y-8">
 						{/* Host Info */}
-						<div className="flex items-center justify-between border-b border-neutral-border pb-8">
+						<div className="flex items-center justify-between border-b border-neutral-border pb-6">
 							<div>
 								<h2 className="text-xl font-semibold text-neutral-text-primary mb-1">
-									Entire ballroom hosted by Lagos Venues
+									Hosted by {listing.vendor?.businessName || 'Lagos Venues'}
 								</h2>
 								<p className="text-neutral-text-muted">
-									500 guests • 20,000 sq ft • 4 restrooms • Full Kitchen
+									{listing.venueDetail?.capacity || 0} guests •{' '}
+									{listing.venueDetail?.floorArea || 0} sq ft •{' '}
+									{listing.venueDetail?.parkingCap || 0} parking •{' '}
+									{listing.venueDetail?.hasIndoor ? 'Indoor' : ''}
+									{listing.venueDetail?.hasIndoor &&
+									listing.venueDetail?.hasOutdoor
+										? ' & '
+										: ''}
+									{listing.venueDetail?.hasOutdoor ? 'Outdoor' : ''}
 								</p>
 							</div>
 							<Avatar className="h-14 w-14 border border-neutral-border">
@@ -152,85 +162,107 @@ export default function ListingDetailPage() {
 							</Avatar>
 						</div>
 
-						{/* Key Features */}
-						<div className="space-y-6 border-b border-neutral-border pb-8">
+						{/* Key Features Highights */}
+						<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-neutral-border pb-8">
 							<FeatureItem
-								icon={<ShieldCheck className="h-6 w-6 text-primary-blue" />}
+								icon={<ShieldCheck className="h-5 w-5" />}
 								title="Premium Venue"
-								description="One of the most highly rated luxury venues in Lekki."
+								description="Highly rated luxury venue in Lekki."
 							/>
 							<FeatureItem
-								icon={<DoorOpen className="h-6 w-6 text-primary-blue" />}
+								icon={<DoorOpen className="h-5 w-5" />}
 								title="Self check-in"
-								description="Easy access code system for event planners."
+								description="Easy access for event planners."
 							/>
 							<FeatureItem
-								icon={<Calendar className="h-6 w-6 text-primary-blue" />}
-								title="Free cancellation for 48 hours"
-								description="Get a full refund if you change your mind."
+								icon={<Calendar className="h-5 w-5" />}
+								title="Flexible Policy"
+								description="Free cancellation for 48 hours."
 							/>
 						</div>
 
 						{/* About */}
-						<div className="border-b border-neutral-border pb-8">
+						<div className="border-b border-neutral-border pb-6">
 							<h2 className="text-xl font-semibold text-neutral-text-primary mb-4">
 								About this space
 							</h2>
-							{listing.description ? (
-								<div
-									className="prose prose-neutral max-w-none w-full min-w-0 break-words text-neutral-text-muted leading-relaxed prose-headings:font-semibold prose-headings:text-neutral-text-primary prose-a:text-primary-blue prose-a:no-underline hover:prose-a:underline prose-strong:text-neutral-text-primary prose-strong:font-semibold prose-img:rounded-xl prose-img:max-w-full"
-									dangerouslySetInnerHTML={{ __html: listing.description }}
-								/>
-							) : (
-								<p className="text-neutral-text-muted leading-relaxed">
-									A luxurious space perfect for traditional weddings, corporate
-									events, and vibrant Owambe celebrations. The Grand Lekki
-									Ballroom features 20-foot ceilings, crystal chandeliers, and
-									floor-to-ceiling windows offering views of the Lekki skyline.
-								</p>
-							)}
-							<Button
-								variant="link"
-								className="px-0 font-semibold text-primary-blue mt-2 hover:text-primary-blue-hover"
+							<div
+								className={`relative ${!showFullDescription ? 'max-h-56 overflow-hidden' : ''}`}
 							>
-								Show more &gt;
-							</Button>
+								{listing.description ? (
+									<div
+										className="prose prose-neutral max-w-none w-full min-w-0 break-words text-neutral-text-muted leading-relaxed prose-headings:font-semibold prose-headings:text-neutral-text-primary prose-a:text-primary-blue prose-a:no-underline hover:prose-a:underline prose-strong:text-neutral-text-primary prose-strong:font-semibold prose-img:rounded-xl prose-img:max-w-full"
+										dangerouslySetInnerHTML={{ __html: listing.description }}
+									/>
+								) : (
+									<p className="text-neutral-text-muted leading-relaxed">
+										A luxurious space perfect for traditional weddings,
+										corporate events, and vibrant Owambe celebrations. The Grand
+										Lekki Ballroom features 20-foot ceilings, crystal
+										chandeliers, and floor-to-ceiling windows offering views of
+										the Lekki skyline.
+									</p>
+								)}
+								{!showFullDescription && listing.description && (
+									<div className="absolute bottom-0 left-0 right-0 h-24 bg-linear-to-t from-neutral-bg to-transparent pointer-events-none" />
+								)}
+							</div>
+							{(listing.description?.length || 0) > 300 && (
+								<Button
+									variant="link"
+									className="px-0 font-bold text-neutral-900 mt-4 hover:no-underline flex items-center gap-1 group"
+									onClick={() => setShowFullDescription(!showFullDescription)}
+								>
+									{showFullDescription ? 'Show less' : 'Show more'}
+									<ChevronRight
+										className={`h-4 w-4 transition-transform ${showFullDescription ? '-rotate-90' : 'rotate-90'}`}
+									/>
+								</Button>
+							)}
 						</div>
 
 						{/* Amenities */}
-						<div className="border-b border-neutral-border pb-8">
-							<h2 className="text-xl font-semibold text-neutral-text-primary mb-6">
+						<div className="border-b border-neutral-border pb-6">
+							<h2 className="text-xl font-semibold text-neutral-text-primary mb-4">
 								What this place offers
 							</h2>
 							<div className="grid sm:grid-cols-2 gap-4">
-								<AmenityItem
-									icon={<Zap className="h-5 w-5" />}
-									label="24/7 Power Supply (Gen)"
-								/>
-								<AmenityItem
-									icon={<Utensils className="h-5 w-5" />}
-									label="Commercial Kitchen"
-								/>
-								<AmenityItem
-									icon={<Home className="h-5 w-5" />}
-									label="Bridal Suite"
-								/>
-								<AmenityItem
-									icon={<Users className="h-5 w-5" />}
-									label="Security Team"
-								/>
+								{(showAllAmenities
+									? listing.venueDetail?.amenities
+									: listing.venueDetail?.amenities?.slice(0, 6)
+								)?.map((slug) => {
+									const config = AMENITY_MAP[slug];
+									if (!config) return null;
+									return (
+										<AmenityItem
+											key={slug}
+											icon={config.icon}
+											label={config.label}
+										/>
+									);
+								})}
+								{!listing.venueDetail?.amenities?.length && (
+									<div className="text-neutral-500 italic">
+										No amenities listed.
+									</div>
+								)}
 							</div>
-							<Button
-								variant="outline"
-								className="mt-6 border-primary-blue text-primary-blue hover:bg-primary-soft-blue"
-							>
-								Show all 32 amenities
-							</Button>
+							{(listing.venueDetail?.amenities?.length || 0) > 6 && (
+								<Button
+									variant="outline"
+									className="mt-6 border-neutral-200 text-neutral-900 hover:border-neutral-900 transition-colors px-6 h-12 font-bold rounded-xl"
+									onClick={() => setShowAllAmenities(!showAllAmenities)}
+								>
+									{showAllAmenities
+										? 'Show less'
+										: `Show all ${listing.venueDetail?.amenities?.length} amenities`}
+								</Button>
+							)}
 						</div>
 
 						{/* Reviews Summary */}
 						<div className="pb-8">
-							<div className="flex items-center gap-2 mb-6">
+							<div className="flex items-center gap-2 mb-4">
 								<Star className="h-6 w-6 fill-accent-gold text-accent-gold" />
 								<h2 className="text-xl font-semibold text-neutral-text-primary">
 									{listing.rating} · {listing.reviewCount} Reviews
@@ -270,13 +302,17 @@ export default function ListingDetailPage() {
 
 					{/* Right Sidebar */}
 					<div>
-						<div className="sticky top-32">
+						<div className="sticky top-24">
 							<BookingSidebar
 								basePrice={listing.basePrice || 0}
 								currency={listing.currency || 'NGN'}
 								venueName={listing.name}
 								venueAddress={listing.addressLine}
 								venueImage={listing.images?.[0]?.url}
+								addOns={listing.addOns}
+								rating={listing.rating}
+								reviewCount={listing.reviewCount}
+								listingId={listing.id}
 							/>
 						</div>
 					</div>
@@ -296,11 +332,15 @@ function FeatureItem({
 	description: string;
 }) {
 	return (
-		<div className="flex gap-4">
-			<div className="mt-1">{icon}</div>
+		<div className="flex flex-col gap-3 p-4 rounded-xl bg-neutral-50/50 border border-neutral-100 transition-all hover:bg-white hover:shadow-sm">
+			<div className="h-10 w-10 flex items-center justify-center rounded-lg bg-blue-50 text-brand-blue shrink-0">
+				{icon}
+			</div>
 			<div>
-				<h3 className="font-semibold text-neutral-text-primary">{title}</h3>
-				<p className="text-neutral-text-muted text-sm">{description}</p>
+				<h3 className="font-bold text-sm text-neutral-900">{title}</h3>
+				<p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+					{description}
+				</p>
 			</div>
 		</div>
 	);

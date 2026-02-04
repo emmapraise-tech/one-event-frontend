@@ -14,25 +14,40 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { format, differenceInDays } from 'date-fns';
+import { DateRange } from 'react-day-picker';
+import { Calendar } from '@/components/ui/calendar';
 import {
-	CalendarIcon,
-	UserIcon,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import {
+	Loader2,
 	CheckCircle2,
 	Star,
 	Lock,
 	ShieldCheck,
 	X,
+	AlertCircle,
 } from 'lucide-react';
 
 import { useRouter } from 'next/navigation';
+import { AddOn } from '@/types/listing';
+import { bookingService } from '@/services/booking.service';
 
 interface BookingSidebarProps {
 	basePrice: number;
 	currency: string;
 	venueName?: string;
 	venueAddress?: string;
+	addOns?: AddOn[];
 	venueImage?: string;
+	rating?: number;
+	reviewCount?: number;
+	listingId: string;
 }
 
 export function BookingSidebar({
@@ -41,36 +56,91 @@ export function BookingSidebar({
 	venueName,
 	venueAddress,
 	venueImage,
+	rating = 0,
+	reviewCount = 0,
+	addOns = [],
+	listingId,
 }: BookingSidebarProps) {
 	const router = useRouter();
+	const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+	const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
+	const [availabilityMessage, setAvailabilityMessage] = useState<string>('');
 	const [guests, setGuests] = useState('100-200');
 	const [customGuests, setCustomGuests] = useState('');
-	const [packageType, setPackageType] = useState('venue-only');
+	const [selectedAddOnIds, setSelectedAddOnIds] = useState<string[]>([]);
 	const [paymentPreference, setPaymentPreference] = useState('full');
-	const [securitySelected, setSecuritySelected] = useState(false);
-	const [changingRoomSelected, setChangingRoomSelected] = useState(true);
 
-	// Default date/time for now, could be passed or picked
-	const [date, setDate] = useState('Oct 24, 2024');
-	const [time, setTime] = useState('2:00 PM - 6:00 PM');
+	// Default date range: today for 1 day
+	const [dateRange, setDateRange] = useState<DateRange | undefined>({
+		from: new Date(),
+		to: undefined,
+	});
 
-	const CLASSIC_DECOR_PRICE = 200000;
-	const SECURITY_PRICE = 50000;
-	const CHANGING_ROOM_PRICE = 20000;
+	const numberOfDays =
+		dateRange?.from && dateRange?.to
+			? differenceInDays(dateRange.to, dateRange.from) + 1
+			: 1;
+
 	const CLEANING_FEE = 50000;
 
-	const venueFee = basePrice * 4;
+	const venueFee = basePrice * numberOfDays;
 	const cleaningFee = CLEANING_FEE;
-	const packagePrice = packageType === 'classic' ? CLASSIC_DECOR_PRICE : 0;
 
-	const addOnsTotal =
-		(securitySelected ? SECURITY_PRICE : 0) +
-		(changingRoomSelected ? CHANGING_ROOM_PRICE : 0);
+	const addOnsTotal = addOns
+		.filter((addon) => selectedAddOnIds.includes(addon.id))
+		.reduce((sum, addon) => sum + (addon.price || 0), 0);
 
-	const total = venueFee + cleaningFee + packagePrice + addOnsTotal;
-	const deposit = total * 0.3;
+	const total = venueFee + cleaningFee + addOnsTotal;
+	const deposit = total * 0.7;
+
+	useEffect(() => {
+		const checkAvailability = async () => {
+			if (!dateRange?.from) return;
+
+			setIsCheckingAvailability(true);
+			setIsAvailable(null);
+
+			try {
+				const startDate = format(dateRange.from, 'yyyy-MM-dd');
+				const endDate = dateRange.to
+					? format(dateRange.to, 'yyyy-MM-dd')
+					: startDate;
+
+				const result = await bookingService.checkAvailability({
+					listingId,
+					startDate,
+					endDate,
+				});
+
+				setIsAvailable(result.available);
+				setAvailabilityMessage(
+					result.available
+						? 'Venue is available for these dates'
+						: 'Venue is already booked for these dates',
+				);
+			} catch (error) {
+				console.error('Error checking availability:', error);
+				setIsAvailable(false);
+				setAvailabilityMessage('Could not verify availability');
+			} finally {
+				setIsCheckingAvailability(false);
+			}
+		};
+
+		checkAvailability();
+	}, [dateRange, listingId]);
+
+	const toggleAddOn = (id: string) => {
+		setSelectedAddOnIds((prev) =>
+			prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+		);
+	};
 
 	const handleProceed = () => {
+		const selectedAddOnsData = addOns.filter((addon) =>
+			selectedAddOnIds.includes(addon.id),
+		);
+
 		const bookingDetails = {
 			venueName,
 			venueAddress,
@@ -78,15 +148,13 @@ export function BookingSidebar({
 			venueStartPrice: basePrice,
 			venueFee,
 			cleaningFee,
-			packageType,
-			packagePrice,
 			addOnsTotal,
-			securitySelected,
-			changingRoomSelected,
+			selectedAddOns: selectedAddOnsData,
 			total,
 			guests: guests === 'others' ? customGuests : guests,
-			date,
-			time,
+			dateRange,
+			numberOfDays,
+			date: dateRange?.from ? format(dateRange.from, 'PPP') : '',
 		};
 
 		localStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
@@ -104,42 +172,72 @@ export function BookingSidebar({
 						</span>
 						<div className="flex items-center gap-1 text-xs font-semibold text-neutral-700">
 							<Star className="h-3 w-3 fill-brand-gold text-brand-gold" />
-							<span>4.9</span>
-							<span className="text-neutral-400 font-normal">(128)</span>
+							<span>{rating}</span>
+							<span className="text-neutral-400 font-normal">
+								({reviewCount})
+							</span>
 						</div>
 					</div>
 					<div>
 						<span className="text-3xl font-bold text-brand-blue">
 							₦{basePrice.toLocaleString()}
 						</span>
-						<span className="text-neutral-500 text-sm"> / hour</span>
+						<span className="text-neutral-500 text-sm"> /day</span>
 					</div>
-					<div className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 text-xs font-medium rounded-lg border border-green-100">
-						<CheckCircle2 className="h-3.5 w-3.5" />
-						Available for your date
-					</div>
+
+					{isCheckingAvailability ? (
+						<div className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-100">
+							<Loader2 className="h-3.5 w-3.5 animate-spin" />
+							Checking availability...
+						</div>
+					) : isAvailable === true ? (
+						<div className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 text-xs font-medium rounded-lg border border-green-100">
+							<CheckCircle2 className="h-3.5 w-3.5" />
+							{availabilityMessage}
+						</div>
+					) : isAvailable === false ? (
+						<div className="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-700 text-xs font-medium rounded-lg border border-red-100">
+							<AlertCircle className="h-3.5 w-3.5" />
+							{availabilityMessage}
+						</div>
+					) : null}
 				</div>
 
-				{/* Date, Duration & Guests */}
+				{/* Date Selection */}
 				<div className="rounded-xl border border-neutral-200 overflow-hidden">
-					<div className="grid grid-cols-2 border-b border-neutral-200">
-						<div className="border-r border-neutral-200 p-3 hover:bg-neutral-50 transition-colors cursor-pointer">
-							<label className="text-[10px] font-bold text-neutral-800 block mb-0.5 uppercase tracking-wide">
-								Event Date
-							</label>
-							<div className="text-sm font-medium text-neutral-600 truncate">
-								{date}
+					<Popover>
+						<PopoverTrigger asChild>
+							<div className="p-3 hover:bg-neutral-50 transition-colors cursor-pointer border-b border-neutral-200">
+								<label className="text-[10px] font-bold text-neutral-800 block mb-0.5 uppercase tracking-wide">
+									Event Date(s)
+								</label>
+								<div className="text-sm font-medium text-neutral-600 truncate">
+									{dateRange?.from ? (
+										dateRange.to ? (
+											<>
+												{format(dateRange.from, 'LLL dd, y')} -{' '}
+												{format(dateRange.to, 'LLL dd, y')}
+											</>
+										) : (
+											format(dateRange.from, 'LLL dd, y')
+										)
+									) : (
+										<span>Pick a date</span>
+									)}
+								</div>
 							</div>
-						</div>
-						<div className="p-3 hover:bg-neutral-50 transition-colors cursor-pointer">
-							<label className="text-[10px] font-bold text-neutral-800 block mb-0.5 uppercase tracking-wide">
-								Time Slot
-							</label>
-							<div className="text-sm font-medium text-neutral-600 truncate">
-								{time}
-							</div>
-						</div>
-					</div>
+						</PopoverTrigger>
+						<PopoverContent className="w-auto p-0" align="start">
+							<Calendar
+								initialFocus
+								mode="range"
+								defaultMonth={dateRange?.from}
+								selected={dateRange}
+								onSelect={setDateRange}
+								numberOfMonths={2}
+							/>
+						</PopoverContent>
+					</Popover>
 
 					<div className="px-3 py-2 hover:bg-neutral-50 transition-colors">
 						<label className="text-[10px] font-bold text-neutral-800 block mb-0 uppercase tracking-wide">
@@ -181,144 +279,47 @@ export function BookingSidebar({
 					</div>
 				</div>
 
-				{/* Package Selection */}
-				<div className="space-y-3">
-					<Label className="text-xs font-semibold text-neutral-text-muted uppercase">
-						Select Package
-					</Label>
-					<RadioGroup
-						defaultValue="venue-only"
-						className="grid gap-3"
-						onValueChange={setPackageType}
-					>
-						<div
-							className={`flex items-center justify-between space-x-2 rounded-lg border p-4 cursor-pointer transition-all ${
-								packageType === 'venue-only'
-									? 'border-brand-blue border-2 bg-brand-blue-soft'
-									: 'border-neutral-border hover:bg-neutral-bg'
-							}`}
-						>
-							<div className="flex items-start gap-3">
-								<RadioGroupItem
-									value="venue-only"
-									id="venue-only"
-									className="mt-1 text-brand-blue border-brand-blue"
-								/>
-								<div>
-									<Label
-										htmlFor="venue-only"
-										className="font-bold cursor-pointer text-neutral-900"
-									>
-										Venue Only
-									</Label>
-									<p className="text-xs text-neutral-500 mt-1">
-										Empty hall, tables, chairs, AC.
-									</p>
-								</div>
-							</div>
-							<span className="text-xs font-bold text-primary-blue uppercase tracking-wide">
-								Included
-							</span>
-						</div>
-
-						<div
-							className={`flex items-center justify-between space-x-2 rounded-lg border p-4 cursor-pointer transition-all ${
-								packageType === 'classic'
-									? 'border-brand-blue border-2 bg-brand-blue-soft'
-									: 'border-neutral-border hover:bg-neutral-bg'
-							}`}
-						>
-							<div className="flex items-start gap-3">
-								<RadioGroupItem
-									value="classic"
-									id="classic"
-									className="mt-1 text-primary-blue border-primary-blue"
-								/>
-								<div>
-									<Label
-										htmlFor="classic"
-										className="font-bold cursor-pointer text-neutral-900"
-									>
-										Classic Decor
-									</Label>
-									<p className="text-xs text-neutral-500 mt-1">
-										Includes stage design, lighting, centerpiece.
-									</p>
-								</div>
-							</div>
-							<span className="text-xs font-medium text-neutral-900">
-								+₦{CLASSIC_DECOR_PRICE.toLocaleString()}
-							</span>
-						</div>
-					</RadioGroup>
-				</div>
-
 				{/* Add-ons */}
-				<div className="space-y-3">
-					<Label className="text-xs font-semibold text-neutral-text-muted uppercase">
-						Add-ons
-					</Label>
+				{addOns.length > 0 && (
 					<div className="space-y-3">
-						<div
-							className={`flex items-center justify-between rounded-lg border p-4 cursor-pointer transition-all ${
-								securitySelected
-									? 'border-brand-blue bg-brand-blue-soft'
-									: 'border-neutral-border hover:bg-neutral-bg'
-							}`}
-							onClick={() => setSecuritySelected(!securitySelected)}
-						>
-							<div className="flex items-center space-x-3">
-								<Checkbox
-									id="security"
-									checked={securitySelected}
-									onCheckedChange={(checked) =>
-										setSecuritySelected(checked === true)
-									}
-									className="text-primary-blue border-neutral-300 data-[state=checked]:bg-brand-blue data-[state=checked]:border-brand-blue rounded data-[state=checked]:text-white"
-								/>
-								<label
-									htmlFor="security"
-									className="text-sm font-medium leading-none cursor-pointer text-neutral-700"
-									onClick={(e) => e.stopPropagation()} // Prevent double toggle if label is clicked
-								>
-									Security Unit (4 guards)
-								</label>
-							</div>
-							<span className="text-sm text-neutral-500">
-								+₦{SECURITY_PRICE.toLocaleString()}
-							</span>
-						</div>
-						<div
-							className={`flex items-center justify-between rounded-lg border p-4 cursor-pointer transition-all ${
-								changingRoomSelected
-									? 'border-brand-blue bg-brand-blue-soft'
-									: 'border-neutral-border hover:bg-neutral-bg'
-							}`}
-							onClick={() => setChangingRoomSelected(!changingRoomSelected)}
-						>
-							<div className="flex items-center space-x-3">
-								<Checkbox
-									id="changing-room"
-									checked={changingRoomSelected}
-									onCheckedChange={(checked) =>
-										setChangingRoomSelected(checked === true)
-									}
-									className="text-primary-blue border-neutral-300 data-[state=checked]:bg-brand-blue data-[state=checked]:border-brand-blue rounded data-[state=checked]:text-white"
-								/>
-								<label
-									htmlFor="changing-room"
-									className="text-sm font-medium leading-none cursor-pointer text-neutral-700"
-									onClick={(e) => e.stopPropagation()}
-								>
-									Changing Room
-								</label>
-							</div>
-							<span className="text-sm text-neutral-500">
-								+₦{CHANGING_ROOM_PRICE.toLocaleString()}
-							</span>
+						<Label className="text-xs font-semibold text-neutral-text-muted uppercase">
+							Add-ons
+						</Label>
+						<div className="space-y-3">
+							{addOns.map((addon) => {
+								const isSelected = selectedAddOnIds.includes(addon.id);
+								return (
+									<div
+										key={addon.id}
+										className={`flex items-center justify-between rounded-lg border p-4 cursor-pointer transition-all ${
+											isSelected
+												? 'border-brand-blue bg-brand-blue-soft'
+												: 'border-neutral-border hover:bg-neutral-bg'
+										}`}
+										onClick={() => toggleAddOn(addon.id)}
+									>
+										<div className="flex items-center space-x-3 pointer-events-none">
+											<Checkbox
+												id={addon.id}
+												checked={isSelected}
+												className="text-primary-blue border-neutral-300 data-[state=checked]:bg-brand-blue data-[state=checked]:border-brand-blue rounded data-[state=checked]:text-white"
+											/>
+											<label
+												htmlFor={addon.id}
+												className="text-sm font-medium leading-none cursor-pointer text-neutral-700"
+											>
+												{addon.name}
+											</label>
+										</div>
+										<span className="text-sm text-neutral-500">
+											+₦{addon.price.toLocaleString()}
+										</span>
+									</div>
+								);
+							})}
 						</div>
 					</div>
-				</div>
+				)}
 
 				{/* Payment Preference */}
 				<div className="space-y-3">
@@ -391,7 +392,7 @@ export function BookingSidebar({
 										htmlFor="pay-deposit"
 										className="text-sm font-bold text-neutral-900 cursor-pointer"
 									>
-										Pay Deposit (30%)
+										Pay Deposit (70%)
 									</Label>
 									<p className="text-xs text-neutral-500">
 										Secure your date now, pay the rest later.
@@ -413,7 +414,9 @@ export function BookingSidebar({
 
 				<div className="bg-neutral-50 p-4 rounded-lg space-y-2 border border-neutral-100">
 					<div className="flex justify-between text-sm">
-						<span className="text-neutral-500">Venue Fee (4hrs)</span>
+						<span className="text-neutral-500">
+							Venue Fee ({numberOfDays} {numberOfDays > 1 ? 'days' : 'day'})
+						</span>
 						<span className="font-medium text-neutral-900">
 							₦{venueFee.toLocaleString()}
 						</span>
@@ -424,15 +427,7 @@ export function BookingSidebar({
 							₦{cleaningFee.toLocaleString()}
 						</span>
 					</div>
-					{/* Conditionally show Package Fee if selected */}
-					{packageType !== 'venue-only' && (
-						<div className="flex justify-between text-sm">
-							<span className="text-neutral-500">Classic Decor</span>
-							<span className="font-medium text-neutral-900">
-								₦{packagePrice.toLocaleString()}
-							</span>
-						</div>
-					)}
+
 					<div className="flex justify-between text-sm">
 						<span className="text-neutral-500">Add-ons</span>
 						<span className="font-medium text-neutral-900">

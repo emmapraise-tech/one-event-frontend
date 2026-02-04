@@ -31,4 +31,9 @@ export const vendorService = {
   async remove(id: string): Promise<void> {
     await api.delete(`/vendors/${id}`);
   },
+
+  async getMyListings(): Promise<any[]> {
+    const response = await api.get<ApiResponse<any[]>>('/vendors/listings');
+    return response.data.data;
+  },
 };

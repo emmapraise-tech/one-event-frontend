@@ -8,7 +8,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import {
 	Calendar,
-	Clock,
 	Edit,
 	Lock,
 	Users,
@@ -33,10 +32,7 @@ export default function BookingSummaryPage() {
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [bookingData, setBookingData] = useState<any>(null);
 
-	// Constants matching Sidebar
-	const CLASSIC_DECOR_PRICE = 200000;
-	const SECURITY_PRICE = 50000;
-	const CHANGING_ROOM_PRICE = 20000;
+	// No need for hardcoded constants anymore as we use dynamic add-ons from bookingData
 
 	useEffect(() => {
 		const data = localStorage.getItem('bookingDetails');
@@ -146,29 +142,30 @@ export default function BookingSummaryPage() {
 									</div>
 
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-										<div className="flex items-start gap-3">
+										<div className="flex items-start gap-3 col-span-2">
 											<div className="p-2 bg-blue-50 rounded-lg text-brand-blue">
 												<Calendar className="w-5 h-5" />
 											</div>
 											<div>
 												<span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide block">
-													DATE
+													EVENT DATES
 												</span>
 												<span className="text-sm font-medium text-neutral-900">
-													Oct 24, 2024
-												</span>
-											</div>
-										</div>
-										<div className="flex items-start gap-3">
-											<div className="p-2 bg-blue-50 rounded-lg text-brand-blue">
-												<Clock className="w-5 h-5" />
-											</div>
-											<div>
-												<span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide block">
-													TIME
-												</span>
-												<span className="text-sm font-medium text-neutral-900">
-													5:00 PM - 11:00 PM
+													{bookingData.dateRange?.to ? (
+														<>
+															{new Date(
+																bookingData.dateRange.from,
+															).toLocaleDateString()}{' '}
+															-{' '}
+															{new Date(
+																bookingData.dateRange.to,
+															).toLocaleDateString()}
+														</>
+													) : (
+														new Date(
+															bookingData.dateRange?.from || bookingData.date,
+														).toLocaleDateString()
+													)}
 												</span>
 											</div>
 										</div>
@@ -181,7 +178,7 @@ export default function BookingSummaryPage() {
 													GUESTS
 												</span>
 												<span className="text-sm font-medium text-neutral-900">
-													250 - 300 People
+													{bookingData.guests} People
 												</span>
 											</div>
 										</div>
@@ -314,7 +311,10 @@ export default function BookingSummaryPage() {
 
 									<div className="space-y-3 text-sm">
 										<div className="flex justify-between items-center text-neutral-600">
-											<span>Venue Rental (4 hrs)</span>
+											<span>
+												Venue Rental ({bookingData.numberOfDays}{' '}
+												{bookingData.numberOfDays > 1 ? 'days' : 'day'})
+											</span>
 											<span className="font-bold text-neutral-900">
 												₦{bookingData.venueFee.toLocaleString()}
 											</span>
@@ -325,30 +325,17 @@ export default function BookingSummaryPage() {
 												₦{bookingData.cleaningFee.toLocaleString()}
 											</span>
 										</div>
-										{bookingData.packageType === 'classic' && (
-											<div className="flex justify-between items-center text-neutral-600">
-												<span>Classic Decor</span>
+										{bookingData.selectedAddOns?.map((addon: any) => (
+											<div
+												key={addon.id}
+												className="flex justify-between items-center text-neutral-600"
+											>
+												<span>{addon.name}</span>
 												<span className="font-bold text-neutral-900">
-													₦{CLASSIC_DECOR_PRICE.toLocaleString()}
+													₦{addon.price.toLocaleString()}
 												</span>
 											</div>
-										)}
-										{bookingData.securitySelected && (
-											<div className="flex justify-between items-center text-neutral-600">
-												<span>Security Unit</span>
-												<span className="font-bold text-neutral-900">
-													₦{SECURITY_PRICE.toLocaleString()}
-												</span>
-											</div>
-										)}
-										{bookingData.changingRoomSelected && (
-											<div className="flex justify-between items-center text-neutral-600">
-												<span>Changing Room</span>
-												<span className="font-bold text-neutral-900">
-													₦{CHANGING_ROOM_PRICE.toLocaleString()}
-												</span>
-											</div>
-										)}
+										))}
 										<div className="flex justify-between items-center text-neutral-600">
 											<span>VAT (7.5%)</span>
 											<span className="font-bold text-neutral-900">

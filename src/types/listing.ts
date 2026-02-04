@@ -24,6 +24,20 @@ export enum ListingStatus {
 	INACTIVE = 'INACTIVE',
 	PENDING = 'PENDING',
 }
+export interface AddOn {
+	id: string;
+	name: string;
+	price: number;
+}
+export interface VenueDetail {
+	id: string;
+	capacity: number;
+	floorArea: number;
+	hasIndoor: boolean;
+	hasOutdoor: boolean;
+	parkingCap: number;
+	amenities: string[];
+}
 
 export interface ListingImage {
 	id: string;
@@ -56,6 +70,8 @@ export interface Listing {
 	createdAt: Date;
 	updatedAt: Date;
 	vendor?: Vendor;
+	addOns?: AddOn[];
+	venueDetail?: VenueDetail;
 }
 
 export interface CreateListingData {
@@ -78,23 +94,28 @@ export interface ListingFormData {
 	categories: ListingCategory[];
 	title: string;
 	slug: string;
-	description: string;
+	description?: string;
 	// Pricing
 	priceStrategy: 'daily' | 'weekday_weekend';
 	basePrice?: number; // Used for "Single Daily Price"
 	weekdayPrice?: number;
 	weekendPrice?: number;
-	currency: string;
+	currency?: string;
 	addressLine: string;
 	city: string;
 	state: string;
+	zipCode: string;
 	country: string;
 
 	// Specs
 	totalArea?: number;
 	seatedCapacity?: number;
 	standingCapacity?: number;
+	parkingCap?: number;
+	hasIndoor?: boolean;
+	hasOutdoor?: boolean;
 	amenities: string[];
+	addOns: { name: string; price: number }[];
 
 	// Media
 	imageUrls: string[]; // For preview

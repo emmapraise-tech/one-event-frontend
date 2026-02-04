@@ -9,7 +9,14 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { DollarSign, ChevronLeft, ChevronRight, Info } from 'lucide-react';
+import {
+	DollarSign,
+	ChevronLeft,
+	ChevronRight,
+	Info,
+	Plus,
+	Trash2,
+} from 'lucide-react';
 import { ListingFormData } from '@/types/listing';
 
 interface StepProps {
@@ -200,10 +207,7 @@ export function PricingStep({
 
 					<div className="grid gap-3">
 						<div className="flex items-center justify-between">
-							<Label
-								htmlFor="cleaningFee"
-								className="text-base font-medium text-gray-700"
-							>
+							<Label className="text-base font-medium text-gray-700">
 								Cleaning Fee
 							</Label>
 							<span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
@@ -213,7 +217,7 @@ export function PricingStep({
 						<div className="relative shadow-sm">
 							<div className="flex">
 								<div className="flex items-center justify-center border border-r-0 border-gray-200 rounded-l-lg bg-gray-50 px-4 text-gray-500 font-medium min-w-[48px]">
-									$
+									₦
 								</div>
 								<Input
 									id="cleaningFee"
@@ -222,6 +226,87 @@ export function PricingStep({
 									placeholder="0.00"
 								/>
 							</div>
+						</div>
+					</div>
+
+					{/* Add-ons Section */}
+					<div className="space-y-4 pt-4 border-t border-gray-100">
+						<div className="flex items-center justify-between">
+							<Label className="text-base font-medium text-gray-700">
+								Extra Services (Add-ons)
+							</Label>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								onClick={() => {
+									const current = formData.addOns || [];
+									updateFormData({
+										addOns: [...current, { name: '', price: 0 }],
+									});
+								}}
+								className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 gap-2"
+							>
+								<Plus className="h-4 w-4" />
+								Add service
+							</Button>
+						</div>
+
+						<div className="space-y-3">
+							{(formData.addOns || []).map((addon, index) => (
+								<div
+									key={index}
+									className="flex gap-3 items-start animate-in fade-in slide-in-from-left-2 duration-200"
+								>
+									<div className="flex-1">
+										<Input
+											placeholder="Setting, Sound, etc."
+											value={addon.name}
+											onChange={(e) => {
+												const newAddOns = [...(formData.addOns || [])];
+												newAddOns[index].name = e.target.value;
+												updateFormData({ addOns: newAddOns });
+											}}
+											className="h-10 border-gray-200"
+										/>
+									</div>
+									<div className="w-24 relative">
+										<Input
+											type="number"
+											placeholder="Price"
+											value={addon.price || ''}
+											onChange={(e) => {
+												const newAddOns = [...(formData.addOns || [])];
+												newAddOns[index].price = Number(e.target.value);
+												updateFormData({ addOns: newAddOns });
+											}}
+											className="h-10 pl-6 border-gray-200"
+										/>
+										<span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">
+											₦
+										</span>
+									</div>
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										onClick={() => {
+											const newAddOns = formData.addOns?.filter(
+												(_, i) => i !== index,
+											);
+											updateFormData({ addOns: newAddOns });
+										}}
+										className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50"
+									>
+										<Trash2 className="h-4 w-4" />
+									</Button>
+								</div>
+							))}
+							{(!formData.addOns || formData.addOns.length === 0) && (
+								<p className="text-xs text-gray-400 italic bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200 text-center">
+									No extra services added yet.
+								</p>
+							)}
 						</div>
 					</div>
 				</div>

@@ -258,6 +258,8 @@ export function LocationStep({
 						<Input
 							id="zip"
 							placeholder="Zip Code"
+							value={formData.zipCode || ''}
+							onChange={(e) => updateFormData({ zipCode: e.target.value })}
 							className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base"
 						/>
 					</div>

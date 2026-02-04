@@ -6,7 +6,6 @@ import { Separator } from '@/components/ui/separator';
 import {
 	Calendar,
 	CheckCircle,
-	Clock,
 	Copy,
 	CreditCard,
 	Download,
@@ -140,29 +139,30 @@ export default function BookingConfirmedPage() {
 							</div>
 
 							<div className="flex flex-wrap gap-4">
-								<div className="flex items-center gap-3 bg-neutral-50 px-4 py-3 rounded-lg border border-neutral-100 flex-1 min-w-[200px]">
+								<div className="flex items-center gap-3 bg-neutral-50 px-4 py-3 rounded-lg border border-neutral-100 flex-1 min-w-[300px]">
 									<div className="p-2 bg-white rounded-md shadow-sm text-brand-blue">
 										<Calendar className="h-5 w-5" />
 									</div>
 									<div>
 										<span className="text-[10px] font-bold text-neutral-400 uppercase block">
-											Date
+											Event Date(s)
 										</span>
 										<span className="text-sm font-semibold text-neutral-900">
-											Oct 24, 2024
-										</span>
-									</div>
-								</div>
-								<div className="flex items-center gap-3 bg-neutral-50 px-4 py-3 rounded-lg border border-neutral-100 flex-1 min-w-[200px]">
-									<div className="p-2 bg-white rounded-md shadow-sm text-brand-blue">
-										<Clock className="h-5 w-5" />
-									</div>
-									<div>
-										<span className="text-[10px] font-bold text-neutral-400 uppercase block">
-											Time
-										</span>
-										<span className="text-sm font-semibold text-neutral-900">
-											5:00 PM - 11:00 PM
+											{bookingData.dateRange?.to ? (
+												<>
+													{new Date(
+														bookingData.dateRange.from,
+													).toLocaleDateString()}{' '}
+													-{' '}
+													{new Date(
+														bookingData.dateRange.to,
+													).toLocaleDateString()}
+												</>
+											) : (
+												new Date(
+													bookingData.dateRange?.from || bookingData.date,
+												).toLocaleDateString()
+											)}
 										</span>
 									</div>
 								</div>
@@ -192,26 +192,7 @@ export default function BookingConfirmedPage() {
 										</div>
 									</div>
 
-									<div className="flex items-start gap-4">
-										<div className="h-10 w-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
-											<Home className="h-5 w-5" />
-										</div>
-										<div>
-											<span className="block font-bold text-neutral-900 text-sm">
-												{bookingData.packageType === 'classic'
-													? 'Classic Decor Package'
-													: 'Venue Only'}
-											</span>
-											<span className="text-xs text-neutral-500">
-												{bookingData.packageType === 'classic'
-													? 'Includes stage design & lighting'
-													: 'Standard hall rental'}
-											</span>
-										</div>
-									</div>
-
-									{(bookingData.securitySelected ||
-										bookingData.changingRoomSelected) && (
+									{bookingData.selectedAddOns?.length > 0 && (
 										<div className="flex items-start gap-4">
 											<div className="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 shrink-0">
 												<Sparkles className="h-5 w-5" />
@@ -220,12 +201,9 @@ export default function BookingConfirmedPage() {
 												<span className="block font-bold text-neutral-900 text-sm">
 													Add-ons Included
 												</span>
-												<span className="text-xs text-neutral-500">
-													{[
-														bookingData.securitySelected && 'Security',
-														bookingData.changingRoomSelected && 'Changing Room',
-													]
-														.filter(Boolean)
+												<span className="text-xs text-neutral-500 line-clamp-2">
+													{bookingData.selectedAddOns
+														.map((a: any) => a.name)
 														.join(', ')}
 												</span>
 											</div>
@@ -242,7 +220,10 @@ export default function BookingConfirmedPage() {
 
 								<div className="space-y-3 text-sm mb-6">
 									<div className="flex justify-between text-neutral-600">
-										<span>Venue Rental</span>
+										<span>
+											Venue Rental ({bookingData.numberOfDays}{' '}
+											{bookingData.numberOfDays > 1 ? 'days' : 'day'})
+										</span>
 										<span className="font-medium text-neutral-900">
 											₦{bookingData.venueFee.toLocaleString()}
 										</span>
@@ -252,9 +233,7 @@ export default function BookingConfirmedPage() {
 										<span className="font-medium text-neutral-900">
 											₦
 											{(
-												bookingData.packagePrice +
-												bookingData.addOnsTotal +
-												bookingData.cleaningFee
+												bookingData.addOnsTotal + bookingData.cleaningFee
 											).toLocaleString()}
 										</span>
 									</div>
