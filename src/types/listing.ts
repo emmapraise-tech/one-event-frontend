@@ -31,8 +31,11 @@ export interface AddOn {
 }
 export interface VenueDetail {
 	id: string;
-	capacity: number;
-	floorArea: number;
+	capacity?: number;
+	seatedCapacity?: number;
+	floorArea?: number;
+	totalArea?: number;
+	standingCapacity?: number;
 	hasIndoor: boolean;
 	hasOutdoor: boolean;
 	parkingCap: number;
@@ -67,11 +70,16 @@ export interface Listing {
 	rating: number;
 	reviewCount: number;
 	images?: ListingImage[];
+	categories?: ListingCategory[];
+	category?: ListingCategory[]; // Fallback for singular naming
 	createdAt: Date;
 	updatedAt: Date;
 	vendor?: Vendor;
 	addOns?: AddOn[];
+	addons?: AddOn[]; // Fallback for lowercase
 	venueDetail?: VenueDetail;
+	details?: VenueDetail; // Fallback for 'details' key
+	standing_capacity?: number; // Another potential fallback
 }
 
 export interface CreateListingData {
@@ -106,6 +114,8 @@ export interface ListingFormData {
 	state: string;
 	zipCode: string;
 	country: string;
+	latitude?: number;
+	longitude?: number;
 
 	// Specs
 	totalArea?: number;

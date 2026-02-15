@@ -13,9 +13,8 @@ export interface Booking {
 	id: string;
 	customerId: string;
 	listingId: string;
-	bookingDate: string;
-	startTime?: string;
-	endTime?: string;
+	startDate: string;
+	endDate?: string;
 	numberOfGuests?: number;
 	specialRequests?: string;
 	basePrice: number;
@@ -35,12 +34,12 @@ export interface Booking {
 
 export interface CreateBookingData {
 	listingId: string;
-	bookingDate: string;
-	startTime?: string;
-	endTime?: string;
+	startDate: string;
+	endDate?: string;
 	numberOfGuests?: number;
 	specialRequests?: string;
 	currency?: string;
+	details?: any;
 }
 
 export interface UpdateBookingData {

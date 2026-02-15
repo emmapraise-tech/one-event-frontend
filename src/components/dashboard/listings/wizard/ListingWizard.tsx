@@ -30,6 +30,8 @@ const initialData: ListingFormData = {
 	state: '',
 	zipCode: '',
 	country: 'Nigeria',
+	latitude: undefined,
+	longitude: undefined,
 	amenities: [],
 	addOns: [],
 	imageUrls: [],

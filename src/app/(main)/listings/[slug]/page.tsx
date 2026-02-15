@@ -120,10 +120,22 @@ export default function ListingDetailPage() {
 								</Badge>
 							</div>
 						)}
+						{(listing.categories || listing.category)?.map((cat) => (
+							<div key={cat} className="flex items-center gap-1">
+								<span className="hidden sm:inline text-neutral-300">•</span>
+								<Badge
+									variant="outline"
+									className="text-neutral-500 font-normal py-0.5 border-neutral-200"
+								>
+									{cat.charAt(0) + cat.slice(1).toLowerCase()}
+								</Badge>
+							</div>
+						))}
 						<span className="hidden sm:inline text-neutral-300">•</span>
 						<div className="flex items-center gap-1 underline cursor-pointer hover:text-neutral-900 font-medium">
 							<span>
 								{listing.addressLine}, {listing.city}
+								{listing.state ? `, ${listing.state}` : ''}
 							</span>
 						</div>
 					</div>
@@ -142,22 +154,43 @@ export default function ListingDetailPage() {
 								<h2 className="text-xl font-semibold text-neutral-text-primary mb-1">
 									Hosted by {listing.vendor?.businessName || 'Lagos Venues'}
 								</h2>
-								<p className="text-neutral-text-muted">
-									{listing.venueDetail?.capacity || 0} guests •{' '}
-									{listing.venueDetail?.floorArea || 0} sq ft •{' '}
-									{listing.venueDetail?.parkingCap || 0} parking •{' '}
-									{listing.venueDetail?.hasIndoor ? 'Indoor' : ''}
-									{listing.venueDetail?.hasIndoor &&
-									listing.venueDetail?.hasOutdoor
-										? ' & '
-										: ''}
-									{listing.venueDetail?.hasOutdoor ? 'Outdoor' : ''}
-								</p>
+								<div className="text-neutral-text-muted">
+									{(() => {
+										const detail = listing.venueDetail || listing.details;
+										if (listing.type === 'VENUE' && detail) {
+											return (
+												<span>
+													{detail.capacity || detail.seatedCapacity || 0} guests
+													{detail.standingCapacity
+														? ` (${detail.standingCapacity} standing)`
+														: ''}{' '}
+													• {detail.floorArea || detail.totalArea || 0} sq ft •{' '}
+													{detail.parkingCap || 0} parking •{' '}
+													{detail.hasIndoor ? 'Indoor' : ''}
+													{detail.hasIndoor && detail.hasOutdoor ? ' & ' : ''}
+													{detail.hasOutdoor ? 'Outdoor' : ''}
+												</span>
+											);
+										}
+										return (
+											<span>
+												{listing.type.charAt(0) +
+													listing.type.slice(1).toLowerCase()}{' '}
+												Specialist
+											</span>
+										);
+									})()}
+								</div>
 							</div>
 							<Avatar className="h-14 w-14 border border-neutral-border">
-								<AvatarImage src="/images/avatar-placeholder.jpg" />
+								<AvatarImage src={listing.vendor?.businessLogo} />
 								<AvatarFallback className="bg-primary-soft-blue text-primary-blue font-semibold">
-									LV
+									{(listing.vendor?.businessName || 'Lagos Venues')
+										.split(' ')
+										.map((n) => n[0])
+										.join('')
+										.substring(0, 2)
+										.toUpperCase()}
 								</AvatarFallback>
 							</Avatar>
 						</div>
@@ -167,17 +200,17 @@ export default function ListingDetailPage() {
 							<FeatureItem
 								icon={<ShieldCheck className="h-5 w-5" />}
 								title="Premium Venue"
-								description="Highly rated luxury venue in Lekki."
+								description={`Highly rated luxury venue in ${listing.city || 'Lekki'}.`}
 							/>
 							<FeatureItem
 								icon={<DoorOpen className="h-5 w-5" />}
-								title="Self check-in"
-								description="Easy access for event planners."
+								title="Verified Listing"
+								description="Professional and reliable service provider."
 							/>
 							<FeatureItem
 								icon={<Calendar className="h-5 w-5" />}
-								title="Flexible Policy"
-								description="Free cancellation for 48 hours."
+								title="Secure Booking"
+								description="Hassle-free reservation and payment."
 							/>
 						</div>
 
@@ -227,27 +260,37 @@ export default function ListingDetailPage() {
 								What this place offers
 							</h2>
 							<div className="grid sm:grid-cols-2 gap-4">
-								{(showAllAmenities
-									? listing.venueDetail?.amenities
-									: listing.venueDetail?.amenities?.slice(0, 6)
-								)?.map((slug) => {
-									const config = AMENITY_MAP[slug];
-									if (!config) return null;
-									return (
-										<AmenityItem
-											key={slug}
-											icon={config.icon}
-											label={config.label}
-										/>
-									);
-								})}
-								{!listing.venueDetail?.amenities?.length && (
+								{(() => {
+									const detail = listing.venueDetail || listing.details;
+									const amenities = detail?.amenities || [];
+									const displayAmenities = showAllAmenities
+										? amenities
+										: amenities.slice(0, 6);
+
+									return displayAmenities.map((slug) => {
+										const config = AMENITY_MAP[slug];
+										if (!config) return null;
+										return (
+											<AmenityItem
+												key={slug}
+												icon={config.icon}
+												label={config.label}
+											/>
+										);
+									});
+								})()}
+								{!(
+									listing.venueDetail?.amenities?.length ||
+									listing.details?.amenities?.length
+								) && (
 									<div className="text-neutral-500 italic">
 										No amenities listed.
 									</div>
 								)}
 							</div>
-							{(listing.venueDetail?.amenities?.length || 0) > 6 && (
+							{(listing.venueDetail?.amenities?.length ||
+								listing.details?.amenities?.length ||
+								0) > 6 && (
 								<Button
 									variant="outline"
 									className="mt-6 border-neutral-200 text-neutral-900 hover:border-neutral-900 transition-colors px-6 h-12 font-bold rounded-xl"
@@ -255,7 +298,7 @@ export default function ListingDetailPage() {
 								>
 									{showAllAmenities
 										? 'Show less'
-										: `Show all ${listing.venueDetail?.amenities?.length} amenities`}
+										: `Show all ${listing.venueDetail?.amenities?.length || listing.details?.amenities?.length} amenities`}
 								</Button>
 							)}
 						</div>
@@ -291,12 +334,33 @@ export default function ListingDetailPage() {
 							<p className="text-neutral-text-muted mb-6">
 								{listing.addressLine}, {listing.city}
 							</p>
-							<div className="aspect-[16/9] w-full bg-primary-soft-blue rounded-xl relative overflow-hidden border border-neutral-border">
-								<div className="absolute inset-0 flex items-center justify-center text-primary-blue opacity-50">
-									{/* Map Image Placeholder or Component */}
-									<MapPin className="h-12 w-12" />
-								</div>
-							</div>
+							{(() => {
+								const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+								const hasCoords =
+									listing.latitude != null && listing.longitude != null;
+								const addressQuery = `${listing.addressLine}, ${listing.city}, ${listing.state}`;
+								const q = hasCoords
+									? `${listing.latitude},${listing.longitude}`
+									: addressQuery;
+
+								const mapSrc = apiKey
+									? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(q)}&zoom=15`
+									: `https://maps.google.com/maps?q=${encodeURIComponent(q)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+
+								return (
+									<div className="aspect-video w-full rounded-xl relative overflow-hidden border border-neutral-border shadow-sm bg-neutral-100">
+										<iframe
+											width="100%"
+											height="100%"
+											style={{ border: 0 }}
+											loading="lazy"
+											allowFullScreen
+											referrerPolicy="no-referrer-when-downgrade"
+											src={mapSrc}
+										></iframe>
+									</div>
+								);
+							})()}
 						</div>
 					</div>
 
@@ -309,7 +373,7 @@ export default function ListingDetailPage() {
 								venueName={listing.name}
 								venueAddress={listing.addressLine}
 								venueImage={listing.images?.[0]?.url}
-								addOns={listing.addOns}
+								addOns={listing.addOns || listing.addons}
 								rating={listing.rating}
 								reviewCount={listing.reviewCount}
 								listingId={listing.id}

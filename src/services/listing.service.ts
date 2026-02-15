@@ -24,6 +24,8 @@ export const listingService = {
 		formData.append('city', data.city);
 		formData.append('state', data.state);
 		formData.append('country', data.country);
+		if (data.latitude) formData.append('latitude', data.latitude.toString());
+		if (data.longitude) formData.append('longitude', data.longitude.toString());
 		formData.append('currency', data.currency || 'NGN');
 		formData.append('isPublished', 'true');
 		formData.append(
@@ -45,7 +47,7 @@ export const listingService = {
 		}
 
 		// Details (Venue Specifics)
-		const details: any = {
+		const details = {
 			capacity: data.seatedCapacity,
 			floorArea: data.totalArea,
 			parkingCap: data.parkingCap,
@@ -53,24 +55,11 @@ export const listingService = {
 			hasOutdoor: data.hasOutdoor,
 			amenities: data.amenities,
 		};
-		// NestJS with class-transformer often expects nested objects as JSON strings or dotted keys
-		// Assuming dot notation for nested DTOs if using standard form-data parsing
-		Object.entries(details).forEach(([key, value]) => {
-			if (value !== undefined && value !== null) {
-				if (Array.isArray(value)) {
-					value.forEach((v) => formData.append(`details.${key}`, v));
-				} else {
-					formData.append(`details.${key}`, value.toString());
-				}
-			}
-		});
+		formData.append('details', JSON.stringify(details));
 
 		// Add-ons
 		if (data.addOns && data.addOns.length > 0) {
-			data.addOns.forEach((addon, index) => {
-				formData.append(`addOns[${index}].name`, addon.name);
-				formData.append(`addOns[${index}].price`, addon.price.toString());
-			});
+			formData.append('addOns', JSON.stringify(data.addOns));
 		}
 
 		// Files

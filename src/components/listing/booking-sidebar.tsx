@@ -37,6 +37,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { AddOn } from '@/types/listing';
 import { bookingService } from '@/services/booking.service';
+import { useAuth } from '@/hooks/useAuth';
 
 interface BookingSidebarProps {
 	basePrice: number;
@@ -62,6 +63,7 @@ export function BookingSidebar({
 	listingId,
 }: BookingSidebarProps) {
 	const router = useRouter();
+	const { isAuthenticated, isLoading: authLoading } = useAuth();
 	const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
 	const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
 	const [availabilityMessage, setAvailabilityMessage] = useState<string>('');
@@ -155,9 +157,16 @@ export function BookingSidebar({
 			dateRange,
 			numberOfDays,
 			date: dateRange?.from ? format(dateRange.from, 'PPP') : '',
+			listingId,
 		};
 
 		localStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
+
+		if (!isAuthenticated) {
+			router.push('/login?callbackUrl=/booking/summary');
+			return;
+		}
+
 		router.push('/booking/summary');
 	};
 
@@ -445,8 +454,14 @@ export function BookingSidebar({
 
 				<Button
 					onClick={handleProceed}
+					disabled={
+						authLoading || isCheckingAvailability || isAvailable === false
+					}
 					className="w-full bg-brand-gold hover:bg-brand-gold-hover text-neutral-900 font-bold h-12 text-base shadow-sm"
 				>
+					{authLoading ? (
+						<Loader2 className="h-4 w-4 animate-spin mr-2" />
+					) : null}
 					Proceed to Payment →
 				</Button>
 

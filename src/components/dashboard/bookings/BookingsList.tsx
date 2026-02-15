@@ -47,9 +47,7 @@ export function BookingsList({
 			filterStatus === 'ALL' || booking.status === filterStatus;
 		const matchesSearch =
 			booking.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			booking.listing?.name
-				.toLowerCase()
-				.includes(searchQuery.toLowerCase()) ||
+			booking.listing?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
 			booking.customer?.firstName
 				?.toLowerCase()
 				.includes(searchQuery.toLowerCase()) ||
@@ -222,16 +220,18 @@ export function BookingsList({
 										<td className="px-6 py-4">
 											<div className="flex flex-col">
 												<span className="font-medium text-gray-900">
-													{format(
-														new Date(booking.bookingDate),
-														'dd MMM, yyyy',
-													)}
+													{format(new Date(booking.startDate), 'dd MMM, yyyy')}
 												</span>
-												{booking.startTime && (
-													<span className="text-xs text-muted-foreground mt-0.5">
-														{format(new Date(booking.startTime), 'p')}
-													</span>
-												)}
+												{booking.endDate &&
+													booking.endDate !== booking.startDate && (
+														<span className="text-xs text-muted-foreground mt-0.5">
+															to{' '}
+															{format(
+																new Date(booking.endDate),
+																'dd MMM, yyyy',
+															)}
+														</span>
+													)}
 											</div>
 										</td>
 										<td className="px-6 py-4 font-medium text-gray-900">

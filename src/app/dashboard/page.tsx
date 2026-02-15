@@ -5,10 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Plus, Wallet, Calendar, Eye, Star } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { RevenueChart } from '@/components/dashboard/revenue-chart';
-import {
-	PendingRequests,
-	RecentBookingsTable,
-} from '@/components/dashboard/recent-activity';
+import { PendingRequests } from '@/components/dashboard/recent-activity';
 
 export default function DashboardPage() {
 	const { user, isLoading } = useAuth();
@@ -21,8 +18,8 @@ export default function DashboardPage() {
 			trend: '12%',
 			trendUp: true,
 			icon: Wallet,
-			bgColor: 'bg-blue-50',
-			iconColor: 'text-primary',
+			bgColor: 'bg-brand-blue-soft',
+			iconColor: 'text-brand-blue',
 		},
 		{
 			title: 'TOTAL BOOKINGS',
@@ -105,12 +102,6 @@ export default function DashboardPage() {
 				{/* Left Column (Charts) */}
 				<div className="lg:col-span-2 space-y-6">
 					<RevenueChart />
-					<div className="pt-2">
-						<h3 className="text-lg font-bold text-neutral-900 mb-4">
-							Recent Bookings
-						</h3>
-						<RecentBookingsTable />
-					</div>
 				</div>
 
 				{/* Right Column (Activity/Sidebars) */}
@@ -121,7 +112,7 @@ export default function DashboardPage() {
 					<div className="bg-white p-4 rounded-xl border border-neutral-100 shadow-sm">
 						<div className="flex items-center justify-between mb-4">
 							<h3 className="font-bold text-neutral-900">Top Listings</h3>
-							<button className="text-xs font-semibold text-primary-blue">
+							<button className="text-xs font-semibold text-brand-blue">
 								Manage
 							</button>
 						</div>

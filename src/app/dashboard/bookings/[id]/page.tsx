@@ -134,7 +134,13 @@ export default function BookingDetailsPage({ params }: PageProps) {
 							</div>
 						</div>
 						<span className="text-xs text-muted-foreground mt-0.5">
-							{format(new Date(booking.bookingDate), 'EEEE, dd MMMM yyyy')}
+							{format(new Date(booking.startDate), 'EEEE, dd MMMM yyyy')}
+							{booking.endDate && booking.endDate !== booking.startDate && (
+								<>
+									{' '}
+									- {format(new Date(booking.endDate), 'EEEE, dd MMMM yyyy')}
+								</>
+							)}
 						</span>
 					</div>
 				</div>
@@ -267,21 +273,12 @@ export default function BookingDetailsPage({ params }: PageProps) {
 												<Calendar className="h-3.5 w-3.5" /> Date
 											</span>
 											<p className="text-sm font-semibold text-gray-900">
-												{format(new Date(booking.bookingDate), 'MMM dd, yyyy')}
+												{format(new Date(booking.startDate), 'MMM dd, yyyy')}
 											</p>
 										</div>
 										<div className="p-3 rounded-lg bg-gray-50 border border-border/50">
-											<span className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1">
-												<Clock className="h-3.5 w-3.5" /> Time
-											</span>
 											<p className="text-sm font-semibold text-gray-900">
-												{booking.startTime
-													? format(new Date(booking.startTime), 'p')
-													: '--'}
-												{' - '}
-												{booking.endTime
-													? format(new Date(booking.endTime), 'p')
-													: '--'}
+												Full Day Access
 											</p>
 										</div>
 									</div>
