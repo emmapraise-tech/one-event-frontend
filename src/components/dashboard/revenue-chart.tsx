@@ -52,8 +52,8 @@ export function RevenueChart() {
 					</SelectContent>
 				</Select>
 			</CardHeader>
-			<CardContent>
-				<div className="h-[200px] w-full mt-4">
+			<CardContent className="p-0">
+				<div className="h-[300px] w-full mt-4 px-6">
 					<ResponsiveContainer width="100%" height="100%">
 						<AreaChart
 							data={data}
@@ -106,6 +106,50 @@ export function RevenueChart() {
 							/>
 						</AreaChart>
 					</ResponsiveContainer>
+				</div>
+
+				<div className="mt-8 border-t border-neutral-100">
+					<table className="w-full text-sm text-left">
+						<thead>
+							<tr className="text-[10px] uppercase text-neutral-400 font-bold tracking-widest border-b border-neutral-50">
+								<th className="py-4 px-6 font-bold">Date Range</th>
+								<th className="py-4 px-6 font-bold">Transactions</th>
+								<th className="py-4 px-6 font-bold text-right">Revenue</th>
+							</tr>
+						</thead>
+						<tbody className="divide-y divide-neutral-50 text-neutral-600">
+							{[
+								{
+									range: 'May 22 - May 29',
+									count: '12 bookings',
+									revenue: '₦45,200',
+								},
+								{
+									range: 'May 15 - May 22',
+									count: '8 bookings',
+									revenue: '₦32,800',
+								},
+								{
+									range: 'May 08 - May 15',
+									count: '15 bookings',
+									revenue: '₦62,100',
+								},
+							].map((row, i) => (
+								<tr
+									key={i}
+									className="hover:bg-neutral-50/50 transition-colors"
+								>
+									<td className="py-4 px-6 font-medium text-neutral-900">
+										{row.range}
+									</td>
+									<td className="py-4 px-6">{row.count}</td>
+									<td className="py-4 px-6 text-right font-bold text-primary-blue">
+										{row.revenue}
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				</div>
 			</CardContent>
 		</Card>

@@ -70,7 +70,11 @@ export default function AdminBookingsPage() {
 										<div className="flex items-center gap-2 text-sm text-muted-foreground">
 											<Calendar className="h-4 w-4" />
 											<span>
-												{format(new Date(booking.bookingDate), 'PPP')}
+												{format(new Date(booking.startDate), 'PPP')}
+												{booking.endDate &&
+													booking.endDate !== booking.startDate && (
+														<> - {format(new Date(booking.endDate), 'PPP')}</>
+													)}
 											</span>
 										</div>
 										<p className="text-sm text-muted-foreground">

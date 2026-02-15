@@ -6,7 +6,6 @@ import { Separator } from '@/components/ui/separator';
 import {
 	Calendar,
 	CheckCircle,
-	Clock,
 	Copy,
 	CreditCard,
 	Download,
@@ -18,28 +17,101 @@ import {
 } from 'lucide-react';
 import Image from 'next/legacy/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { paymentService } from '@/services/payment.service';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
-export default function BookingConfirmedPage() {
+function BookingConfirmedContent() {
+	const searchParams = useSearchParams();
+	const router = useRouter();
 	const [bookingData, setBookingData] = useState<any>(null);
 	const [refCode, setRefCode] = useState('');
+	const [isVerifying, setIsVerifying] = useState(true);
+	const [verificationError, setVerificationError] = useState<string | null>(
+		null,
+	);
+
+	const reference = searchParams.get('reference');
 
 	useEffect(() => {
 		const data = localStorage.getItem('bookingDetails');
 		if (data) {
 			setBookingData(JSON.parse(data));
-			// Generate a random-ish ref code if not already existing,
-			// or just static for demo since it's a new load
-			setRefCode(
-				'#OE-' + Math.floor(100000 + Math.random() * 900000).toString(),
-			);
 		}
-	}, []);
+
+		const verify = async () => {
+			if (!reference) {
+				setIsVerifying(false);
+				return;
+			}
+
+			try {
+				await paymentService.verify(reference);
+				setRefCode(reference);
+				setIsVerifying(false);
+				localStorage.removeItem('bookingDetails'); // Clear after successful booking
+			} catch (error: any) {
+				console.error('Verification error:', error);
+				setVerificationError(
+					error.response?.data?.message || 'Failed to verify payment',
+				);
+				setIsVerifying(false);
+				toast.error('Payment verification failed. Please contact support.');
+			}
+		};
+
+		verify();
+	}, [reference]);
+
+	if (isVerifying) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-neutral-bg">
+				<div className="flex flex-col items-center gap-4">
+					<Loader2 className="h-12 w-12 animate-spin text-brand-blue" />
+					<h2 className="text-xl font-bold text-neutral-900">
+						Verifying your payment...
+					</h2>
+					<p className="text-neutral-500 text-sm">
+						This will only take a moment.
+					</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (verificationError && !bookingData) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-neutral-bg">
+				<div className="flex flex-col items-center gap-4 max-w-md text-center px-4">
+					<div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-2">
+						<Home className="h-10 w-10" />
+					</div>
+					<h2 className="text-2xl font-bold text-neutral-900">
+						Something went wrong
+					</h2>
+					<p className="text-neutral-500">{verificationError}</p>
+					<Button
+						onClick={() => router.push('/')}
+						className="mt-4 bg-brand-blue text-white"
+					>
+						Back to Home
+					</Button>
+				</div>
+			</div>
+		);
+	}
 
 	if (!bookingData) {
 		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<p className="text-neutral-500">Loading confirmation...</p>
+			<div className="min-h-screen flex items-center justify-center bg-neutral-bg">
+				<div className="flex flex-col items-center gap-4">
+					<p className="text-neutral-500">No booking data found.</p>
+					<Button onClick={() => router.push('/')} variant="outline">
+						Go Home
+					</Button>
+				</div>
 			</div>
 		);
 	}
@@ -140,29 +212,30 @@ export default function BookingConfirmedPage() {
 							</div>
 
 							<div className="flex flex-wrap gap-4">
-								<div className="flex items-center gap-3 bg-neutral-50 px-4 py-3 rounded-lg border border-neutral-100 flex-1 min-w-[200px]">
+								<div className="flex items-center gap-3 bg-neutral-50 px-4 py-3 rounded-lg border border-neutral-100 flex-1 min-w-[300px]">
 									<div className="p-2 bg-white rounded-md shadow-sm text-brand-blue">
 										<Calendar className="h-5 w-5" />
 									</div>
 									<div>
 										<span className="text-[10px] font-bold text-neutral-400 uppercase block">
-											Date
+											Event Date(s)
 										</span>
 										<span className="text-sm font-semibold text-neutral-900">
-											Oct 24, 2024
-										</span>
-									</div>
-								</div>
-								<div className="flex items-center gap-3 bg-neutral-50 px-4 py-3 rounded-lg border border-neutral-100 flex-1 min-w-[200px]">
-									<div className="p-2 bg-white rounded-md shadow-sm text-brand-blue">
-										<Clock className="h-5 w-5" />
-									</div>
-									<div>
-										<span className="text-[10px] font-bold text-neutral-400 uppercase block">
-											Time
-										</span>
-										<span className="text-sm font-semibold text-neutral-900">
-											5:00 PM - 11:00 PM
+											{bookingData.dateRange?.to ? (
+												<>
+													{new Date(
+														bookingData.dateRange.from,
+													).toLocaleDateString()}{' '}
+													-{' '}
+													{new Date(
+														bookingData.dateRange.to,
+													).toLocaleDateString()}
+												</>
+											) : (
+												new Date(
+													bookingData.dateRange?.from || bookingData.date,
+												).toLocaleDateString()
+											)}
 										</span>
 									</div>
 								</div>
@@ -192,26 +265,7 @@ export default function BookingConfirmedPage() {
 										</div>
 									</div>
 
-									<div className="flex items-start gap-4">
-										<div className="h-10 w-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
-											<Home className="h-5 w-5" />
-										</div>
-										<div>
-											<span className="block font-bold text-neutral-900 text-sm">
-												{bookingData.packageType === 'classic'
-													? 'Classic Decor Package'
-													: 'Venue Only'}
-											</span>
-											<span className="text-xs text-neutral-500">
-												{bookingData.packageType === 'classic'
-													? 'Includes stage design & lighting'
-													: 'Standard hall rental'}
-											</span>
-										</div>
-									</div>
-
-									{(bookingData.securitySelected ||
-										bookingData.changingRoomSelected) && (
+									{bookingData.selectedAddOns?.length > 0 && (
 										<div className="flex items-start gap-4">
 											<div className="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 shrink-0">
 												<Sparkles className="h-5 w-5" />
@@ -220,12 +274,9 @@ export default function BookingConfirmedPage() {
 												<span className="block font-bold text-neutral-900 text-sm">
 													Add-ons Included
 												</span>
-												<span className="text-xs text-neutral-500">
-													{[
-														bookingData.securitySelected && 'Security',
-														bookingData.changingRoomSelected && 'Changing Room',
-													]
-														.filter(Boolean)
+												<span className="text-xs text-neutral-500 line-clamp-2">
+													{bookingData.selectedAddOns
+														.map((a: any) => a.name)
 														.join(', ')}
 												</span>
 											</div>
@@ -242,7 +293,10 @@ export default function BookingConfirmedPage() {
 
 								<div className="space-y-3 text-sm mb-6">
 									<div className="flex justify-between text-neutral-600">
-										<span>Venue Rental</span>
+										<span>
+											Venue Rental ({bookingData.numberOfDays}{' '}
+											{bookingData.numberOfDays > 1 ? 'days' : 'day'})
+										</span>
 										<span className="font-medium text-neutral-900">
 											₦{bookingData.venueFee.toLocaleString()}
 										</span>
@@ -252,9 +306,7 @@ export default function BookingConfirmedPage() {
 										<span className="font-medium text-neutral-900">
 											₦
 											{(
-												bookingData.packagePrice +
-												bookingData.addOnsTotal +
-												bookingData.cleaningFee
+												bookingData.addOnsTotal + bookingData.cleaningFee
 											).toLocaleString()}
 										</span>
 									</div>
@@ -337,5 +389,19 @@ export default function BookingConfirmedPage() {
 				</div>
 			</div>
 		</div>
+	);
+}
+
+export default function BookingConfirmedPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="min-h-screen flex items-center justify-center bg-neutral-bg">
+					<Loader2 className="h-12 w-12 animate-spin text-brand-blue" />
+				</div>
+			}
+		>
+			<BookingConfirmedContent />
+		</Suspense>
 	);
 }

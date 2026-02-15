@@ -105,7 +105,7 @@ export function BasicInfoStep({ formData, updateFormData, onNext }: StepProps) {
 							/>
 						</div>
 						<div className="text-xs text-gray-400 font-medium text-right mt-1">
-							{formData.description.length} / 5000 characters
+							{(formData.description || '').length} / 5000 characters
 						</div>
 					</div>
 				</div>

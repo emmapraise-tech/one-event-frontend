@@ -55,6 +55,10 @@ export function LocationStep({
 		script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
 		script.async = true;
 		script.defer = true;
+		script.onerror = () => {
+			console.error('Google Maps script failed to load');
+			setIsLoadingScript(false);
+		};
 
 		// Define callback
 		window.initMap = () => {
@@ -98,8 +102,12 @@ export function LocationStep({
 
 				addressComponents.forEach((component: any) => {
 					const types = component.types;
-					if (types.includes('locality')) {
-						city = component.long_name;
+					if (
+						types.includes('locality') ||
+						types.includes('sublocality_level_1') ||
+						types.includes('administrative_area_level_2')
+					) {
+						city = city || component.long_name;
 					}
 					if (types.includes('administrative_area_level_1')) {
 						state = component.long_name;
@@ -113,11 +121,13 @@ export function LocationStep({
 				});
 
 				updateFormData({
-					addressLine: streetAddress || place.formatted_address,
+					addressLine: place.formatted_address || streetAddress,
 					city,
 					state,
 					country,
-					// You might want to store lat/lng too if you added them to formData
+					zipCode: zip,
+					latitude: place.geometry.location.lat(),
+					longitude: place.geometry.location.lng(),
 				});
 			});
 		}
@@ -131,8 +141,8 @@ export function LocationStep({
 	// Construct map query based on form data or default to Lagos
 	const addressQuery = [
 		formData.addressLine,
-		formData.city,
-		formData.state,
+		formData.city || 'Lagos',
+		formData.state || 'Lagos',
 		formData.country || 'Nigeria',
 	]
 		.filter(Boolean)
@@ -258,6 +268,8 @@ export function LocationStep({
 						<Input
 							id="zip"
 							placeholder="Zip Code"
+							value={formData.zipCode || ''}
+							onChange={(e) => updateFormData({ zipCode: e.target.value })}
 							className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base"
 						/>
 					</div>

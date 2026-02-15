@@ -12,40 +12,54 @@ export const listingService = {
 	async create(data: ListingFormData, vendorId: string): Promise<Listing> {
 		const formData = new FormData();
 
-		// Text fields
+		// Top-level fields
+		formData.append('vendorId', vendorId);
 		formData.append('type', data.type);
 		formData.append('name', data.title);
-		formData.append('slug', data.slug);
-		formData.append('currency', data.currency);
-		formData.append('zipCode', '00000'); // TODO: Add to form
+		if (data.slug) formData.append('slug', data.slug);
+		formData.append('description', data.description || '');
+		formData.append('zipCode', data.zipCode || '00000');
 		formData.append('streetAddress', data.addressLine);
+		formData.append('addressLine', data.addressLine);
 		formData.append('city', data.city);
 		formData.append('state', data.state);
 		formData.append('country', data.country);
+		if (data.latitude) formData.append('latitude', data.latitude.toString());
+		if (data.longitude) formData.append('longitude', data.longitude.toString());
+		formData.append('currency', data.currency || 'NGN');
+		formData.append('isPublished', 'true');
+		formData.append(
+			'isDailyPrice',
+			(data.priceStrategy === 'daily').toString(),
+		);
 
-		// Optional text fields
-		if (data.description) formData.append('description', data.description);
 		if (data.basePrice) formData.append('basePrice', data.basePrice.toString());
-		if (data.weekendPrice)
-			formData.append('weekendPrice', data.weekendPrice.toString());
 		if (data.weekdayPrice)
 			formData.append('weekDayPrice', data.weekdayPrice.toString());
+		if (data.weekendPrice)
+			formData.append('weekendPrice', data.weekendPrice.toString());
 
-		// Categories
+		// Categories (Multiple fields with same name)
 		if (data.categories) {
-			data.categories.forEach((category) => {
-				formData.append('category[]', category);
+			data.categories.forEach((cat) => {
+				formData.append('category', cat);
 			});
-		} else {
-			// Fallback default if nothing selected (though validaton should handle this)
-			formData.append('category[]', 'WEDDING');
 		}
 
-		// Amenities
-		if (data.amenities) {
-			data.amenities.forEach((amenity) => {
-				// formData.append('amenities[]', amenity);
-			});
+		// Details (Venue Specifics)
+		const details = {
+			capacity: data.seatedCapacity,
+			floorArea: data.totalArea,
+			parkingCap: data.parkingCap,
+			hasIndoor: data.hasIndoor,
+			hasOutdoor: data.hasOutdoor,
+			amenities: data.amenities,
+		};
+		formData.append('details', JSON.stringify(details));
+
+		// Add-ons
+		if (data.addOns && data.addOns.length > 0) {
+			formData.append('addOns', JSON.stringify(data.addOns));
 		}
 
 		// Files
@@ -54,9 +68,6 @@ export const listingService = {
 				formData.append('images', file);
 			});
 		}
-
-		// Vendor ID from parameter
-		formData.append('vendorId', vendorId);
 
 		const response = await api.post<ApiResponse<Listing>>(
 			'/listings',

@@ -1,14 +1,12 @@
 'use client';
 
 import { BookingStepper } from '@/components/booking/booking-stepper';
-import { PaymentMethodSelector } from '@/components/booking/payment-method-selector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import {
 	Calendar,
-	Clock,
 	Edit,
 	Lock,
 	Users,
@@ -25,18 +23,25 @@ import Image from 'next/legacy/image';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
+import { bookingService } from '@/services/booking.service';
+import { paymentService } from '@/services/payment.service';
+import { PaymentType, PaymentProvider } from '@/types/payment';
+import { toast } from 'sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Clock } from 'lucide-react';
 
-export default function BookingSummaryPage() {
+import { Suspense } from 'react';
+
+function BookingSummaryContent() {
 	const router = useRouter();
-	const [paymentMethod, setPaymentMethod] = useState('');
 	const [termsAccepted, setTermsAccepted] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [bookingData, setBookingData] = useState<any>(null);
+	const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
+	const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
-	// Constants matching Sidebar
-	const CLASSIC_DECOR_PRICE = 200000;
-	const SECURITY_PRICE = 50000;
-	const CHANGING_ROOM_PRICE = 20000;
+	// No need for hardcoded constants anymore as we use dynamic add-ons from bookingData
 
 	useEffect(() => {
 		const data = localStorage.getItem('bookingDetails');
@@ -45,10 +50,38 @@ export default function BookingSummaryPage() {
 		}
 	}, []);
 
-	if (!bookingData) {
+	useEffect(() => {
+		if (!authLoading && !isAuthenticated) {
+			router.push(
+				`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`,
+			);
+		}
+	}, [isAuthenticated, authLoading, router]);
+
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+		}, 1000);
+		return () => clearInterval(timer);
+	}, []);
+
+	const formatTime = (seconds: number) => {
+		const mins = Math.floor(seconds / 60);
+		const secs = seconds % 60;
+		return `${mins}:${secs.toString().padStart(2, '0')}`;
+	};
+
+	if (authLoading || !bookingData) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
-				<p className="text-neutral-500">Loading booking details...</p>
+				<div className="flex flex-col items-center gap-4">
+					<Loader2 className="h-8 w-8 animate-spin text-brand-blue" />
+					<p className="text-neutral-500">
+						{authLoading
+							? 'Checking authentication...'
+							: 'Loading booking details...'}
+					</p>
+				</div>
 			</div>
 		);
 	}
@@ -58,24 +91,73 @@ export default function BookingSummaryPage() {
 	const vat = subtotal * 0.075;
 	const grandTotal = subtotal + vat;
 
-	const handlePayment = () => {
+	const handlePayment = async () => {
+		if (!termsAccepted) {
+			toast.error('Please accept the terms and conditions');
+			return;
+		}
+
 		setIsProcessing(true);
-		// Simulate API call
-		setTimeout(() => {
-			router.push('/booking/confirmed');
-		}, 2000);
+		try {
+			// 1. Create the booking in the backend
+			const booking = await bookingService.create({
+				listingId: bookingData.listingId,
+				startDate: bookingData.dateRange.from,
+				endDate: bookingData.dateRange.to || bookingData.dateRange.from,
+				numberOfGuests: parseInt(bookingData.guests) || 100,
+				currency: 'NGN',
+				details: {
+					selectedAddOns: bookingData.selectedAddOns,
+					venueFee: bookingData.venueFee,
+					cleaningFee: bookingData.cleaningFee,
+					vat,
+				},
+			});
+
+			// 2. Initialize payment with Paystack
+			const paymentResponse: any = await paymentService.create({
+				bookingId: booking.id,
+				amount: grandTotal,
+				paymentType:
+					bookingData.paymentPreference === 'deposit'
+						? PaymentType.DEPOSIT
+						: PaymentType.FULL_PAYMENT,
+				provider: PaymentProvider.PAYSTACK,
+				callbackUrl: `${window.location.origin}/booking/confirmed`,
+				metadata: {
+					bookingId: booking.id,
+					customerEmail: user?.email,
+					customerName: `${user?.firstName} ${user?.lastName}`,
+				},
+			});
+
+			// 3. Redirect to Paystack
+			if (paymentResponse.paystackResponse?.authorization_url) {
+				window.location.href =
+					paymentResponse.paystackResponse.authorization_url;
+			} else {
+				throw new Error('Could not initialize payment redirect');
+			}
+		} catch (error: any) {
+			console.error('Payment error:', error);
+			toast.error(
+				error.response?.data?.message ||
+					'Failed to process booking. Please try again.',
+			);
+			setIsProcessing(false);
+		}
 	};
 
 	return (
 		<div className="min-h-screen bg-gray-50">
 			{/* Breadcrumbs */}
-			<div className="bg-white/50 backdrop-blur-sm py-4 border-b border-neutral-100 mb-8 sticky top-16 z-30">
+			<div className="bg-white/50 backdrop-blur-sm py-4 border-b border-neutral-100 mb-4 sticky top-16 z-30">
 				<div className="container mx-auto px-4 flex items-center gap-2 text-sm text-neutral-500">
 					<Button
 						variant="ghost"
 						size="icon"
 						className="mr-2 h-8 w-8 hover:bg-neutral-100 rounded-full"
-						onClick={() => router.back()}
+						onClick={() => router.push(`/listings/${bookingData.listingId}`)}
 					>
 						<ChevronRight className="h-4 w-4 rotate-180 text-neutral-900" />
 					</Button>
@@ -84,10 +166,10 @@ export default function BookingSummaryPage() {
 					</Link>
 					<ChevronRight className="h-4 w-4 text-neutral-400" />
 					<Link
-						href="/listings"
+						href={`/listings/${bookingData.listingId}`}
 						className="hover:text-neutral-900 transition-colors"
 					>
-						Venues
+						Venue Details
 					</Link>
 					<ChevronRight className="h-4 w-4 text-neutral-400" />
 					<span className="text-neutral-500 truncate max-w-[200px]">
@@ -98,6 +180,19 @@ export default function BookingSummaryPage() {
 				</div>
 			</div>
 
+			<div className="container mx-auto max-w-6xl px-4 py-4">
+				<Alert className="bg-blue-50 border-blue-200 text-blue-800 rounded-xl mb-6 flex items-center gap-3">
+					<Clock className="h-5 w-5 text-blue-600 animate-pulse" />
+					<AlertDescription className="font-medium">
+						We've reserved this venue for you. Complete your booking within{' '}
+						<span className="font-bold text-blue-900">
+							{formatTime(timeLeft)}
+						</span>{' '}
+						to secure this date.
+					</AlertDescription>
+				</Alert>
+			</div>
+
 			<div className="container mx-auto max-w-6xl px-4 pb-8">
 				{/* Page Header */}
 				<div className="mb-8">
@@ -105,7 +200,7 @@ export default function BookingSummaryPage() {
 						Review & Payment
 					</h1>
 					<p className="text-neutral-500 mb-8">
-						Review your booking details and select a payment method to confirm.
+						Review your booking details and confirm to proceed.
 					</p>
 
 					{/* Stepper hidden on small screens if desired, but good to keep */}
@@ -140,35 +235,39 @@ export default function BookingSummaryPage() {
 											variant="ghost"
 											size="sm"
 											className="text-brand-blue hover:text-brand-blue/80 h-auto p-0 font-medium"
+											onClick={() =>
+												router.push(`/listings/${bookingData.listingId}`)
+											}
 										>
 											Edit <Edit className="w-3 h-3 ml-1" />
 										</Button>
 									</div>
 
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-										<div className="flex items-start gap-3">
+										<div className="flex items-start gap-3 col-span-2">
 											<div className="p-2 bg-blue-50 rounded-lg text-brand-blue">
 												<Calendar className="w-5 h-5" />
 											</div>
 											<div>
 												<span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide block">
-													DATE
+													EVENT DATES
 												</span>
 												<span className="text-sm font-medium text-neutral-900">
-													Oct 24, 2024
-												</span>
-											</div>
-										</div>
-										<div className="flex items-start gap-3">
-											<div className="p-2 bg-blue-50 rounded-lg text-brand-blue">
-												<Clock className="w-5 h-5" />
-											</div>
-											<div>
-												<span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide block">
-													TIME
-												</span>
-												<span className="text-sm font-medium text-neutral-900">
-													5:00 PM - 11:00 PM
+													{bookingData.dateRange?.to ? (
+														<>
+															{new Date(
+																bookingData.dateRange.from,
+															).toLocaleDateString()}{' '}
+															-{' '}
+															{new Date(
+																bookingData.dateRange.to,
+															).toLocaleDateString()}
+														</>
+													) : (
+														new Date(
+															bookingData.dateRange?.from || bookingData.date,
+														).toLocaleDateString()
+													)}
 												</span>
 											</div>
 										</div>
@@ -181,7 +280,7 @@ export default function BookingSummaryPage() {
 													GUESTS
 												</span>
 												<span className="text-sm font-medium text-neutral-900">
-													250 - 300 People
+													{bookingData.guests} People
 												</span>
 											</div>
 										</div>
@@ -205,42 +304,46 @@ export default function BookingSummaryPage() {
 								</Button>
 							</div>
 							<CardContent className="p-6 space-y-6">
-								<div className="flex items-start gap-4">
-									<div className="p-3 bg-neutral-100 rounded-lg text-neutral-600">
-										<Utensils className="w-6 h-6" />
-									</div>
-									<div className="flex-1">
-										<div className="flex justify-between mb-1">
-											<span className="font-bold text-neutral-900">
-												Royal Nigerian Buffet
-											</span>
-											<span className="font-bold text-neutral-900">
-												₦650,000.00
-											</span>
-										</div>
-										<p className="text-sm text-neutral-500">
-											Jollof/Fried Rice, Pounded Yam & Egusi, Chapman, 5 servers
+								{bookingData.selectedAddOns &&
+								bookingData.selectedAddOns.length > 0 ? (
+									bookingData.selectedAddOns.map(
+										(addon: any, index: number) => (
+											<div key={index} className="flex items-start gap-4">
+												<div className="p-3 bg-neutral-100 rounded-lg text-neutral-600">
+													<Sparkles className="w-6 h-6" />
+												</div>
+												<div className="flex-1">
+													<div className="flex justify-between mb-1">
+														<span className="font-bold text-neutral-900">
+															{addon.name}
+														</span>
+														<span className="font-bold text-neutral-900">
+															₦{addon.price.toLocaleString()}
+														</span>
+													</div>
+													<p className="text-sm text-neutral-500">
+														Additional service confirmed for your booking.
+													</p>
+												</div>
+											</div>
+										),
+									)
+								) : (
+									<div className="text-center py-8">
+										<p className="text-neutral-500 text-sm">
+											No additional services selected.
 										</p>
+										<Button
+											variant="link"
+											className="text-brand-blue text-xs mt-2"
+											onClick={() =>
+												router.push(`/listings/${bookingData.listingId}`)
+											}
+										>
+											Browse Services
+										</Button>
 									</div>
-								</div>
-								<div className="flex items-start gap-4">
-									<div className="p-3 bg-neutral-100 rounded-lg text-neutral-600">
-										<Music className="w-6 h-6" />
-									</div>
-									<div className="flex-1">
-										<div className="flex justify-between mb-1">
-											<span className="font-bold text-neutral-900">
-												Live Band & DJ Setup
-											</span>
-											<span className="font-bold text-neutral-900">
-												₦350,000.00
-											</span>
-										</div>
-										<p className="text-sm text-neutral-500">
-											Full sound equipment, Stage lights, Backup generator
-										</p>
-									</div>
-								</div>
+								)}
 							</CardContent>
 						</Card>
 
@@ -264,7 +367,7 @@ export default function BookingSummaryPage() {
 										PRIMARY CONTACT
 									</span>
 									<span className="font-medium text-neutral-900">
-										Adewale Ogunleye
+										{user?.firstName} {user?.lastName}
 									</span>
 								</div>
 								<div>
@@ -272,7 +375,7 @@ export default function BookingSummaryPage() {
 										EMAIL ADDRESS
 									</span>
 									<span className="font-medium text-neutral-900">
-										adewale.o@example.com
+										{user?.email}
 									</span>
 								</div>
 								<div>
@@ -280,27 +383,11 @@ export default function BookingSummaryPage() {
 										PHONE
 									</span>
 									<span className="font-medium text-neutral-900">
-										+234 802 345 6789
+										{user?.phone || 'Not provided'}
 									</span>
 								</div>
 							</CardContent>
 						</Card>
-
-						{/* Payment Method */}
-						<div className="space-y-4 pt-4">
-							<div className="flex items-center justify-between">
-								<h3 className="font-bold text-lg text-neutral-900">
-									Select Payment Method
-								</h3>
-								<div className="flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100">
-									<Lock className="w-3 h-3" /> Secure Transaction
-								</div>
-							</div>
-							<PaymentMethodSelector
-								value={paymentMethod}
-								onChange={setPaymentMethod}
-							/>
-						</div>
 					</div>
 
 					{/* Sidebar - Price Breakdown */}
@@ -314,7 +401,10 @@ export default function BookingSummaryPage() {
 
 									<div className="space-y-3 text-sm">
 										<div className="flex justify-between items-center text-neutral-600">
-											<span>Venue Rental (4 hrs)</span>
+											<span>
+												Venue Rental ({bookingData.numberOfDays}{' '}
+												{bookingData.numberOfDays > 1 ? 'days' : 'day'})
+											</span>
 											<span className="font-bold text-neutral-900">
 												₦{bookingData.venueFee.toLocaleString()}
 											</span>
@@ -325,30 +415,17 @@ export default function BookingSummaryPage() {
 												₦{bookingData.cleaningFee.toLocaleString()}
 											</span>
 										</div>
-										{bookingData.packageType === 'classic' && (
-											<div className="flex justify-between items-center text-neutral-600">
-												<span>Classic Decor</span>
+										{bookingData.selectedAddOns?.map((addon: any) => (
+											<div
+												key={addon.id}
+												className="flex justify-between items-center text-neutral-600"
+											>
+												<span>{addon.name}</span>
 												<span className="font-bold text-neutral-900">
-													₦{CLASSIC_DECOR_PRICE.toLocaleString()}
+													₦{addon.price.toLocaleString()}
 												</span>
 											</div>
-										)}
-										{bookingData.securitySelected && (
-											<div className="flex justify-between items-center text-neutral-600">
-												<span>Security Unit</span>
-												<span className="font-bold text-neutral-900">
-													₦{SECURITY_PRICE.toLocaleString()}
-												</span>
-											</div>
-										)}
-										{bookingData.changingRoomSelected && (
-											<div className="flex justify-between items-center text-neutral-600">
-												<span>Changing Room</span>
-												<span className="font-bold text-neutral-900">
-													₦{CHANGING_ROOM_PRICE.toLocaleString()}
-												</span>
-											</div>
-										)}
+										))}
 										<div className="flex justify-between items-center text-neutral-600">
 											<span>VAT (7.5%)</span>
 											<span className="font-bold text-neutral-900">
@@ -399,9 +476,7 @@ export default function BookingSummaryPage() {
 											</label>
 										</div>
 										<Button
-											disabled={
-												!termsAccepted || !paymentMethod || isProcessing
-											}
+											disabled={!termsAccepted || isProcessing}
 											onClick={handlePayment}
 											className="w-full bg-brand-gold hover:bg-brand-gold-hover text-neutral-900 font-bold h-12 text-base shadow-sm mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
 										>
@@ -446,5 +521,19 @@ export default function BookingSummaryPage() {
 				</div>
 			</div>
 		</div>
+	);
+}
+
+export default function BookingSummaryPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="min-h-screen flex items-center justify-center">
+					<Loader2 className="h-8 w-8 animate-spin text-brand-blue" />
+				</div>
+			}
+		>
+			<BookingSummaryContent />
+		</Suspense>
 	);
 }

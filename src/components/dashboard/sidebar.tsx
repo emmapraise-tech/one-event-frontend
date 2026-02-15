@@ -147,15 +147,14 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
 			{user && (
 				<div
 					className={cn(
-						'p-4 border-t border-neutral-200 mt-auto transition-all duration-300',
-						isCollapsed && 'p-2',
+						'h-20 border-t border-neutral-200 mt-auto flex items-center px-4 transition-all duration-300',
+						isCollapsed && 'px-2 justify-center',
 					)}
 				>
 					<div
 						className={cn(
-							'flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100 shadow-sm transition-all',
-							isCollapsed &&
-								'justify-center p-2 bg-transparent border-none shadow-none',
+							'flex items-center gap-3 w-full transition-all',
+							isCollapsed && 'justify-center',
 						)}
 					>
 						<Avatar className="h-9 w-9 border border-gray-200 shrink-0">

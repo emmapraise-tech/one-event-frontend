@@ -35,7 +35,7 @@ export default function BookingsPage() {
 			bookings?.filter((b) => b.status === BookingStatus.PENDING).length || 0,
 		upcomingEvents:
 			bookings?.filter((b) => {
-				const date = new Date(b.bookingDate);
+				const date = new Date(b.startDate);
 				const now = new Date();
 				const nextWeek = addDays(now, 7);
 				return isAfter(date, now) && isBefore(date, nextWeek);

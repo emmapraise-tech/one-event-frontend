@@ -57,12 +57,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 				<div className="flex-1 flex flex-col h-screen overflow-hidden">
 					<DashboardHeader />
 					<main className="flex-1 overflow-y-auto bg-gray-50/50">
-						<div className="flex flex-col min-h-full">
-							<div className="mx-auto p-6 md:p-8 w-full max-w-[1600px] flex-1">
-								{children}
-							</div>
-							<DashboardFooter />
+						<div className="mx-auto p-6 md:p-8 w-full max-w-[1600px]">
+							{children}
 						</div>
+						<DashboardFooter />
 					</main>
 				</div>
 			</div>

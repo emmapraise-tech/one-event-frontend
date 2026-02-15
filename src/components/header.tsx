@@ -102,18 +102,6 @@ export function Header() {
 
 				{/* Right Actions */}
 				<div className="flex items-center gap-2 z-50">
-					<Link href="/list-your-business" className="hidden lg:block">
-						<Button
-							variant="ghost"
-							className={`font-semibold transition-colors rounded-full px-4 ${
-								isTransparent
-									? 'text-amber-300 hover:text-amber-200 hover:bg-white/10'
-									: 'text-brand-gold hover:text-amber-600 hover:bg-amber-50'
-							}`}
-						>
-							List your space
-						</Button>
-					</Link>
 
 					{isAuthenticated && user ? (
 						<DropdownMenu
