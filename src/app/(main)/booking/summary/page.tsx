@@ -31,7 +31,9 @@ import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Clock } from 'lucide-react';
 
-export default function BookingSummaryPage() {
+import { Suspense } from 'react';
+
+function BookingSummaryContent() {
 	const router = useRouter();
 	const [termsAccepted, setTermsAccepted] = useState(false);
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -519,5 +521,19 @@ export default function BookingSummaryPage() {
 				</div>
 			</div>
 		</div>
+	);
+}
+
+export default function BookingSummaryPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="min-h-screen flex items-center justify-center">
+					<Loader2 className="h-8 w-8 animate-spin text-brand-blue" />
+				</div>
+			}
+		>
+			<BookingSummaryContent />
+		</Suspense>
 	);
 }
