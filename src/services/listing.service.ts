@@ -86,6 +86,11 @@ export const listingService = {
 		return response.data.data;
 	},
 
+	async adminFindAll(): Promise<Listing[]> {
+		const response = await api.get<ApiResponse<Listing[]>>('/admin/listings');
+		return response.data.data;
+	},
+
 	async findOne(id: string): Promise<Listing> {
 		const response = await api.get<ApiResponse<Listing>>(`/listings/${id}`);
 		return response.data.data;
