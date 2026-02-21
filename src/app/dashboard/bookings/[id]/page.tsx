@@ -137,7 +137,7 @@ export default function BookingDetailsPage({ params }: PageProps) {
 	return (
 		<div className="min-h-screen bg-gray-50/50 pb-20">
 			{/* Top Navigation Bar */}
-			<div className="sticky top-0 z-30 bg-white/80 border-b border-border/60 px-8 py-4 flex items-center justify-between backdrop-blur-sm supports-backdrop-filter:bg-white/60">
+			<div className="sticky top-0 z-30 bg-white/80 border-b border-border/60 px-4 md:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm supports-backdrop-filter:bg-white/60">
 				<div className="flex items-center gap-4">
 					<Link
 						href={isCustomer ? '/dashboard/my-bookings' : '/dashboard/bookings'}
@@ -147,8 +147,8 @@ export default function BookingDetailsPage({ params }: PageProps) {
 						<ArrowLeft className="h-5 w-5" />
 					</Link>
 					<div className="flex flex-col">
-						<div className="flex items-center gap-3">
-							<h1 className="text-xl font-bold tracking-tight text-gray-900">
+						<div className="flex flex-wrap items-center gap-2 sm:gap-3">
+							<h1 className="text-lg sm:text-xl font-bold tracking-tight text-gray-900">
 								Booking {booking.id.slice(-7).toUpperCase()}
 							</h1>
 							<div
@@ -171,7 +171,7 @@ export default function BookingDetailsPage({ params }: PageProps) {
 					</div>
 				</div>
 
-				<div className="flex items-center gap-2">
+				<div className="flex items-center justify-end sm:justify-start gap-2 w-full sm:w-auto">
 					<Button
 						variant="outline"
 						size="sm"
@@ -273,7 +273,7 @@ export default function BookingDetailsPage({ params }: PageProps) {
 				</div>
 			</div>
 
-			<div className="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+			<div className="max-w-7xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
 				{/* Left Column - Main Details */}
 				<div className="lg:col-span-2 space-y-6">
 					{/* Venue & Time Card */}
@@ -436,7 +436,7 @@ export default function BookingDetailsPage({ params }: PageProps) {
 								<h4 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">
 									Features & Amenities
 								</h4>
-								<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+								<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
 									{Array.isArray(booking.listing?.venueDetail?.amenities) ? (
 										booking.listing.venueDetail.amenities.map((amenity, i) => (
 											<div
@@ -658,7 +658,7 @@ export default function BookingDetailsPage({ params }: PageProps) {
 									</span>
 								</div>
 
-								<div className="grid grid-cols-2 gap-4">
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 									{/* Deposit Status */}
 									<div
 										className={`relative overflow-hidden rounded-xl border p-4 ${

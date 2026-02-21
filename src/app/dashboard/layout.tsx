@@ -58,7 +58,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 					<DashboardHeader />
 					<main className="flex-1 overflow-y-auto bg-gray-50/50">
 						<div className="flex flex-col min-h-full">
-							<div className="flex-1 w-full mx-auto max-w-[1600px] p-6 md:p-8">
+							<div className="flex-1 w-full mx-auto max-w-[1600px] p-4 md:p-6 lg:p-8">
 								{children}
 							</div>
 							<DashboardFooter />

@@ -489,7 +489,7 @@ function BookingSummaryContent() {
 										<h4 className="font-bold text-sm text-neutral-900">
 											Select Payment Method
 										</h4>
-										<div className="grid grid-cols-2 gap-3">
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 											<div
 												onClick={() => setPaymentMethod('card')}
 												className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all ${

@@ -181,11 +181,11 @@ export default function DashboardPage() {
 		];
 
 		return (
-			<div className="space-y-8 pb-12 animate-in fade-in duration-500">
-				<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white p-8 rounded-[40px] border border-neutral-100 shadow-soft">
-					<div className="flex items-center gap-6">
-						<div className="h-20 w-20 rounded-[28px] bg-brand-blue flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
-							<Shield className="h-10 w-10" />
+			<div className="space-y-6 md:space-y-8 pb-12 animate-in fade-in duration-500">
+				<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white p-6 md:p-8 rounded-3xl md:rounded-[40px] border border-neutral-100 shadow-soft">
+					<div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+						<div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl sm:rounded-[28px] bg-brand-blue flex items-center justify-center text-white shadow-xl shadow-blue-500/20 shrink-0">
+							<Shield className="h-8 w-8 sm:h-10 sm:w-10" />
 						</div>
 						<div>
 							<div className="flex items-center gap-2 mb-1">
@@ -193,10 +193,10 @@ export default function DashboardPage() {
 									System Intelligence
 								</span>
 							</div>
-							<h1 className="text-4xl font-black text-neutral-900 tracking-tight leading-none">
+							<h1 className="text-3xl sm:text-4xl font-black text-neutral-900 tracking-tight leading-none">
 								Command Center
 							</h1>
-							<p className="text-neutral-500 mt-2 font-medium italic">
+							<p className="text-neutral-500 mt-2 font-medium italic text-sm sm:text-base">
 								Monitoring the pulse of Nigeria's premium event marketplace.
 							</p>
 						</div>
@@ -243,8 +243,8 @@ export default function DashboardPage() {
 						/>
 
 						{/* Top Vendors Section */}
-						<div className="bg-white rounded-[40px] border border-neutral-100 shadow-soft overflow-hidden">
-							<div className="p-8 border-b border-neutral-50 flex items-center justify-between">
+						<div className="bg-white rounded-3xl md:rounded-[40px] border border-neutral-100 shadow-soft overflow-hidden">
+							<div className="p-6 md:p-8 border-b border-neutral-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 								<div>
 									<h3 className="text-lg font-black text-neutral-900 font-display">
 										Merchant Performance
@@ -254,25 +254,28 @@ export default function DashboardPage() {
 									</p>
 								</div>
 								<Link href="/dashboard/earnings">
-									<Button variant="ghost" className="text-brand-blue font-bold">
+									<Button
+										variant="ghost"
+										className="text-brand-blue font-bold px-0 sm:px-4"
+									>
 										Full Ledger
 									</Button>
 								</Link>
 							</div>
 							<div className="overflow-x-auto">
-								<table className="w-full text-left">
+								<table className="w-full text-left whitespace-nowrap min-w-[600px]">
 									<thead className="bg-neutral-50/50">
 										<tr>
-											<th className="px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+											<th className="px-4 md:px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
 												Merchant
 											</th>
-											<th className="px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+											<th className="px-4 md:px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
 												Gross Sales
 											</th>
-											<th className="px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+											<th className="px-4 md:px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
 												Platform Cut
 											</th>
-											<th className="px-8 py-4 text-right"></th>
+											<th className="px-4 md:px-8 py-4 text-right"></th>
 										</tr>
 									</thead>
 									<tbody className="divide-y divide-neutral-50">
@@ -281,7 +284,7 @@ export default function DashboardPage() {
 												key={i}
 												className="hover:bg-neutral-50/30 transition-colors"
 											>
-												<td className="px-8 py-5">
+												<td className="px-4 md:px-8 py-5">
 													<div className="flex items-center gap-3">
 														<div className="h-8 w-8 rounded-lg bg-brand-blue-soft flex items-center justify-center text-brand-blue font-bold shrink-0">
 															{vendor.name[0]}
@@ -296,13 +299,13 @@ export default function DashboardPage() {
 														</div>
 													</div>
 												</td>
-												<td className="px-8 py-5 font-black text-neutral-900">
+												<td className="px-4 md:px-8 py-5 font-black text-neutral-900">
 													{vendor.sales}
 												</td>
-												<td className="px-8 py-5 font-black text-brand-blue">
+												<td className="px-4 md:px-8 py-5 font-black text-brand-blue">
 													{vendor.share}
 												</td>
-												<td className="px-8 py-5 text-right">
+												<td className="px-4 md:px-8 py-5 text-right">
 													<Button
 														variant="ghost"
 														size="sm"
@@ -436,11 +439,11 @@ export default function DashboardPage() {
 	const stats = isVendor ? vendorStats : customerStats;
 
 	return (
-		<div className="space-y-8 pb-12">
+		<div className="space-y-6 md:space-y-8 pb-12">
 			{/* Header Section */}
-			<div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+			<div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
 				<div className="animate-in fade-in slide-in-from-left-4 duration-500">
-					<h1 className="text-3xl font-bold text-neutral-900 flex items-center gap-3">
+					<h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 flex items-center gap-3 flex-wrap">
 						Welcome back, {userName}{' '}
 						<span className="animate-bounce inline-block">👋</span>
 					</h1>

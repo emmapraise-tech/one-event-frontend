@@ -192,8 +192,8 @@ export default function ListingDetailPage() {
 									</div>
 								</div>
 
-								<div className="flex items-center gap-6 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-									<div className="text-center">
+								<div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+									<div className="text-center w-full sm:w-auto">
 										<div className="flex items-center justify-center text-brand-blue mb-1">
 											<Star className="h-5 w-5 fill-brand-blue" />
 											<span className="text-xl font-black ml-1">
@@ -204,8 +204,8 @@ export default function ListingDetailPage() {
 											{listing.reviewCount} Reviews
 										</p>
 									</div>
-									<div className="h-10 w-px bg-gray-200" />
-									<div className="text-right font-sans">
+									<div className="w-full h-px sm:w-px sm:h-10 bg-gray-200" />
+									<div className="text-center sm:text-right font-sans w-full sm:w-auto">
 										<p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
 											Daily rate
 										</p>
@@ -408,7 +408,7 @@ export default function ListingDetailPage() {
 										</CardTitle>
 									</CardHeader>
 									<CardContent className="p-6 space-y-6">
-										<div className="grid grid-cols-2 gap-4">
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 											<div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
 												<div className="flex items-center gap-2 text-gray-400 mb-2">
 													<Eye className="h-4 w-4" />
