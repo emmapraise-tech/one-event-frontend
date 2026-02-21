@@ -1,25 +1,29 @@
-"use client"
+"use client";
 
-import { useQuery } from "@tanstack/react-query"
-import { userService } from "@/services/user.service"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { EmptyState } from "@/components/ui/empty-state"
-import { Badge } from "@/components/ui/badge"
-import { Loader2, Users } from "lucide-react"
-import { UserType } from "@/types/auth"
+import { useQuery } from "@tanstack/react-query";
+import { userService } from "@/services/user.service";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Users } from "lucide-react";
+import { UserType } from "@/types/auth";
 
 export default function AdminUsersPage() {
-  const { data: users, isLoading, error } = useQuery({
+  const {
+    data: users,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["users"],
     queryFn: userService.findAll,
-  })
+  });
 
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -27,13 +31,15 @@ export default function AdminUsersPage() {
       <div className="flex h-full items-center justify-center text-destructive">
         Error loading users
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+          User Management
+        </h1>
         <p className="text-muted-foreground">
           View and manage all users in the system
         </p>
@@ -67,15 +73,19 @@ export default function AdminUsersPage() {
                           user.type === UserType.ADMIN
                             ? "default"
                             : user.type === UserType.VENDOR
-                            ? "secondary"
-                            : "outline"
+                              ? "secondary"
+                              : "outline"
                         }
                       >
                         {user.type}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                    <p className="text-sm text-muted-foreground">{user.phone}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {user.email}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {user.phone}
+                    </p>
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {user.isActive ? (
@@ -91,6 +101,5 @@ export default function AdminUsersPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-

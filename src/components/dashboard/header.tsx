@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SidebarContent } from '@/components/dashboard/sidebar';
 
+import { useAuth } from '@/hooks/useAuth';
+
 export function DashboardHeader() {
+	const { user } = useAuth();
 	return (
 		<header className="flex h-16 items-center justify-between border-b border-neutral-200 bg-white px-4 md:px-8">
 			<div className="flex items-center gap-4 flex-1">
@@ -37,24 +40,32 @@ export function DashboardHeader() {
 			</div>
 
 			<div className="flex items-center gap-6">
-				<div className="flex items-center gap-3">
-					<Button
-						variant="ghost"
-						size="icon"
-						className="text-neutral-500 hover:text-primary-blue relative"
-					>
-						<Bell className="h-5 w-5" />
-						<span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 border-2 border-white"></span>
-					</Button>
-					<Button
-						variant="ghost"
-						size="icon"
-						className="text-neutral-500 hover:text-primary-blue"
-					>
-						<HelpCircle className="h-5 w-5" />
-					</Button>
+				<div className="flex items-center gap-4">
+					{user?.type === 'CUSTOMER' && (
+						<Link href="/onboard-vendor">
+							<Button className="bg-brand-blue hover:bg-brand-blue-hover text-white px-4 h-9 text-sm font-bold rounded-lg shadow-sm">
+								List your venue
+							</Button>
+						</Link>
+					)}
 
-					{/* Profile dropdown moved to Sidebar */}
+					<div className="flex items-center gap-1">
+						<Button
+							variant="ghost"
+							size="icon"
+							className="text-neutral-500 hover:text-primary-blue relative"
+						>
+							<Bell className="h-5 w-5" />
+							<span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 border-2 border-white"></span>
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="text-neutral-500 hover:text-primary-blue"
+						>
+							<HelpCircle className="h-5 w-5" />
+						</Button>
+					</div>
 				</div>
 			</div>
 		</header>

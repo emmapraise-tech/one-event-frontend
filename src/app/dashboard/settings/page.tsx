@@ -5,29 +5,54 @@ import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 import { SettingsSidebar } from '@/components/dashboard/settings/SettingsSidebar';
 import { ProfileSettings } from '@/components/dashboard/settings/ProfileSettings';
-import { EmptyState } from '@/components/ui/empty-state'; // Optional reuse
+import { GeneralSettings } from '@/components/dashboard/settings/GeneralSettings';
+import { SecuritySettings } from '@/components/dashboard/settings/SecuritySettings';
+import { NotificationSettings } from '@/components/dashboard/settings/NotificationSettings';
+import { BillingSettings } from '@/components/dashboard/settings/BillingSettings';
 
 export default function SettingsPage() {
 	const { user, isLoading } = useAuth();
-	const [activeTab, setActiveTab] = useState('profile');
+	const [activeTab, setActiveTab] = useState('general');
 
 	if (isLoading) {
 		return (
 			<div className="flex h-screen items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+				<Loader2 className="h-8 w-8 animate-spin text-brand-blue" />
 			</div>
 		);
 	}
 
+	const renderContent = () => {
+		switch (activeTab) {
+			case 'general':
+				return <GeneralSettings />;
+			case 'profile':
+				return <ProfileSettings />;
+			case 'security':
+				return <SecuritySettings />;
+			case 'notifications':
+				return <NotificationSettings />;
+			case 'billing':
+				return <BillingSettings />;
+			default:
+				return (
+					<div className="rounded-xl border border-gray-100 bg-white p-12 text-center text-muted-foreground animate-in fade-in duration-500">
+						<h3 className="text-lg font-semibold text-gray-900">Coming Soon</h3>
+						<p>The {activeTab} settings panel is under construction.</p>
+					</div>
+				);
+		}
+	};
+
 	return (
 		<div className="space-y-8">
 			{/* Header */}
-			<div>
-				<h1 className="text-3xl font-bold tracking-tight text-gray-900">
+			<div className="animate-in fade-in slide-in-from-left-4 duration-500">
+				<h1 className="text-3xl font-black tracking-tight text-neutral-900">
 					Settings
 				</h1>
-				<p className="text-muted-foreground mt-1">
-					Manage your profile, security, payments, and notifications.
+				<p className="text-neutral-500 mt-1 font-medium">
+					Personalize your experience and manage account security.
 				</p>
 			</div>
 
@@ -36,18 +61,7 @@ export default function SettingsPage() {
 				<SettingsSidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
 				{/* Content Area */}
-				<div className="flex-1 w-full">
-					{activeTab === 'profile' ? (
-						<ProfileSettings />
-					) : (
-						<div className="rounded-xl border border-gray-100 bg-white p-12 text-center text-muted-foreground">
-							<h3 className="text-lg font-semibold text-gray-900">
-								Coming Soon
-							</h3>
-							<p>The {activeTab} settings panel is under construction.</p>
-						</div>
-					)}
-				</div>
+				<div className="flex-1 w-full min-h-[600px]">{renderContent()}</div>
 			</div>
 		</div>
 	);

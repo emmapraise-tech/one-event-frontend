@@ -33,7 +33,7 @@ function LoginForm() {
 	});
 
 	const onSubmit = (data: LoginValues) => {
-		login(data);
+		login({ data });
 	};
 
 	return (

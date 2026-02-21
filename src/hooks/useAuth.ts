@@ -21,10 +21,20 @@ export function useAuth() {
 	});
 
 	const loginMutation = useMutation({
-		mutationFn: authService.login,
-		onSuccess: (data) => {
+		mutationFn: (variables: {
+			data: LoginCredentials;
+			redirectUrl?: string | null | false;
+		}) => authService.login(variables.data),
+		onSuccess: (data, variables) => {
 			localStorage.setItem('token', data.access_token);
 			queryClient.setQueryData(['user'], data.user);
+
+			// Check for explicit redirect directive
+			if (variables.redirectUrl === false) return;
+			if (typeof variables.redirectUrl === 'string') {
+				router.push(variables.redirectUrl);
+				return;
+			}
 
 			// Priority 1: Check for callbackUrl in search params
 			const callbackUrl = searchParams.get('callbackUrl');
