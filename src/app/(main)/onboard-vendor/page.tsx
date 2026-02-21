@@ -28,10 +28,10 @@ import {
 	Upload,
 } from 'lucide-react';
 import Image from 'next/legacy/image';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { toast } from 'sonner';
 
-export default function OnboardVendorPage() {
+function OnboardVendorContent() {
 	const { user } = useAuth();
 	const { createVendor, isCreating } = useVendors();
 	const router = useRouter();
@@ -602,5 +602,19 @@ export default function OnboardVendorPage() {
 				</div>
 			</div>
 		</div>
+	);
+}
+
+export default function OnboardVendorPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="min-h-screen flex items-center justify-center bg-neutral-50">
+					<Loader2 className="h-8 w-8 animate-spin text-brand-blue" />
+				</div>
+			}
+		>
+			<OnboardVendorContent />
+		</Suspense>
 	);
 }
