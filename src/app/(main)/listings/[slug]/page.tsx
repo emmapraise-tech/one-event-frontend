@@ -262,13 +262,28 @@ export default function ListingDetailPage() {
 							<div className="grid sm:grid-cols-2 gap-4">
 								{(() => {
 									const detail = listing.venueDetail || listing.details;
-									const amenities = detail?.amenities || [];
+									const rawAmenities = detail?.amenities || [];
+									const amenities = Array.isArray(rawAmenities)
+										? rawAmenities
+										: Object.entries(rawAmenities)
+												.filter(([_, v]) => v)
+												.map(([k]) => k);
+
+									if (amenities.length === 0) {
+										return (
+											<div className="text-neutral-500 italic">
+												No amenities listed.
+											</div>
+										);
+									}
+
 									const displayAmenities = showAllAmenities
 										? amenities
-										: amenities.slice(0, 6);
+										: (amenities as any[]).slice(0, 6);
 
-									return displayAmenities.map((slug) => {
-										const config = AMENITY_MAP[slug];
+									return (displayAmenities as string[]).map((slug) => {
+										const config =
+											AMENITY_MAP[slug as keyof typeof AMENITY_MAP];
 										if (!config) return null;
 										return (
 											<AmenityItem
@@ -279,28 +294,29 @@ export default function ListingDetailPage() {
 										);
 									});
 								})()}
-								{!(
-									listing.venueDetail?.amenities?.length ||
-									listing.details?.amenities?.length
-								) && (
-									<div className="text-neutral-500 italic">
-										No amenities listed.
-									</div>
-								)}
 							</div>
-							{(listing.venueDetail?.amenities?.length ||
-								listing.details?.amenities?.length ||
-								0) > 6 && (
-								<Button
-									variant="outline"
-									className="mt-6 border-neutral-200 text-neutral-900 hover:border-neutral-900 transition-colors px-6 h-12 font-bold rounded-xl"
-									onClick={() => setShowAllAmenities(!showAllAmenities)}
-								>
-									{showAllAmenities
-										? 'Show less'
-										: `Show all ${listing.venueDetail?.amenities?.length || listing.details?.amenities?.length} amenities`}
-								</Button>
-							)}
+							{(() => {
+								const detail = listing.venueDetail || listing.details;
+								const rawAmenities = detail?.amenities || [];
+								const amenitiesCount = Array.isArray(rawAmenities)
+									? rawAmenities.length
+									: Object.values(rawAmenities).filter(Boolean).length;
+
+								if (amenitiesCount > 6) {
+									return (
+										<Button
+											variant="outline"
+											className="mt-6 border-neutral-200 text-neutral-900 hover:border-neutral-900 transition-colors px-6 h-12 font-bold rounded-xl"
+											onClick={() => setShowAllAmenities(!showAllAmenities)}
+										>
+											{showAllAmenities
+												? 'Show less'
+												: `Show all ${amenitiesCount} amenities`}
+										</Button>
+									);
+								}
+								return null;
+							})()}
 						</div>
 
 						{/* Reviews Summary */}

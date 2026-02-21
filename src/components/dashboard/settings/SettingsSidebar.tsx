@@ -7,9 +7,11 @@ import {
 	CreditCard,
 	Settings as SettingsIcon,
 	HelpCircle,
+	Heart,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SettingsSidebarProps {
 	activeTab: string;
@@ -20,6 +22,8 @@ export function SettingsSidebar({
 	activeTab,
 	onTabChange,
 }: SettingsSidebarProps) {
+	const { user } = useAuth();
+
 	const menuItems = [
 		{
 			category: 'ACCOUNT',
@@ -30,10 +34,12 @@ export function SettingsSidebar({
 			],
 		},
 		{
-			category: 'BUSINESS',
+			category: user?.type === 'CUSTOMER' ? 'PREFERENCES' : 'BUSINESS',
 			items: [
 				{ id: 'notifications', label: 'Notifications', icon: Bell },
-				{ id: 'billing', label: 'Payments & Billing', icon: CreditCard },
+				...(user?.type !== 'CUSTOMER'
+					? [{ id: 'billing', label: 'Payments & Billing', icon: CreditCard }]
+					: []),
 			],
 		},
 	];

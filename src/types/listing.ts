@@ -39,7 +39,7 @@ export interface VenueDetail {
 	hasIndoor: boolean;
 	hasOutdoor: boolean;
 	parkingCap: number;
-	amenities: string[];
+	amenities: string[] | Record<string, boolean>;
 }
 
 export interface ListingImage {

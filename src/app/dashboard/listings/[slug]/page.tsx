@@ -139,9 +139,8 @@ export default function ListingDetailPage() {
 									OWNER VIEW
 								</Badge>
 								<Button
-									size="sm"
 									asChild
-									className="bg-brand-blue hover:bg-brand-blue-hover h-9 rounded-lg font-bold"
+									className="bg-brand-blue hover:bg-brand-blue-hover text-white shadow-sm h-10 px-6 font-bold rounded-lg transition-colors"
 								>
 									<Link href={`/dashboard/listings/${listing.slug}/edit`}>
 										<Edit className="h-4 w-4 mr-2" />
@@ -302,10 +301,12 @@ export default function ListingDetailPage() {
 									<div className="grid sm:grid-cols-2 gap-y-4 gap-x-8">
 										{(() => {
 											const detail = listing.venueDetail || listing.details;
-											const amenities = detail?.amenities || [];
-											const displayAmenities = showAllAmenities
-												? amenities
-												: amenities.slice(0, 6);
+											const rawAmenities = detail?.amenities || [];
+											const amenities = Array.isArray(rawAmenities)
+												? rawAmenities
+												: Object.entries(rawAmenities)
+														.filter(([_, v]) => v)
+														.map(([k]) => k);
 
 											if (amenities.length === 0) {
 												return (
@@ -315,8 +316,13 @@ export default function ListingDetailPage() {
 												);
 											}
 
-											return displayAmenities.map((slug) => {
-												const config = AMENITY_MAP[slug];
+											const displayAmenities = showAllAmenities
+												? amenities
+												: (amenities as any[]).slice(0, 6);
+
+											return (displayAmenities as string[]).map((slug) => {
+												const config =
+													AMENITY_MAP[slug as keyof typeof AMENITY_MAP];
 												if (!config) return null;
 												return (
 													<div
@@ -334,7 +340,11 @@ export default function ListingDetailPage() {
 									</div>
 									{(() => {
 										const detail = listing.venueDetail || listing.details;
-										const amenitiesCount = detail?.amenities?.length || 0;
+										const rawAmenities = detail?.amenities || [];
+										const amenitiesCount = Array.isArray(rawAmenities)
+											? rawAmenities.length
+											: Object.values(rawAmenities).filter(Boolean).length;
+
 										if (amenitiesCount > 6) {
 											return (
 												<Button

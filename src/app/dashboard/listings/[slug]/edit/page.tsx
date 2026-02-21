@@ -1,26 +1,26 @@
-"use client"
+"use client";
 
-import { useParams, useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { useListingBySlug } from "@/hooks/useListings"
-import { useListings } from "@/hooks/useListings"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { useParams, useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useListingBySlug } from "@/hooks/useListings";
+import { useListings } from "@/hooks/useListings";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ListingType, ListingStatus } from "@/types/listing"
-import { Loader2 } from "lucide-react"
-import { useEffect } from "react"
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ListingType, ListingStatus } from "@/types/listing";
+import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
 
 const listingSchema = z.object({
   type: z.nativeEnum(ListingType),
@@ -33,16 +33,16 @@ const listingSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   country: z.string().optional(),
-})
+});
 
-type ListingFormData = z.infer<typeof listingSchema>
+type ListingFormData = z.infer<typeof listingSchema>;
 
 export default function EditListingPage() {
-  const params = useParams()
-  const slug = params.slug as string
-  const router = useRouter()
-  const { data: listing, isLoading: isLoadingListing } = useListingBySlug(slug)
-  const { listings, updateListing, isUpdating } = useListings()
+  const params = useParams();
+  const slug = params.slug as string;
+  const router = useRouter();
+  const { data: listing, isLoading: isLoadingListing } = useListingBySlug(slug);
+  const { listings, updateListing, isUpdating } = useListings();
 
   const form = useForm<ListingFormData>({
     resolver: zodResolver(listingSchema),
@@ -58,7 +58,7 @@ export default function EditListingPage() {
       state: "",
       country: "",
     },
-  })
+  });
 
   useEffect(() => {
     if (listing) {
@@ -73,39 +73,39 @@ export default function EditListingPage() {
         city: listing.city || "",
         state: listing.state || "",
         country: listing.country || "",
-      })
+      });
     }
-  }, [listing, form])
+  }, [listing, form]);
 
   const onSubmit = (data: ListingFormData) => {
-    if (!listing) return
-    
+    if (!listing) return;
+
     updateListing(
       { id: listing.id, data },
       {
         onSuccess: () => {
-          router.push("/dashboard/listings")
+          router.push("/dashboard/listings");
         },
       },
-    )
-  }
+    );
+  };
 
   // Generate slug from title
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const title = e.target.value
+    const title = e.target.value;
     const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "")
-    form.setValue("slug", slug)
-  }
+      .replace(/(^-|-$)/g, "");
+    form.setValue("slug", slug);
+  };
 
   if (isLoadingListing) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
-    )
+    );
   }
 
   if (!listing) {
@@ -113,16 +113,16 @@ export default function EditListingPage() {
       <div className="flex h-full items-center justify-center">
         <p className="text-muted-foreground">Listing not found</p>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Edit Listing</h1>
-        <p className="text-muted-foreground">
-          Update your listing information
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
+          Edit Listing
+        </h1>
+        <p className="text-muted-foreground">Update your listing information</p>
       </div>
 
       <Card>
@@ -135,7 +135,9 @@ export default function EditListingPage() {
               <Label htmlFor="type">Listing Type</Label>
               <Select
                 value={form.watch("type")}
-                onValueChange={(value) => form.setValue("type", value as ListingType)}
+                onValueChange={(value) =>
+                  form.setValue("type", value as ListingType)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
@@ -156,8 +158,8 @@ export default function EditListingPage() {
                 id="title"
                 {...form.register("title")}
                 onChange={(e) => {
-                  form.register("title").onChange(e)
-                  handleTitleChange(e)
+                  form.register("title").onChange(e);
+                  handleTitleChange(e);
                 }}
               />
               {form.formState.errors.title && (
@@ -179,7 +181,11 @@ export default function EditListingPage() {
 
             <div className="grid gap-2">
               <Label htmlFor="description">Description</Label>
-              <Textarea id="description" {...form.register("description")} rows={4} />
+              <Textarea
+                id="description"
+                {...form.register("description")}
+                rows={4}
+              />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -226,7 +232,11 @@ export default function EditListingPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isUpdating}>
+              <Button
+                type="submit"
+                disabled={isUpdating}
+                className="bg-brand-blue hover:bg-brand-blue-hover text-white shadow-sm h-10 px-6 font-bold rounded-lg transition-colors"
+              >
                 {isUpdating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -241,6 +251,5 @@ export default function EditListingPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-

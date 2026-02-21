@@ -28,6 +28,7 @@ export interface Booking {
 	listing?: Listing;
 	customer?: User;
 	payments?: Payment[];
+	details?: any;
 	createdAt: string;
 	updatedAt: string;
 }

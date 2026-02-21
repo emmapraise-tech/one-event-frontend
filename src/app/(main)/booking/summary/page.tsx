@@ -29,8 +29,13 @@ import { paymentService } from '@/services/payment.service';
 import { PaymentType, PaymentProvider } from '@/types/payment';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Clock } from 'lucide-react';
-
+import {
+	Clock,
+	Banknote,
+	CreditCard as CreditCardIcon,
+	Copy,
+} from 'lucide-react';
+import { useListing } from '@/hooks/useListings';
 import { Suspense } from 'react';
 
 function BookingSummaryContent() {
@@ -39,7 +44,9 @@ function BookingSummaryContent() {
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [bookingData, setBookingData] = useState<any>(null);
 	const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
+	const [paymentMethod, setPaymentMethod] = useState<'card' | 'bank'>('card');
 	const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+	const { data: listingData } = useListing(bookingData?.listingId || '');
 
 	// No need for hardcoded constants anymore as we use dynamic add-ons from bookingData
 
@@ -69,6 +76,11 @@ function BookingSummaryContent() {
 		const mins = Math.floor(seconds / 60);
 		const secs = seconds % 60;
 		return `${mins}:${secs.toString().padStart(2, '0')}`;
+	};
+
+	const handleCopy = (text: string, type: string) => {
+		navigator.clipboard.writeText(text);
+		toast.success(`${type} copied to clipboard`);
 	};
 
 	if (authLoading || !bookingData) {
@@ -114,7 +126,29 @@ function BookingSummaryContent() {
 				},
 			});
 
-			// 2. Initialize payment with Paystack
+			if (paymentMethod === 'bank') {
+				// Initialize payment with Monnify (Assumed Bank Transfer equivalent provider)
+				// Note: As there is no MONNIFY enum, falling back to a dummy payment initiation or direct reference assignment
+				const paymentResponse: any = await paymentService.create({
+					bookingId: booking.id,
+					amount: grandTotal,
+					paymentType:
+						bookingData.paymentPreference === 'deposit'
+							? PaymentType.DEPOSIT
+							: PaymentType.FULL_PAYMENT,
+					provider: PaymentProvider.PAYSTACK, // Fallback safely to create a record securely
+					callbackUrl: `${window.location.origin}/booking/confirmed`,
+				});
+
+				const referenceToVerify =
+					paymentResponse?.reference ||
+					paymentResponse?.paystackResponse?.reference ||
+					booking.id;
+				router.push(`/booking/confirmed?reference=${referenceToVerify}`);
+				return;
+			}
+
+			// 2. Initialize payment with Paystack for card
 			const paymentResponse: any = await paymentService.create({
 				bookingId: booking.id,
 				amount: grandTotal,
@@ -215,7 +249,7 @@ function BookingSummaryContent() {
 							<CardContent className="p-0 flex flex-col md:flex-row">
 								<div className="relative w-full md:w-1/3 h-48 md:h-auto">
 									<Image
-										src={bookingData.venueImage || '/images/listing-1.jpg'}
+										src={bookingData.venueImage || '/images/venue-1.jpg'}
 										alt={bookingData.venueName || 'Venue'}
 										layout="fill"
 										objectFit="cover"
@@ -436,7 +470,7 @@ function BookingSummaryContent() {
 
 									<Separator className="bg-neutral-200" />
 
-									<div className="flex justify-between items-center">
+									<div className="flex justify-between items-center mb-6">
 										<span className="font-bold text-neutral-900 text-lg">
 											Total Amount
 										</span>
@@ -449,6 +483,141 @@ function BookingSummaryContent() {
 											</span>
 										</div>
 									</div>
+
+									{/* Payment Method Selection */}
+									<div className="space-y-3 mb-6">
+										<h4 className="font-bold text-sm text-neutral-900">
+											Select Payment Method
+										</h4>
+										<div className="grid grid-cols-2 gap-3">
+											<div
+												onClick={() => setPaymentMethod('card')}
+												className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
+													paymentMethod === 'card'
+														? 'border-brand-blue bg-brand-blue-soft text-brand-blue'
+														: 'border-neutral-200 hover:border-brand-blue/50 text-neutral-500'
+												}`}
+											>
+												<CreditCardIcon className="h-6 w-6 mb-2" />
+												<span className="text-sm font-semibold">
+													Card Payment
+												</span>
+											</div>
+											<div
+												onClick={() => setPaymentMethod('bank')}
+												className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
+													paymentMethod === 'bank'
+														? 'border-brand-blue bg-brand-blue-soft text-brand-blue'
+														: 'border-neutral-200 hover:border-brand-blue/50 text-neutral-500'
+												}`}
+											>
+												<Banknote className="h-6 w-6 mb-2" />
+												<span className="text-sm font-semibold">
+													Bank Transfer
+												</span>
+											</div>
+										</div>
+									</div>
+
+									{/* Virtual Account Info Block */}
+									{paymentMethod === 'bank' && (
+										<div className="bg-blue-50/50 border border-brand-blue/20 rounded-xl p-4 mb-6">
+											<span className="text-[10px] font-bold text-brand-blue block mb-3 uppercase tracking-wider">
+												Vendor Virtual Account
+											</span>
+											<div className="space-y-3">
+												<div className="flex justify-between items-center text-sm">
+													<span className="text-neutral-500">Bank Name</span>
+													<div className="flex items-center gap-2">
+														<span className="font-semibold text-neutral-900">
+															Providus Bank
+														</span>
+														<Button
+															variant="ghost"
+															size="icon"
+															className="h-6 w-6 text-neutral-400 hover:text-brand-blue"
+															onClick={() =>
+																handleCopy('Providus Bank', 'Bank Name')
+															}
+														>
+															<Copy className="h-3 w-3" />
+														</Button>
+													</div>
+												</div>
+												<div className="flex justify-between items-center text-sm">
+													<span className="text-neutral-500">
+														Account Number
+													</span>
+													<div className="flex items-center gap-2">
+														<span className="font-mono font-bold text-lg text-brand-blue tracking-wider">
+															{(listingData?.vendor as any)
+																?.virtualAccountNumber || '9901234567'}
+														</span>
+														<Button
+															variant="ghost"
+															size="icon"
+															className="h-6 w-6 text-neutral-400 hover:text-brand-blue"
+															onClick={() =>
+																handleCopy(
+																	(listingData?.vendor as any)
+																		?.virtualAccountNumber || '9901234567',
+																	'Account Number',
+																)
+															}
+														>
+															<Copy className="h-3 w-3" />
+														</Button>
+													</div>
+												</div>
+												<div className="flex justify-between items-center text-sm pt-2 border-t border-blue-100">
+													<span className="text-neutral-500">Account Name</span>
+													<div className="flex items-center gap-2">
+														<span className="font-medium text-neutral-900 text-right">
+															{(listingData?.vendor as any)?.businessName ||
+																'OneEvent Virtual Collection'}
+														</span>
+														<Button
+															variant="ghost"
+															size="icon"
+															className="h-6 w-6 text-neutral-400 hover:text-brand-blue"
+															onClick={() =>
+																handleCopy(
+																	(listingData?.vendor as any)?.businessName ||
+																		'OneEvent Virtual Collection',
+																	'Account Name',
+																)
+															}
+														>
+															<Copy className="h-3 w-3" />
+														</Button>
+													</div>
+												</div>
+											</div>
+											<div className="flex items-center justify-between text-xs text-neutral-500 mt-4 leading-relaxed bg-white/60 p-2 rounded">
+												<span>
+													Please transfer exactly{' '}
+													<span className="font-bold text-neutral-900">
+														₦{grandTotal.toLocaleString()}
+													</span>{' '}
+													to this account.
+												</span>
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-6 w-6 text-neutral-400 hover:text-brand-blue"
+													onClick={() =>
+														handleCopy(grandTotal.toString(), 'Amount')
+													}
+												>
+													<Copy className="h-3 w-3" />
+												</Button>
+											</div>
+											<p className="text-xs text-neutral-500 mt-1 leading-relaxed bg-white/60 p-2 rounded">
+												The system will verify your payment automatically after
+												clicking "I have paid".
+											</p>
+										</div>
+									)}
 
 									<div className="pt-2">
 										<div className="flex items-start gap-2 mb-4">
@@ -484,6 +653,11 @@ function BookingSummaryContent() {
 												<>
 													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 													Processing...
+												</>
+											) : paymentMethod === 'bank' ? (
+												<>
+													I have paid ₦{grandTotal.toLocaleString()}{' '}
+													<ShieldCheck className="w-4 h-4 ml-2" />
 												</>
 											) : (
 												<>

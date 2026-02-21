@@ -102,111 +102,126 @@ export function Header() {
 
 				{/* Right Actions */}
 				<div className="flex items-center gap-2 z-50">
-
 					{isAuthenticated && user ? (
-						<DropdownMenu
-							open={isMenuOpen}
-							onOpenChange={setIsMenuOpen}
-							modal={false}
-						>
-							<div
-								onMouseEnter={handleMouseEnter}
-								onMouseLeave={handleMouseLeave}
-								className="py-2"
-							>
-								<DropdownMenuTrigger asChild>
+						<div className="flex items-center gap-4">
+							{user.type === 'CUSTOMER' && (
+								<Link href="/onboard-vendor">
 									<Button
-										variant="ghost"
-										className={`relative h-10 w-10 rounded-full transition-all ${
+										variant="outline"
+										className={`hidden md:flex rounded-full px-5 font-bold border-2 transition-all ${
 											isTransparent
-												? 'hover:bg-white/10'
-												: 'hover:bg-neutral-100'
+												? 'text-white border-white/30 hover:bg-white/10'
+												: 'text-brand-blue border-brand-blue/20 hover:bg-neutral-50'
 										}`}
 									>
-										<Avatar
-											className={`h-10 w-10 border-2 transition-all ${isTransparent ? 'border-white/30' : 'border-white shadow-sm'}`}
-										>
-											<AvatarImage
-												src={undefined} // Replace with actual user image if available
-												alt={user.firstName}
-												className="object-cover"
-											/>
-											<AvatarFallback className="bg-brand-blue text-white font-bold">
-												{getInitials(user.firstName, user.lastName)}
-											</AvatarFallback>
-										</Avatar>
+										List your venue
 									</Button>
-								</DropdownMenuTrigger>
-							</div>
-
-							<DropdownMenuContent
-								className="w-64 bg-white/95 backdrop-blur-xl border-neutral-100 shadow-xl rounded-2xl p-2 mt-2"
-								align="end"
-								forceMount
-								onMouseEnter={handleMouseEnter}
-								onMouseLeave={handleMouseLeave}
+								</Link>
+							)}
+							<DropdownMenu
+								open={isMenuOpen}
+								onOpenChange={setIsMenuOpen}
+								modal={false}
 							>
-								<DropdownMenuLabel className="font-normal p-3 bg-neutral-50/50 rounded-xl mb-2">
-									<div className="flex flex-col space-y-1">
-										<p className="text-sm font-bold text-neutral-900">
-											{user.firstName} {user.lastName}
-										</p>
-										<p className="text-xs text-neutral-500 font-medium">
-											{user.email}
-										</p>
-									</div>
-								</DropdownMenuLabel>
-
-								<div className="grid gap-1 px-1">
-									<DropdownMenuItem
-										asChild
-										className="rounded-lg focus:bg-neutral-100 cursor-pointer"
-									>
-										<Link
-											href="/dashboard"
-											className="flex items-center py-2.5"
+								<div
+									onMouseEnter={handleMouseEnter}
+									onMouseLeave={handleMouseLeave}
+									className="py-2"
+								>
+									<DropdownMenuTrigger asChild>
+										<Button
+											variant="ghost"
+											className={`relative h-10 w-10 rounded-full transition-all ${
+												isTransparent
+													? 'hover:bg-white/10'
+													: 'hover:bg-neutral-100'
+											}`}
 										>
-											<LayoutDashboard className="mr-3 h-4 w-4 text-neutral-500" />
-											<span className="font-medium">Dashboard</span>
-										</Link>
-									</DropdownMenuItem>
-									<DropdownMenuItem
-										asChild
-										className="rounded-lg focus:bg-neutral-100 cursor-pointer"
-									>
-										<Link
-											href="/dashboard/my-bookings"
-											className="flex items-center py-2.5"
-										>
-											<Calendar className="mr-3 h-4 w-4 text-neutral-500" />
-											<span className="font-medium">My Bookings</span>
-										</Link>
-									</DropdownMenuItem>
-									<DropdownMenuItem
-										asChild
-										className="rounded-lg focus:bg-neutral-100 cursor-pointer"
-									>
-										<Link
-											href="/dashboard/settings"
-											className="flex items-center py-2.5"
-										>
-											<Settings className="mr-3 h-4 w-4 text-neutral-500" />
-											<span className="font-medium">Settings</span>
-										</Link>
-									</DropdownMenuItem>
+											<Avatar
+												className={`h-10 w-10 border-2 transition-all ${isTransparent ? 'border-white/30' : 'border-white shadow-sm'}`}
+											>
+												<AvatarImage
+													src={undefined} // Replace with actual user image if available
+													alt={user.firstName}
+													className="object-cover"
+												/>
+												<AvatarFallback className="bg-brand-blue text-white font-bold">
+													{getInitials(user.firstName, user.lastName)}
+												</AvatarFallback>
+											</Avatar>
+										</Button>
+									</DropdownMenuTrigger>
 								</div>
 
-								<DropdownMenuSeparator className="my-2 bg-neutral-100" />
-
-								<DropdownMenuItem
-									onClick={() => logout()}
-									className="text-red-500 focus:text-red-600 focus:bg-red-50 rounded-lg cursor-pointer py-2.5 m-1"
+								<DropdownMenuContent
+									className="w-64 bg-white/95 backdrop-blur-xl border-neutral-100 shadow-xl rounded-2xl p-2 mt-2"
+									align="end"
+									forceMount
+									onMouseEnter={handleMouseEnter}
+									onMouseLeave={handleMouseLeave}
 								>
-									<LogOut className="mr-3 h-4 w-4" />
-									<span className="font-medium">Log out</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+									<DropdownMenuLabel className="font-normal p-3 bg-neutral-50/50 rounded-xl mb-2">
+										<div className="flex flex-col space-y-1">
+											<p className="text-sm font-bold text-neutral-900">
+												{user.firstName} {user.lastName}
+											</p>
+											<p className="text-xs text-neutral-500 font-medium">
+												{user.email}
+											</p>
+										</div>
+									</DropdownMenuLabel>
+
+									<div className="grid gap-1 px-1">
+										<DropdownMenuItem
+											asChild
+											className="rounded-lg focus:bg-neutral-100 cursor-pointer"
+										>
+											<Link
+												href="/dashboard"
+												className="flex items-center py-2.5"
+											>
+												<LayoutDashboard className="mr-3 h-4 w-4 text-neutral-500" />
+												<span className="font-medium">Dashboard</span>
+											</Link>
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											asChild
+											className="rounded-lg focus:bg-neutral-100 cursor-pointer"
+										>
+											<Link
+												href="/dashboard/my-bookings"
+												className="flex items-center py-2.5"
+											>
+												<Calendar className="mr-3 h-4 w-4 text-neutral-500" />
+												<span className="font-medium">My Bookings</span>
+											</Link>
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											asChild
+											className="rounded-lg focus:bg-neutral-100 cursor-pointer"
+										>
+											<Link
+												href="/dashboard/settings"
+												className="flex items-center py-2.5"
+											>
+												<Settings className="mr-3 h-4 w-4 text-neutral-500" />
+												<span className="font-medium">Settings</span>
+											</Link>
+										</DropdownMenuItem>
+									</div>
+
+									<DropdownMenuSeparator className="my-2 bg-neutral-100" />
+
+									<DropdownMenuItem
+										onClick={() => logout()}
+										className="text-red-500 focus:text-red-600 focus:bg-red-50 rounded-lg cursor-pointer py-2.5 m-1"
+									>
+										<LogOut className="mr-3 h-4 w-4" />
+										<span className="font-medium">Log out</span>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
 					) : (
 						<div className="flex items-center gap-3">
 							{/* Login Link */}
@@ -275,10 +290,10 @@ export function Header() {
 							</Link>
 							<div className="h-px bg-neutral-100 my-1" />
 							<Link
-								href="/list-your-business"
+								href="/onboard-vendor"
 								className="text-brand-gold font-bold p-2 hover:bg-amber-50 rounded-lg"
 							>
-								List your space
+								List your venue
 							</Link>
 						</nav>
 					</div>
