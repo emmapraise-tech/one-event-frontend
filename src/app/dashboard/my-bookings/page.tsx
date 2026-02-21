@@ -273,14 +273,14 @@ export default function BookingsPage() {
 										</div>
 
 										<div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-neutral-100">
-											<div className="flex items-center gap-4">
+											<div className="flex flex-wrap items-center gap-4 w-full sm:w-auto justify-center sm:justify-start">
 												<Button
 													variant="ghost"
 													className="text-neutral-500 hover:text-neutral-900 font-bold px-0 h-auto"
 												>
 													View Receipt
 												</Button>
-												<span className="h-4 w-px bg-neutral-200" />
+												<span className="h-4 w-px bg-neutral-200 hidden sm:block" />
 												<Button
 													variant="ghost"
 													className="text-neutral-500 hover:text-neutral-900 font-bold px-0 h-auto"
@@ -289,12 +289,12 @@ export default function BookingsPage() {
 												</Button>
 											</div>
 
-											<div className="flex items-center gap-3 w-full sm:w-auto">
+											<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
 												{booking.status !== BookingStatus.CANCELLED &&
 													booking.status !== BookingStatus.COMPLETED && (
 														<Button
 															variant="ghost"
-															className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold rounded-xl px-6"
+															className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold rounded-xl px-6 w-full sm:w-auto"
 															onClick={() => handleCancel(booking.id)}
 															disabled={isCancelling}
 														>
@@ -305,7 +305,7 @@ export default function BookingsPage() {
 												{!booking.fullPaymentPaid &&
 													booking.status === BookingStatus.CONFIRMED && (
 														<Button
-															className="bg-brand-blue hover:bg-brand-blue-hover text-white font-bold rounded-xl px-8 h-11"
+															className="bg-brand-blue hover:bg-brand-blue-hover text-white font-bold rounded-xl px-8 h-11 w-full sm:w-auto"
 															onClick={() => handlePayment(booking.id)}
 															disabled={isCreating}
 														>
@@ -317,8 +317,11 @@ export default function BookingsPage() {
 														</Button>
 													)}
 
-												<Link href={`/dashboard/bookings/${booking.id}`}>
-													<Button className="bg-neutral-900 hover:bg-neutral-800 text-white font-bold rounded-xl px-8 h-11">
+												<Link
+													href={`/dashboard/bookings/${booking.id}`}
+													className="w-full sm:w-auto"
+												>
+													<Button className="bg-neutral-900 hover:bg-neutral-800 text-white font-bold rounded-xl px-8 h-11 w-full relative sm:shrink-0 block sm:inline-block">
 														Details
 													</Button>
 												</Link>

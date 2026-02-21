@@ -14,6 +14,10 @@ import {
 	ChevronsLeft,
 	ChevronsRight,
 	Heart,
+	TrendingUp,
+	Users as UsersIcon,
+	Shield,
+	Store,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -25,7 +29,6 @@ import {
 	TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-
 const sidebarItems = [
 	{
 		title: 'Dashboard',
@@ -36,19 +39,49 @@ const sidebarItems = [
 		title: 'My Listings',
 		href: '/dashboard/listings',
 		icon: List,
-		roles: ['VENDOR', 'ADMIN'],
+		roles: ['VENDOR'],
 	},
 	{
 		title: 'Bookings',
 		href: '/dashboard/bookings',
 		icon: CalendarCheck,
-		roles: ['VENDOR', 'ADMIN'],
+		roles: ['VENDOR'],
+	},
+	{
+		title: 'All Listings',
+		href: '/dashboard/admin/listings',
+		icon: List,
+		roles: ['ADMIN'],
+	},
+	{
+		title: 'Bookings',
+		href: '/dashboard/admin/bookings',
+		icon: CalendarCheck,
+		roles: ['ADMIN'],
+	},
+	{
+		title: 'Vendors',
+		href: '/dashboard/admin/vendors',
+		icon: Store,
+		roles: ['ADMIN'],
+	},
+	{
+		title: 'Settlements',
+		href: '/dashboard/admin/settlements',
+		icon: Wallet,
+		roles: ['ADMIN'],
+	},
+	{
+		title: 'Users',
+		href: '/dashboard/admin/users',
+		icon: UsersIcon,
+		roles: ['ADMIN'],
 	},
 	{
 		title: 'My Bookings',
 		href: '/dashboard/my-bookings',
 		icon: CalendarDays,
-		roles: ['CUSTOMER', 'VENDOR', 'ADMIN'],
+		roles: ['CUSTOMER', 'VENDOR'],
 	},
 	{
 		title: 'Calendar',
@@ -61,12 +94,6 @@ const sidebarItems = [
 		href: '/dashboard/earnings',
 		icon: Wallet,
 		roles: ['VENDOR', 'ADMIN'],
-	},
-	{
-		title: 'Saved',
-		href: '/dashboard/saved',
-		icon: Heart,
-		roles: ['CUSTOMER', 'VENDOR', 'ADMIN'],
 	},
 	{
 		title: 'Settings',
@@ -113,7 +140,7 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
 				</Link>
 			</div>
 
-			<nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+			<nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto no-scrollbar">
 				<TooltipProvider>
 					{sidebarItems
 						.filter(
@@ -129,7 +156,7 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
 								<Link
 									href={item.href}
 									className={cn(
-										'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors relative group',
+										'flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors relative group mb-1',
 										isActive
 											? 'bg-brand-blue text-white shadow-sm'
 											: 'text-neutral-600 hover:bg-neutral-50 hover:text-primary-blue',
@@ -138,14 +165,14 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
 								>
 									<item.icon
 										className={cn(
-											'h-5 w-5 shrink-0',
+											'h-5 w-5 shrink-0 transition-transform group-hover:scale-110',
 											isActive
 												? 'text-white'
 												: 'text-neutral-500 group-hover:text-primary-blue',
 										)}
 									/>
 									{!isCollapsed && (
-										<span className="animate-in fade-in duration-300 truncate">
+										<span className="animate-in fade-in duration-300 truncate font-semibold">
 											{item.title}
 										</span>
 									)}

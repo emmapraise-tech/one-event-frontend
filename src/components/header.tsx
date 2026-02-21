@@ -256,7 +256,7 @@ export function Header() {
 					<button
 						className={`md:hidden p-2 rounded-full transition-colors ${
 							isTransparent
-								? 'text-white hover:bg-white/10'
+								? 'text-white hover:bg-white/20'
 								: 'text-neutral-900 hover:bg-neutral-100'
 						}`}
 						onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -272,29 +272,114 @@ export function Header() {
 						<nav className="flex flex-col gap-2">
 							<Link
 								href="/listings"
+								onClick={() => setIsMobileMenuOpen(false)}
 								className="text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
 							>
 								Venues
 							</Link>
 							<Link
 								href="/services"
+								onClick={() => setIsMobileMenuOpen(false)}
 								className="text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
 							>
 								Services
 							</Link>
 							<Link
 								href="/blog"
+								onClick={() => setIsMobileMenuOpen(false)}
 								className="text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
 							>
 								Blog
 							</Link>
 							<div className="h-px bg-neutral-100 my-1" />
-							<Link
-								href="/onboard-vendor"
-								className="text-brand-gold font-bold p-2 hover:bg-amber-50 rounded-lg"
-							>
-								List your venue
-							</Link>
+
+							{/* Auth & Dashboard Links */}
+							{isAuthenticated && user ? (
+								<>
+									<div className="p-2 mb-2 bg-neutral-50 rounded-lg">
+										<p className="text-sm font-bold text-neutral-900">
+											{user.firstName} {user.lastName}
+										</p>
+										<p className="text-xs text-neutral-500 font-medium">
+											{user.email}
+										</p>
+									</div>
+									<Link
+										href="/dashboard"
+										onClick={() => setIsMobileMenuOpen(false)}
+										className="flex items-center text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
+									>
+										<LayoutDashboard className="mr-3 h-4 w-4 text-neutral-400" />
+										Dashboard
+									</Link>
+									<Link
+										href="/dashboard/my-bookings"
+										onClick={() => setIsMobileMenuOpen(false)}
+										className="flex items-center text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
+									>
+										<Calendar className="mr-3 h-4 w-4 text-neutral-400" />
+										My Bookings
+									</Link>
+									<div className="h-px bg-neutral-100 my-1" />
+									<button
+										onClick={() => {
+											setIsMobileMenuOpen(false);
+											logout();
+										}}
+										className="flex items-center text-red-600 font-medium p-2 hover:bg-red-50 rounded-lg text-left"
+									>
+										<LogOut className="mr-3 h-4 w-4" />
+										Log out
+									</button>
+								</>
+							) : (
+								<>
+									<Link
+										href="/login"
+										onClick={() => setIsMobileMenuOpen(false)}
+									>
+										<Button
+											variant="outline"
+											className="w-full justify-start mb-2"
+										>
+											Log In
+										</Button>
+									</Link>
+									<Link
+										href="/register"
+										onClick={() => setIsMobileMenuOpen(false)}
+									>
+										<Button className="w-full justify-start bg-brand-gold hover:bg-brand-gold-hover text-white">
+											Sign Up
+										</Button>
+									</Link>
+								</>
+							)}
+
+							{isAuthenticated && user?.type === 'CUSTOMER' && (
+								<>
+									<div className="h-px bg-neutral-100 my-1" />
+									<Link
+										href="/onboard-vendor"
+										onClick={() => setIsMobileMenuOpen(false)}
+										className="text-brand-gold font-bold p-2 hover:bg-amber-50 rounded-lg"
+									>
+										List your venue
+									</Link>
+								</>
+							)}
+							{!isAuthenticated && (
+								<>
+									<div className="h-px bg-neutral-100 my-1" />
+									<Link
+										href="/onboard-vendor"
+										onClick={() => setIsMobileMenuOpen(false)}
+										className="text-brand-gold font-bold p-2 hover:bg-amber-50 rounded-lg"
+									>
+										List your venue
+									</Link>
+								</>
+							)}
 						</nav>
 					</div>
 				)}
