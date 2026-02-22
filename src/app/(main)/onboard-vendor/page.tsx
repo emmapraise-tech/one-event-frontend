@@ -30,6 +30,7 @@ import {
 import Image from 'next/legacy/image';
 import { Suspense, useState } from 'react';
 import { toast } from 'sonner';
+import { FormSkeleton } from '@/components/ui/skeletons';
 
 function OnboardVendorContent() {
 	const { user } = useAuth();
@@ -609,8 +610,10 @@ export default function OnboardVendorPage() {
 	return (
 		<Suspense
 			fallback={
-				<div className="min-h-screen flex items-center justify-center bg-neutral-50">
-					<Loader2 className="h-8 w-8 animate-spin text-brand-blue" />
+				<div className="min-h-screen py-12 px-4 bg-neutral-50 mb-10">
+					<div className="container mx-auto max-w-2xl bg-white rounded-3xl shadow-xl border border-neutral-100 p-8 md:p-10">
+						<FormSkeleton fields={4} />
+					</div>
 				</div>
 			}
 		>

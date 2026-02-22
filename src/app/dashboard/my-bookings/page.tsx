@@ -24,6 +24,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { PageHeaderSkeleton, CardSkeleton } from '@/components/ui/skeletons';
 
 export default function BookingsPage() {
 	const { bookings, isLoading, error, cancelBooking, isCancelling } =
@@ -90,12 +91,12 @@ export default function BookingsPage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex h-[60vh] items-center justify-center">
-				<div className="flex flex-col items-center gap-4">
-					<Loader2 className="h-10 w-10 animate-spin text-brand-blue" />
-					<p className="text-neutral-500 font-medium animate-pulse">
-						Fetching your bookings...
-					</p>
+			<div className="space-y-8 pb-20">
+				<PageHeaderSkeleton />
+				<div className="grid grid-cols-1 gap-6">
+					<CardSkeleton />
+					<CardSkeleton />
+					<CardSkeleton />
 				</div>
 			</div>
 		);

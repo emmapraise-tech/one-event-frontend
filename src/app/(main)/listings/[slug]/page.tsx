@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-	Loader2,
 	MapPin,
 	Star,
 	Share,
@@ -25,6 +24,7 @@ import {
 import { useState } from 'react';
 import { ImageGrid } from '@/components/listing/image-grid';
 import { BookingSidebar } from '@/components/listing/booking-sidebar';
+import { ListingDetailSkeleton } from '@/components/ui/skeletons';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AMENITY_MAP } from '@/constants/amenities';
@@ -37,11 +37,7 @@ export default function ListingDetailPage() {
 	const [showAllAmenities, setShowAllAmenities] = useState(false);
 
 	if (isLoading) {
-		return (
-			<div className="flex h-screen items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin text-primary" />
-			</div>
-		);
+		return <ListingDetailSkeleton />;
 	}
 
 	if (!listing) {
