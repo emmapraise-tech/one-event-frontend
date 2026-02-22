@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import Image from 'next/legacy/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { PageHeaderSkeleton, CardSkeleton } from '@/components/ui/skeletons';
 
 async function getAdminListings(): Promise<Listing[]> {
 	return listingService.adminFindAll();
@@ -51,8 +52,12 @@ export default function AdminListingsPage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex h-[60vh] items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin text-brand-blue" />
+			<div className="space-y-8 animate-in fade-in duration-500 pb-20">
+				<PageHeaderSkeleton />
+				<div className="grid gap-8">
+					<CardSkeleton />
+					<CardSkeleton />
+				</div>
 			</div>
 		);
 	}

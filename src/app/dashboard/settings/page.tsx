@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2 } from 'lucide-react';
 import { SettingsSidebar } from '@/components/dashboard/settings/SettingsSidebar';
+import { FormSkeleton, PageHeaderSkeleton } from '@/components/ui/skeletons';
 import { ProfileSettings } from '@/components/dashboard/settings/ProfileSettings';
 import { GeneralSettings } from '@/components/dashboard/settings/GeneralSettings';
 import { SecuritySettings } from '@/components/dashboard/settings/SecuritySettings';
@@ -16,8 +16,16 @@ export default function SettingsPage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex h-screen items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin text-brand-blue" />
+			<div className="space-y-8">
+				<PageHeaderSkeleton />
+				<div className="flex flex-col lg:flex-row gap-8 items-start">
+					<div className="w-full lg:w-64">
+						<FormSkeleton fields={5} />
+					</div>
+					<div className="flex-1 w-full">
+						<FormSkeleton fields={4} />
+					</div>
+				</div>
 			</div>
 		);
 	}

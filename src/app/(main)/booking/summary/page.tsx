@@ -17,7 +17,6 @@ import {
 	Sparkles,
 	Shirt,
 	ChevronRight,
-	Loader2,
 } from 'lucide-react';
 import Image from 'next/legacy/image';
 import { useEffect, useState } from 'react';
@@ -37,6 +36,7 @@ import {
 } from 'lucide-react';
 import { useListing } from '@/hooks/useListings';
 import { Suspense } from 'react';
+import { FormSkeleton, CardSkeleton } from '@/components/ui/skeletons';
 
 function BookingSummaryContent() {
 	const router = useRouter();
@@ -85,14 +85,18 @@ function BookingSummaryContent() {
 
 	if (authLoading || !bookingData) {
 		return (
-			<div className="min-h-screen flex items-center justify-center">
-				<div className="flex flex-col items-center gap-4">
-					<Loader2 className="h-8 w-8 animate-spin text-brand-blue" />
-					<p className="text-neutral-500">
-						{authLoading
-							? 'Checking authentication...'
-							: 'Loading booking details...'}
-					</p>
+			<div className="min-h-screen bg-gray-50 py-16">
+				<div className="container mx-auto max-w-6xl px-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
+					<div className="col-span-1 lg:col-span-2 space-y-8">
+						<FormSkeleton fields={2} />
+						<div className="space-y-6">
+							<CardSkeleton />
+							<CardSkeleton />
+						</div>
+					</div>
+					<div className="col-span-1 lg:col-span-1">
+						<CardSkeleton />
+					</div>
 				</div>
 			</div>
 		);
@@ -655,10 +659,7 @@ function BookingSummaryContent() {
 											className="w-full bg-brand-gold hover:bg-brand-gold-hover text-neutral-900 font-bold h-12 text-base shadow-sm mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
 										>
 											{isProcessing ? (
-												<>
-													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-													Processing...
-												</>
+												<>Processing...</>
 											) : paymentMethod === 'bank' ? (
 												<>
 													I have paid ₦{grandTotal.toLocaleString()}{' '}
@@ -707,8 +708,16 @@ export default function BookingSummaryPage() {
 	return (
 		<Suspense
 			fallback={
-				<div className="min-h-screen flex items-center justify-center">
-					<Loader2 className="h-8 w-8 animate-spin text-brand-blue" />
+				<div className="min-h-screen bg-gray-50 py-16">
+					<div className="container mx-auto max-w-6xl px-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
+						<div className="col-span-1 lg:col-span-2 space-y-8">
+							<FormSkeleton fields={2} />
+							<CardSkeleton />
+						</div>
+						<div className="col-span-1 lg:col-span-1">
+							<CardSkeleton />
+						</div>
+					</div>
 				</div>
 			}
 		>

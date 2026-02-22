@@ -22,6 +22,7 @@ import { StatsCard } from '@/components/dashboard/stats-card';
 import { RevenueChart } from '@/components/dashboard/revenue-chart';
 import { PendingRequests } from '@/components/dashboard/recent-activity';
 import Link from 'next/link';
+import { CardSkeleton, PageHeaderSkeleton } from '@/components/ui/skeletons';
 
 export default function DashboardPage() {
 	const { user, isLoading } = useAuth();
@@ -108,8 +109,22 @@ export default function DashboardPage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex h-[60vh] items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin text-primary-blue" />
+			<div className="space-y-6 md:space-y-8 pb-12">
+				<PageHeaderSkeleton />
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+					<CardSkeleton />
+					<CardSkeleton />
+					<CardSkeleton />
+					<CardSkeleton />
+				</div>
+				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+					<div className="lg:col-span-2">
+						<CardSkeleton />
+					</div>
+					<div className="lg:col-span-1">
+						<CardSkeleton />
+					</div>
+				</div>
 			</div>
 		);
 	}
