@@ -88,9 +88,10 @@ export function ListingCard({ listing }: ListingCardProps) {
 			</CardHeader>
 
 			<CardContent className="p-5 pt-2 flex-1">
-				<p className="text-sm text-gray-600 line-clamp-2 leading-relaxed h-10">
-					{listing.description}
-				</p>
+				<div
+					className="text-sm text-gray-600 line-clamp-2 leading-relaxed h-10 [&>p]:inline"
+					dangerouslySetInnerHTML={{ __html: listing.description || '' }}
+				/>
 				<div className="mt-4 flex items-center justify-between">
 					<div className="flex flex-col">
 						<span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">

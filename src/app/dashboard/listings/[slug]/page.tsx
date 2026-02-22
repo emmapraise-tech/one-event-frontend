@@ -123,28 +123,29 @@ export default function ListingDetailPage() {
 				<div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
 					<button
 						onClick={() => router.back()}
-						className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
+						className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors shrink-0"
 					>
 						<ArrowLeft className="h-4 w-4" />
-						Back
+						<span className="hidden sm:inline">Back</span>
 					</button>
 
-					<div className="flex items-center gap-3">
+					<div className="flex items-center gap-2 sm:gap-3 shrink-0">
 						{isOwner && (
 							<>
 								<Badge
 									variant="outline"
-									className="bg-brand-blue-soft text-brand-blue border-brand-blue-soft/30 h-8 font-bold px-3"
+									className="hidden sm:flex bg-brand-blue-soft text-brand-blue border-brand-blue-soft/30 h-8 font-bold px-3 shrink-0"
 								>
 									OWNER VIEW
 								</Badge>
 								<Button
 									asChild
-									className="bg-brand-blue hover:bg-brand-blue-hover text-white shadow-sm h-10 px-6 font-bold rounded-lg transition-colors"
+									className="bg-brand-blue hover:bg-brand-blue-hover text-white shadow-sm h-9 sm:h-10 px-3 sm:px-6 font-bold rounded-lg transition-colors shrink-0"
 								>
 									<Link href={`/dashboard/listings/${listing.slug}/edit`}>
-										<Edit className="h-4 w-4 mr-2" />
-										Edit Listing
+										<Edit className="h-4 w-4 sm:mr-2" />
+										<span className="hidden sm:inline">Edit Listing</span>
+										<span className="sm:hidden ml-1">Edit</span>
 									</Link>
 								</Button>
 							</>

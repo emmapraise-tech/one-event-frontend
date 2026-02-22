@@ -68,17 +68,19 @@ export default function CalendarPage() {
 		<div className="flex h-[calc(100vh-64px)] overflow-hidden">
 			{/* Main Content Area */}
 			<div className="flex-1 flex flex-col h-full overflow-hidden">
-				<div className="p-6 space-y-6 flex-1 overflow-y-auto no-scrollbar">
+				<div className="p-4 sm:p-6 space-y-4 sm:space-y-6 flex-1 overflow-y-auto no-scrollbar">
 					<CalendarHeader />
 					<CalendarStats bookings={mappedBookings} />
 
 					{/* Grow grid to fill remaining space */}
-					<div className="flex-1 pb-6 min-h-[600px]">
-						<CalendarGrid
-							bookings={mappedBookings}
-							onSelectBooking={setSelectedBooking}
-							selectedBookingId={selectedBooking?.id}
-						/>
+					<div className="flex-1 pb-6 min-h-[500px] overflow-x-auto w-full">
+						<div className="min-w-[700px] h-full">
+							<CalendarGrid
+								bookings={mappedBookings}
+								onSelectBooking={setSelectedBooking}
+								selectedBookingId={selectedBooking?.id}
+							/>
+						</div>
 					</div>
 				</div>
 			</div>

@@ -53,23 +53,26 @@ export default function ListingDetailPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-neutral-bg pb-10">
+		<div className="min-h-screen bg-neutral-bg pb-10 overflow-x-hidden w-full">
 			{/* Breadcrumbs (Simple) */}
 			<div className="container mx-auto px-4 pt-6 pb-12">
 				{/* Breadcrumbs */}
-				<div className="flex items-center gap-2 text-sm text-neutral-500 mb-4">
-					<Link href="/" className="hover:text-neutral-900 transition-colors">
+				<div className="flex items-center gap-2 text-sm text-neutral-500 mb-4 overflow-x-auto whitespace-nowrap scrollbar-hide pb-2">
+					<Link
+						href="/"
+						className="hover:text-neutral-900 transition-colors shrink-0"
+					>
 						Home
 					</Link>
-					<ChevronRight className="h-4 w-4 text-neutral-400" />
+					<ChevronRight className="h-4 w-4 text-neutral-400 shrink-0" />
 					<Link
 						href="/listings"
-						className="hover:text-neutral-900 transition-colors"
+						className="hover:text-neutral-900 transition-colors shrink-0"
 					>
 						Venues
 					</Link>
-					<ChevronRight className="h-4 w-4 text-neutral-400" />
-					<span className="text-neutral-900 font-medium truncate max-w-[300px]">
+					<ChevronRight className="h-4 w-4 text-neutral-400 shrink-0" />
+					<span className="text-neutral-900 font-medium truncate max-w-[200px] sm:max-w-[300px] shrink-0">
 						{listing.name}
 					</span>
 				</div>
@@ -147,7 +150,7 @@ export default function ListingDetailPage() {
 				</div>
 
 				<div className="grid gap-8 lg:grid-cols-3">
-					<div className="lg:col-span-2 space-y-8">
+					<div className="lg:col-span-2 space-y-8 min-w-0">
 						{/* Host Info */}
 						<div className="flex items-center justify-between border-b border-neutral-border pb-6">
 							<div>
@@ -224,7 +227,7 @@ export default function ListingDetailPage() {
 							>
 								{listing.description ? (
 									<div
-										className="prose prose-neutral max-w-none w-full min-w-0 break-words text-neutral-text-muted leading-relaxed prose-headings:font-semibold prose-headings:text-neutral-text-primary prose-a:text-primary-blue prose-a:no-underline hover:prose-a:underline prose-strong:text-neutral-text-primary prose-strong:font-semibold prose-img:rounded-xl prose-img:max-w-full"
+										className="prose prose-neutral max-w-full w-full overflow-x-auto min-w-0 break-words text-neutral-text-muted leading-relaxed prose-headings:font-semibold prose-headings:text-neutral-text-primary prose-a:text-primary-blue prose-a:no-underline hover:prose-a:underline prose-strong:text-neutral-text-primary prose-strong:font-semibold prose-img:rounded-xl prose-img:max-w-full"
 										dangerouslySetInnerHTML={{ __html: listing.description }}
 									/>
 								) : (
@@ -381,7 +384,7 @@ export default function ListingDetailPage() {
 					</div>
 
 					{/* Right Sidebar */}
-					<div>
+					<div className="min-w-0">
 						<div className="sticky top-24">
 							<BookingSidebar
 								basePrice={listing.basePrice || 0}
@@ -397,6 +400,30 @@ export default function ListingDetailPage() {
 						</div>
 					</div>
 				</div>
+			</div>
+
+			{/* Mobile Sticky Booking Bar */}
+			<div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40 flex items-center justify-between">
+				<div>
+					<p className="text-[10px] font-bold text-neutral-500 uppercase tracking-wide">
+						Starting at
+					</p>
+					<div className="text-lg font-black text-neutral-900">
+						{listing.currency} {listing.basePrice?.toLocaleString()}{' '}
+						<span className="text-sm font-normal text-neutral-500">/day</span>
+					</div>
+				</div>
+				<Button
+					onClick={() => {
+						window.scrollTo({
+							top: document.body.scrollHeight,
+							behavior: 'smooth',
+						});
+					}}
+					className="bg-brand-gold hover:bg-brand-gold-hover text-neutral-900 font-bold px-8 h-12 shadow-md rounded-xl"
+				>
+					Reserve
+				</Button>
 			</div>
 		</div>
 	);
@@ -463,7 +490,7 @@ function ReviewItem({
 					<div className="text-xs text-neutral-text-muted">{date}</div>
 				</div>
 			</div>
-			<p className="text-neutral-text-muted text-sm leading-relaxed">
+			<p className="text-neutral-text-muted text-sm leading-relaxed break-words">
 				"{text}"
 			</p>
 		</div>

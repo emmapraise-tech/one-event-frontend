@@ -314,7 +314,7 @@ export default function EarningsPage() {
 	return (
 		<div className="min-h-screen bg-gray-50/50 pb-20">
 			{/* Vendor View (Unchanged) */}
-			<div className="sticky top-0 z-30 bg-white/80 border-b border-border/60 px-8 py-4 flex items-center justify-between backdrop-blur-sm">
+			<div className="sticky top-0 z-30 bg-white/80 border-b border-border/60 px-4 sm:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
 				<div>
 					<h1 className="text-xl font-bold tracking-tight text-gray-900">
 						Earnings
@@ -323,14 +323,14 @@ export default function EarningsPage() {
 						Manage your revenue and payouts
 					</p>
 				</div>
-				<div className="flex items-center gap-2">
-					<Button className="bg-brand-blue hover:bg-brand-blue-hover text-white shadow-sm h-10 px-6 font-bold rounded-lg transition-colors">
+				<div className="flex items-center gap-2 w-full sm:w-auto">
+					<Button className="w-full sm:w-auto bg-brand-blue hover:bg-brand-blue-hover text-white shadow-sm h-10 px-6 font-bold rounded-lg transition-colors">
 						<Upload className="mr-2 h-4 w-4" /> Request Payout
 					</Button>
 				</div>
 			</div>
 
-			<div className="w-full px-8 p-8 space-y-8">
+			<div className="w-full p-4 sm:p-8 space-y-8">
 				<EarningsStats {...mockStats} />
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 					<div className="lg:col-span-2">
