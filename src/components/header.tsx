@@ -75,7 +75,7 @@ export function Header() {
 					: 'bg-white/80 backdrop-blur-md border-b border-neutral-200 shadow-sm py-4'
 			}`}
 		>
-			<div className="container mx-auto flex items-center justify-between px-4 md:px-6">
+			<div className="container mx-auto flex items-center justify-between gap-4 px-4 md:px-6">
 				{/* Logo */}
 				<Logo variant={isTransparent ? 'transparent' : 'default'} />
 

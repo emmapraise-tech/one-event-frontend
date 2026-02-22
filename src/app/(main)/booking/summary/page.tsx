@@ -186,31 +186,36 @@ function BookingSummaryContent() {
 		<div className="min-h-screen bg-gray-50">
 			{/* Breadcrumbs */}
 			<div className="bg-white/50 backdrop-blur-sm py-4 border-b border-neutral-100 mb-4 sticky top-16 z-30">
-				<div className="container mx-auto px-4 flex items-center gap-2 text-sm text-neutral-500">
+				<div className="container mx-auto px-4 flex items-center gap-2 text-sm text-neutral-500 overflow-x-auto whitespace-nowrap scrollbar-hide">
 					<Button
 						variant="ghost"
 						size="icon"
-						className="mr-2 h-8 w-8 hover:bg-neutral-100 rounded-full"
+						className="mr-2 h-8 w-8 hover:bg-neutral-100 rounded-full shrink-0"
 						onClick={() => router.push(`/listings/${bookingData.listingId}`)}
 					>
 						<ChevronRight className="h-4 w-4 rotate-180 text-neutral-900" />
 					</Button>
-					<Link href="/" className="hover:text-neutral-900 transition-colors">
+					<Link
+						href="/"
+						className="hover:text-neutral-900 transition-colors shrink-0"
+					>
 						Home
 					</Link>
-					<ChevronRight className="h-4 w-4 text-neutral-400" />
+					<ChevronRight className="h-4 w-4 text-neutral-400 shrink-0" />
 					<Link
 						href={`/listings/${bookingData.listingId}`}
-						className="hover:text-neutral-900 transition-colors"
+						className="hover:text-neutral-900 transition-colors shrink-0"
 					>
 						Venue Details
 					</Link>
-					<ChevronRight className="h-4 w-4 text-neutral-400" />
-					<span className="text-neutral-500 truncate max-w-[200px]">
+					<ChevronRight className="h-4 w-4 text-neutral-400 shrink-0" />
+					<span className="text-neutral-500 truncate max-w-[150px] sm:max-w-[200px] shrink-0">
 						{bookingData.venueName || 'Venue'}
 					</span>
-					<ChevronRight className="h-4 w-4 text-neutral-400" />
-					<span className="text-neutral-900 font-medium">Review & Payment</span>
+					<ChevronRight className="h-4 w-4 text-neutral-400 shrink-0" />
+					<span className="text-neutral-900 font-medium shrink-0">
+						Review & Payment
+					</span>
 				</div>
 			</div>
 
