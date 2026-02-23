@@ -28,8 +28,8 @@ export function SettingsSidebar({
 		{
 			category: 'ACCOUNT',
 			items: [
-				{ id: 'general', label: 'General', icon: SettingsIcon },
 				{ id: 'profile', label: 'Profile', icon: User },
+				{ id: 'general', label: 'General', icon: SettingsIcon },
 				{ id: 'security', label: 'Security', icon: Shield },
 			],
 		},

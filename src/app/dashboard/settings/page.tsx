@@ -12,7 +12,7 @@ import { BillingSettings } from '@/components/dashboard/settings/BillingSettings
 
 export default function SettingsPage() {
 	const { user, isLoading } = useAuth();
-	const [activeTab, setActiveTab] = useState('general');
+	const [activeTab, setActiveTab] = useState('profile');
 
 	if (isLoading) {
 		return (
