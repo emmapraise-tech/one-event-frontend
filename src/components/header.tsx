@@ -79,45 +79,54 @@ export function Header() {
 				{/* Logo */}
 				<Logo variant={isTransparent ? 'transparent' : 'default'} />
 
-				{/* Desktop Navigation - Centered */}
-				<nav className="hidden md:flex items-center gap-1 bg-white/10 backdrop-blur-sm px-2 py-1.5 rounded-full border border-white/10 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 shadow-sm">
-					{[
-						{ label: 'Venues', href: '/listings' },
-						{ label: 'Services', href: '/services' },
-						{ label: 'Blog', href: '/blog' },
-					].map((item) => (
-						<Link
-							key={item.label}
-							href={item.href}
-							className={`text-sm font-medium px-5 py-2 rounded-full transition-all duration-200 ${
-								isTransparent
-									? 'text-white hover:bg-white/10'
-									: 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
-							}`}
-						>
-							{item.label}
-						</Link>
-					))}
-				</nav>
+				{/* Desktop Navigation - Removed per request */}
 
 				{/* Right Actions */}
-				<div className="flex items-center gap-2 z-50">
+				<div className="flex items-center gap-4 z-50">
+					{/* Always visible "Book a Venue" button except for Vendors */}
+					{(!isAuthenticated || user?.type === 'CUSTOMER') && (
+						<Link href="/listings">
+							<Button
+								variant="outline"
+								className={`hidden md:flex rounded-full px-5 font-bold border-2 transition-all ${
+									isTransparent
+										? 'text-white border-white/30 hover:bg-white/10'
+										: 'text-brand-blue border-brand-blue/20 hover:bg-neutral-50'
+								}`}
+							>
+								Book a venue
+							</Button>
+						</Link>
+					)}
+
+					{/* List your venue (Icon only) - visible to unauthenticated or CUSTOMER */}
+					{(!isAuthenticated || user?.type === 'CUSTOMER') && (
+						<div
+							className="hidden md:flex relative group cursor-pointer"
+							title="List your venue"
+						>
+							<Link href="/onboard-vendor">
+								<Button
+									variant="ghost"
+									size="icon"
+									className={`rounded-full h-10 w-10 transition-all ${
+										isTransparent
+											? 'text-white hover:bg-white/10 hover:text-white'
+											: 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+									}`}
+								>
+									<PlusCircle className="h-5 w-5" />
+								</Button>
+							</Link>
+							{/* Custom Tooltip */}
+							<div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-neutral-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none">
+								List your venue
+							</div>
+						</div>
+					)}
+
 					{isAuthenticated && user ? (
 						<div className="flex items-center gap-4">
-							{user.type === 'CUSTOMER' && (
-								<Link href="/onboard-vendor">
-									<Button
-										variant="outline"
-										className={`hidden md:flex rounded-full px-5 font-bold border-2 transition-all ${
-											isTransparent
-												? 'text-white border-white/30 hover:bg-white/10'
-												: 'text-brand-blue border-brand-blue/20 hover:bg-neutral-50'
-										}`}
-									>
-										List your venue
-									</Button>
-								</Link>
-							)}
 							<DropdownMenu
 								open={isMenuOpen}
 								onOpenChange={setIsMenuOpen}
@@ -224,31 +233,29 @@ export function Header() {
 						</div>
 					) : (
 						<div className="flex items-center gap-3">
-							{/* Login Link */}
-							<Link href="/login">
-								<Button
-									variant="ghost"
-									className={`hidden md:inline-flex rounded-full px-5 font-semibold transition-all ${
-										isTransparent
-											? 'text-white hover:bg-white/10 hover:text-white'
-											: 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
-									}`}
-								>
-									Log In
-								</Button>
-							</Link>
-
-							<Link href="/register">
-								<Button
-									className={`hidden md:inline-flex font-bold rounded-full px-6 shadow-lg shadow-amber-500/20 transition-all ${
-										isTransparent
-											? 'bg-white text-brand-gold hover:bg-amber-50'
-											: 'bg-brand-gold text-white hover:bg-brand-gold-hover'
-									}`}
-								>
-									Sign Up
-								</Button>
-							</Link>
+							{/* Login/Signup Icon for unauthenticated users */}
+							<div
+								className="hidden md:flex relative group cursor-pointer"
+								title="Login / Sign up"
+							>
+								<Link href="/login">
+									<Button
+										variant="ghost"
+										size="icon"
+										className={`rounded-full h-10 w-10 transition-all ${
+											isTransparent
+												? 'text-white hover:bg-white/10 hover:text-white border border-white/30'
+												: 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 border border-neutral-200'
+										}`}
+									>
+										<User className="h-5 w-5" />
+									</Button>
+								</Link>
+								{/* Custom Tooltip */}
+								<div className="absolute top-full mt-2 right-0 opacity-0 group-hover:opacity-100 transition-opacity bg-neutral-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none">
+									Login / Sign Up
+								</div>
+							</div>
 						</div>
 					)}
 

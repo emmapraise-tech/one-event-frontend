@@ -4,6 +4,7 @@ import { BookingStepper } from '@/components/booking/booking-stepper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import {
 	Calendar,
@@ -45,15 +46,32 @@ function BookingSummaryContent() {
 	const [bookingData, setBookingData] = useState<any>(null);
 	const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
 	const [paymentMethod, setPaymentMethod] = useState<'card' | 'bank'>('card');
+	const [specialRequest, setSpecialRequest] = useState('');
+	const [isAvailable, setIsAvailable] = useState<boolean | true>(true);
 	const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 	const { data: listingData } = useListing(bookingData?.listingId || '');
 
 	// No need for hardcoded constants anymore as we use dynamic add-ons from bookingData
 
 	useEffect(() => {
-		const data = localStorage.getItem('bookingDetails');
-		if (data) {
-			setBookingData(JSON.parse(data));
+		const checkAvailability = async (data: any) => {
+			try {
+				const response = await bookingService.checkAvailability({
+					listingId: data.listingId,
+					startDate: data.dateRange.from,
+					endDate: data.dateRange.to || data.dateRange.from,
+				});
+				setIsAvailable(response.available);
+			} catch (error) {
+				console.error('Availability check failed:', error);
+			}
+		};
+
+		const dataStr = localStorage.getItem('bookingDetails');
+		if (dataStr) {
+			const data = JSON.parse(dataStr);
+			setBookingData(data);
+			checkAvailability(data);
 		}
 	}, []);
 
@@ -122,6 +140,7 @@ function BookingSummaryContent() {
 				endDate: bookingData.dateRange.to || bookingData.dateRange.from,
 				numberOfGuests: parseInt(bookingData.guests) || 100,
 				currency: 'NGN',
+				specialRequests: specialRequest,
 				details: {
 					selectedAddOns: bookingData.selectedAddOns,
 					venueFee: bookingData.venueFee,
@@ -224,16 +243,24 @@ function BookingSummaryContent() {
 			</div>
 
 			<div className="container mx-auto max-w-6xl px-4 py-4">
-				<Alert className="bg-blue-50 border-blue-200 text-blue-800 rounded-xl mb-6 flex items-center gap-3">
-					<Clock className="h-5 w-5 text-blue-600 animate-pulse" />
-					<AlertDescription className="font-medium">
-						We've reserved this venue for you. Complete your booking within{' '}
-						<span className="font-bold text-blue-900">
-							{formatTime(timeLeft)}
-						</span>{' '}
-						to secure this date.
-					</AlertDescription>
-				</Alert>
+				{isAvailable === false ? (
+					<Alert className="bg-red-50 border-red-200 text-red-800 rounded-xl mb-6 flex items-center gap-3">
+						<AlertDescription className="font-medium">
+							The selected dates are no longer available for this venue.
+						</AlertDescription>
+					</Alert>
+				) : (
+					<Alert className="bg-blue-50 border-blue-200 text-blue-800 rounded-xl mb-6 flex items-center gap-3">
+						<Clock className="h-5 w-5 text-blue-600 animate-pulse" />
+						<AlertDescription className="font-medium">
+							We've reserved this venue for you. Complete your booking within{' '}
+							<span className="font-bold text-blue-900">
+								{formatTime(timeLeft)}
+							</span>{' '}
+							to secure this date.
+						</AlertDescription>
+					</Alert>
+				)}
 			</div>
 
 			<div className="container mx-auto max-w-6xl px-4 pb-8">
@@ -429,6 +456,24 @@ function BookingSummaryContent() {
 										{user?.phone || 'Not provided'}
 									</span>
 								</div>
+							</CardContent>
+						</Card>
+
+						{/* Special Requests */}
+						<Card className="border-neutral-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+							<div className="p-6 border-b border-neutral-100 flex justify-between items-center">
+								<h3 className="font-bold text-lg text-neutral-900">
+									Note / Special Requests
+								</h3>
+							</div>
+							<CardContent className="p-6">
+								<Textarea
+									placeholder="Any special requests or instructions for the host?"
+									value={specialRequest}
+									onChange={(e) => setSpecialRequest(e.target.value)}
+									className="resize-none"
+									rows={4}
+								/>
 							</CardContent>
 						</Card>
 					</div>
@@ -654,12 +699,16 @@ function BookingSummaryContent() {
 											</label>
 										</div>
 										<Button
-											disabled={!termsAccepted || isProcessing}
+											disabled={
+												!termsAccepted || isProcessing || isAvailable === false
+											}
 											onClick={handlePayment}
 											className="w-full bg-brand-gold hover:bg-brand-gold-hover text-neutral-900 font-bold h-12 text-base shadow-sm mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
 										>
 											{isProcessing ? (
 												<>Processing...</>
+											) : isAvailable === false ? (
+												<>Date Not Available</>
 											) : paymentMethod === 'bank' ? (
 												<>
 													I have paid ₦{grandTotal.toLocaleString()}{' '}

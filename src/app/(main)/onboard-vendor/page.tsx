@@ -60,7 +60,7 @@ function OnboardVendorContent() {
 		if (step === 1) {
 			fields = ['businessName', 'businessDescription'];
 		} else if (step === 2) {
-			fields = ['cacNumber', 'rcNumber', 'taxNumber'];
+			fields = ['cacNumber', 'taxNumber'];
 		} else if (step === 3) {
 			fields = [
 				'businessAddress',
@@ -169,7 +169,7 @@ function OnboardVendorContent() {
 									{s === 1
 										? 'Profile'
 										: s === 2
-											? 'Legal'
+											? 'Verification'
 											: s === 3
 												? 'Payments'
 												: 'Confirm'}
@@ -272,7 +272,7 @@ function OnboardVendorContent() {
 									onClick={nextStep}
 									className="w-full h-12 bg-brand-blue hover:bg-brand-blue-hover text-white rounded-xl font-bold shadow-lg shadow-blue-500/20"
 								>
-									Continue to Legal
+									Continue to Verification
 									<ArrowRight className="h-4 w-4 ml-2" />
 								</Button>
 							</div>
@@ -286,7 +286,7 @@ function OnboardVendorContent() {
 									</div>
 									<div>
 										<h2 className="text-xl font-bold text-neutral-900">
-											Legal & Verification
+											Verification Details
 										</h2>
 										<p className="text-sm text-neutral-500">
 											Official registration details
@@ -313,43 +313,26 @@ function OnboardVendorContent() {
 												</p>
 											)}
 										</div>
+
 										<div className="space-y-2">
-											<Label htmlFor="rcNumber">RC Number</Label>
+											<Label htmlFor="taxNumber">
+												Tax Identification Number (TIN)
+											</Label>
 											<div className="relative">
-												<FileText className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+												<Shield className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
 												<Input
-													id="rcNumber"
-													placeholder="1234567"
+													id="taxNumber"
+													placeholder="12345678-0001"
 													className="h-12 pl-11 rounded-xl"
-													{...register('rcNumber')}
+													{...register('taxNumber')}
 												/>
 											</div>
-											{errors.rcNumber && (
+											{errors.taxNumber && (
 												<p className="text-xs text-red-500">
-													{errors.rcNumber.message}
+													{errors.taxNumber.message}
 												</p>
 											)}
 										</div>
-									</div>
-
-									<div className="space-y-2">
-										<Label htmlFor="taxNumber">
-											Tax Identification Number (TIN)
-										</Label>
-										<div className="relative">
-											<Shield className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-											<Input
-												id="taxNumber"
-												placeholder="12345678-0001"
-												className="h-12 pl-11 rounded-xl"
-												{...register('taxNumber')}
-											/>
-										</div>
-										{errors.taxNumber && (
-											<p className="text-xs text-red-500">
-												{errors.taxNumber.message}
-											</p>
-										)}
 									</div>
 								</div>
 
@@ -550,7 +533,7 @@ function OnboardVendorContent() {
 										</span>
 									</div>
 									<div className="flex justify-between items-center text-sm">
-										<span className="text-neutral-500">Legal Verification</span>
+										<span className="text-neutral-500">Verification</span>
 										<span className="font-bold text-neutral-900 uppercase tracking-tight">
 											Confirmed
 										</span>

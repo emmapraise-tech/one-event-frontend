@@ -229,9 +229,10 @@ export default function AdminVendorDetailsPage() {
 							</div>
 
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-								<div className="p-6 rounded-3xl bg-gradient-to-br from-neutral-900 to-neutral-800 text-white relative overflow-hidden">
+								<div className="p-6 rounded-3xl bg-linear-to-br from-neutral-900 to-neutral-800 text-white relative overflow-hidden">
 									{/* Decorative shapes */}
 									<div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-16 -mt-16" />
+									<div className="absolute inset-0 bg-linear-to-br from-brand-blue/90 to-brand-blue-hover mix-blend-multiply" />
 									<div className="absolute bottom-0 left-0 w-24 h-24 bg-brand-blue/20 rounded-full blur-xl -ml-12 -mb-12" />
 
 									<div className="relative z-10">
