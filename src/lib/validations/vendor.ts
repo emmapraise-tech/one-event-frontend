@@ -15,7 +15,6 @@ export const vendorOnboardingSchema = z.object({
 		.min(10, 'Description must be at least 10 characters'),
 	cacNumber: z.string().min(1, 'CAC Number is required'),
 	taxNumber: z.string().min(1, 'Tax Number is required'),
-	rcNumber: z.string().min(1, 'RC Number is required'),
 	bankName: z.string().min(1, 'Bank name is required'),
 	bankAccountNumber: z.string().min(10, 'Account number must be 10 digits'),
 	bankAccountName: z.string().min(3, 'Account name is required'),

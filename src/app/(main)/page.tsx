@@ -35,6 +35,7 @@ import { useListings } from '@/hooks/useListings';
 
 export default function Home() {
 	const [date, setDate] = useState<Date>();
+	const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
 	const { listings, isLoading } = useListings();
 
@@ -52,7 +53,7 @@ export default function Home() {
 		<div className="flex min-h-screen flex-col">
 			<main className="flex-1">
 				{/* HERO SECTION */}
-				<section className="relative min-h-[650px] flex items-center justify-center bg-neutral-900 text-white overflow-hidden pt-20">
+				<section className="relative min-h-[80vh] flex items-center justify-center bg-neutral-900 text-white overflow-hidden pt-20">
 					{/* Background Image & Overlay */}
 					<div className="absolute inset-0">
 						<div className="absolute inset-0 bg-[url('/images/hero_background.png')] bg-cover bg-center" />
@@ -61,22 +62,22 @@ export default function Home() {
 						<div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/30" />
 					</div>
 
-					<div className="container relative z-10 px-4 text-center">
-						<h1 className="text-white text-4xl md:text-7xl font-bold mb-8 tracking-tight leading-tight drop-shadow-xl">
+					<div className="container relative z-10 px-4 text-center mt-8">
+						<h1 className="text-white text-5xl md:text-[5rem] font-extrabold mb-10 tracking-tight leading-[1.1] drop-shadow-2xl">
 							Find the Perfect Venue
 							<br />
-							<span className="text-transparent bg-clip-text bg-linear-to-r from-blue-200 to-amber-200">
+							<span className="text-transparent bg-clip-text bg-linear-to-r from-blue-200 via-white to-brand-gold">
 								for Your Next Celebration
 							</span>
 						</h1>
-						<p className="text-neutral-200 text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed drop-shadow-md font-medium">
+						<p className="text-neutral-200 text-lg md:text-2xl mb-16 max-w-3xl mx-auto leading-relaxed drop-shadow-md font-medium">
 							From intimate gatherings in Lagos to grand weddings in Abuja.
 							Discover, compare, and book verified event centers across Nigeria.
 						</p>
 
 						{/* Search Bar */}
-						<div className="bg-white/95 backdrop-blur-md rounded-2xl p-2 max-w-5xl mx-auto flex flex-col md:flex-row shadow-2xl hover:shadow-black/20 transition-shadow ring-1 ring-white/20">
-							<div className="flex-2 px-6 border-b md:border-b-0 md:border-r border-gray-100 py-4 md:py-3 flex items-center gap-4">
+						<div className="bg-white/95 backdrop-blur-md rounded-2xl p-3 max-w-5xl mx-auto flex flex-col md:flex-row shadow-2xl hover:shadow-black/20 transition-shadow ring-1 ring-white/20">
+							<div className="flex-2 px-8 border-b md:border-b-0 md:border-r border-gray-100 py-5 md:py-4 flex items-center gap-5">
 								<div className="h-10 w-10 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-blue-600">
 									<MapPin className="h-5 w-5" />
 								</div>
@@ -92,7 +93,7 @@ export default function Home() {
 								</div>
 							</div>
 
-							<div className="flex-1.5 px-6 border-b md:border-b-0 md:border-r border-gray-100 py-4 md:py-3 flex items-center gap-4">
+							<div className="flex-1.5 px-8 border-b md:border-b-0 md:border-r border-gray-100 py-5 md:py-4 flex items-center gap-5">
 								<div className="h-10 w-10 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-blue-600">
 									<CalendarIcon className="h-5 w-5" />
 								</div>
@@ -100,7 +101,10 @@ export default function Home() {
 									<label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">
 										Date
 									</label>
-									<Popover>
+									<Popover
+										open={isCalendarOpen}
+										onOpenChange={setIsCalendarOpen}
+									>
 										<PopoverTrigger asChild>
 											<button
 												className={cn(
@@ -115,15 +119,21 @@ export default function Home() {
 											<Calendar
 												mode="single"
 												selected={date}
-												onSelect={setDate}
+												onSelect={(d) => {
+													setDate(d);
+													setIsCalendarOpen(false);
+												}}
 												initialFocus
+												disabled={(date) =>
+													date < new Date(new Date().setHours(0, 0, 0, 0))
+												}
 											/>
 										</PopoverContent>
 									</Popover>
 								</div>
 							</div>
 
-							<div className="flex-1.5 px-6 border-b md:border-b-0 border-gray-100 py-4 md:py-3 flex items-center gap-4">
+							<div className="flex-1.5 px-8 border-b md:border-b-0 border-gray-100 py-5 md:py-4 flex items-center gap-5">
 								<div className="h-10 w-10 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-blue-600">
 									<Users className="h-5 w-5" />
 								</div>
@@ -139,9 +149,9 @@ export default function Home() {
 								</div>
 							</div>
 
-							<div className="p-2">
-								<Button className="h-full w-full md:w-auto bg-brand-gold hover:bg-brand-gold-hover text-white font-bold px-8 rounded-xl shadow-lg hover:shadow-amber-500/25 transition-all text-base transform active:scale-95">
-									<Search className="h-5 w-5 md:mr-2" />
+							<div className="p-3 flex items-stretch">
+								<Button className="h-full min-h-[64px] w-full md:w-48 bg-brand-gold hover:bg-brand-gold-hover text-white font-bold px-8 rounded-xl shadow-lg hover:shadow-amber-500/30 transition-all text-lg transform active:scale-95">
+									<Search className="h-6 w-6 md:mr-2" />
 									<span className="md:inline hidden">Search</span>
 									<span className="md:hidden inline">Search Venues</span>
 								</Button>
@@ -167,6 +177,7 @@ export default function Home() {
 				</section>
 
 				{/* EXPLORE BY CATEGORY */}
+				{/* Users requested removal of category section (commented out) 
 				<section className="bg-white py-20 px-4">
 					<div className="container mx-auto">
 						<div className="flex justify-between items-end mb-12">
@@ -211,6 +222,7 @@ export default function Home() {
 						</div>
 					</div>
 				</section>
+				*/}
 
 				{/* FEATURED EVENT CENTERS */}
 				<section className="bg-neutral-50 py-20 px-4">
@@ -421,9 +433,11 @@ export default function Home() {
 								payments effortlessly.
 							</p>
 							<div className="flex flex-col sm:flex-row gap-4">
-								<Button className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold h-14 px-12 rounded-xl shadow-lg shadow-amber-500/20 text-lg border border-transparent">
-									Become a Partner
-								</Button>
+								<Link href="/onboard-vendor">
+									<Button className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold h-14 px-12 rounded-xl shadow-lg shadow-amber-500/20 text-lg border border-transparent w-full sm:w-auto">
+										Become a Partner
+									</Button>
+								</Link>
 								<Button
 									variant="outline"
 									className="border-white/30 text-white bg-white/5 hover:bg-white/20 h-14 px-12 rounded-xl text-lg backdrop-blur-sm transition-all"
@@ -434,7 +448,7 @@ export default function Home() {
 						</div>
 						<div className="md:w-1/2 min-h-[500px] relative z-10">
 							{/* Image Placeholder */}
-							<div className="absolute inset-0 bg-[url('/images/venue_host.png')] bg-cover bg-center"></div>
+							<div className="absolute inset-0 bg-[url('/images/venue_host_black.png')] bg-cover bg-center"></div>
 							{/* Gradient Overlay */}
 							<div className="absolute inset-0 bg-linear-to-r from-[#172554] via-[#172554]/50 to-transparent md:w-3/4"></div>
 						</div>

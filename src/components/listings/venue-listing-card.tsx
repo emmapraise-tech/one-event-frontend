@@ -1,8 +1,9 @@
+'use client';
+
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, MapPin, Star, Users, Utensils, Wifi, Car } from 'lucide-react';
-import Link from 'next/link';
+import { Heart, MapPin, Star, Users, Wifi, Car } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Listing } from '@/types/listing';
 
 interface VenueListingCardProps {
@@ -10,6 +11,7 @@ interface VenueListingCardProps {
 }
 
 export function VenueListingCard({ listing }: VenueListingCardProps) {
+	const router = useRouter();
 	// Mock features/amenities derived from type
 	const features = [
 		{ label: '50-100', icon: Users },
@@ -31,8 +33,15 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 			? `₦${(listing.basePrice / 1000).toFixed(0)}k`
 			: `₦${(listing.basePrice! / 1000000).toFixed(1)}m`;
 
+	const handleCardClick = () => {
+		router.push(`/listings/${listing.slug}`);
+	};
+
 	return (
-		<Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all flex flex-col h-full rounded-2xl">
+		<Card
+			onClick={handleCardClick}
+			className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all flex flex-col h-full rounded-2xl cursor-pointer"
+		>
 			{/* Image Header */}
 			<div className="relative aspect-4/3 bg-neutral-100 overflow-hidden">
 				{/* Badges */}
@@ -47,7 +56,13 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 				</div>
 
 				{/* Favorite Button */}
-				<button className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-white/50 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors group/heart">
+				<button
+					onClick={(e) => {
+						e.stopPropagation();
+						// Handle favorite logic here
+					}}
+					className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-white/50 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors group/heart"
+				>
 					<Heart className="h-4 w-4 text-neutral-900 group-hover/heart:fill-red-500 group-hover/heart:text-red-500 transition-colors" />
 				</button>
 
@@ -119,12 +134,9 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 						</div>
 					</div>
 
-					<Link
-						href={`/listings/${listing.slug}`}
-						className="w-full max-w-[100px] inline-flex h-9 items-center justify-center rounded-lg bg-brand-blue text-sm font-semibold text-white shadow-sm hover:bg-brand-blue-hover transition-colors"
-					>
+					<span className="w-full max-w-[100px] inline-flex h-9 items-center justify-center rounded-lg bg-brand-blue text-sm font-semibold text-white shadow-sm hover:bg-brand-blue-hover transition-colors pointer-events-none group-hover:bg-brand-blue-hover">
 						View Details
-					</Link>
+					</span>
 				</div>
 			</CardContent>
 		</Card>
