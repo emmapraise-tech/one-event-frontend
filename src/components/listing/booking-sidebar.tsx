@@ -86,14 +86,16 @@ export function BookingSidebar({
 		to: undefined,
 	});
 
-	const { data: listingBookings } = useQuery({
+	const { data: listingBookingsPaginated } = useQuery({
 		queryKey: ['bookings', 'listing', listingId],
 		queryFn: () => bookingService.findByListingId(listingId),
 	});
 
+	const listingBookings = listingBookingsPaginated?.data || [];
+
 	const disabledDates = useMemo(() => {
 		let dates: Date[] = [];
-		if (!listingBookings) return dates;
+		if (!listingBookings.length) return dates;
 		listingBookings.forEach((booking: any) => {
 			if (booking.status === 'CONFIRMED' || booking.status === 'PENDING') {
 				try {

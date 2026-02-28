@@ -1,5 +1,5 @@
 import api from '@/lib/axios';
-import { ApiResponse } from '@/types/api';
+import { ApiResponse, PaginatedData } from '@/types/api';
 import { CreateVendorData, Vendor } from '@/types/vendor';
 
 export const vendorService = {
@@ -8,13 +8,17 @@ export const vendorService = {
 		return response.data.data;
 	},
 
-	async findAll(): Promise<Vendor[]> {
-		const response = await api.get<ApiResponse<Vendor[]>>('/vendors');
+	async findAll(page = 1, limit = 10): Promise<PaginatedData<Vendor>> {
+		const response = await api.get<ApiResponse<PaginatedData<Vendor>>>(
+			`/vendors?page=${page}&limit=${limit}`,
+		);
 		return response.data.data;
 	},
 
-	async adminFindAll(): Promise<Vendor[]> {
-		const response = await api.get<ApiResponse<Vendor[]>>('/admin/vendors');
+	async adminFindAll(page = 1, limit = 10): Promise<PaginatedData<Vendor>> {
+		const response = await api.get<ApiResponse<PaginatedData<Vendor>>>(
+			`/admin/vendors?page=${page}&limit=${limit}`,
+		);
 		return response.data.data;
 	},
 
@@ -28,8 +32,10 @@ export const vendorService = {
 		return response.data.data;
 	},
 
-	async getVendorBookings(): Promise<any[]> {
-		const response = await api.get<ApiResponse<any[]>>('/vendors/bookings');
+	async getVendorBookings(page = 1, limit = 10): Promise<PaginatedData<any>> {
+		const response = await api.get<ApiResponse<PaginatedData<any>>>(
+			`/vendors/bookings?page=${page}&limit=${limit}`,
+		);
 		return response.data.data;
 	},
 
@@ -37,8 +43,10 @@ export const vendorService = {
 		await api.delete(`/vendors/${id}`);
 	},
 
-	async getMyListings(): Promise<any[]> {
-		const response = await api.get<ApiResponse<any[]>>('/vendors/listings');
+	async getMyListings(page = 1, limit = 10): Promise<PaginatedData<any>> {
+		const response = await api.get<ApiResponse<PaginatedData<any>>>(
+			`/vendors/listings?page=${page}&limit=${limit}`,
+		);
 		return response.data.data;
 	},
 };

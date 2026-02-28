@@ -1,18 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { listingService } from '@/services/listing.service';
-import { CreateListingData, ListingType, ListingStatus } from '@/types/listing';
+import {
+	CreateListingData,
+	ListingType,
+	ListingStatus,
+	ListingFilters,
+} from '@/types/listing';
 import { vendorService } from '@/services/vendor.service';
 
-export function useListings() {
+export function useListings(filters: ListingFilters = { page: 1, limit: 10 }) {
 	const queryClient = useQueryClient();
 
 	const {
-		data: listings,
+		data: paginatedData,
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: ['listings'],
-		queryFn: listingService.findAll,
+		queryKey: ['listings', filters],
+		queryFn: () => listingService.findAll(filters),
 	});
 
 	const createListingMutation = useMutation({
@@ -37,7 +42,8 @@ export function useListings() {
 	});
 
 	return {
-		listings,
+		listings: paginatedData?.data || [],
+		meta: paginatedData?.meta,
 		isLoading,
 		error,
 		createListing: createListingMutation.mutate,

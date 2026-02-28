@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useListings } from '@/hooks/useListings';
 import { VenueListingCard } from '@/components/listings/venue-listing-card';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -30,29 +31,157 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover';
-import { ListingStatus } from '@/types/listing';
+import {
+	ListingStatus,
+	ListingFilters,
+	ListingCategory,
+	ListingType,
+} from '@/types/listing';
+import { useDebounce } from '@/hooks/useDebounce'; // Assuming we'll create this or use simple timeout
 
 export default function ListingsLandingPage() {
-	const { listings, isLoading, error } = useListings();
-	const [searchQuery, setSearchQuery] = useState('');
+	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+
+	// Initialize filters from URL parameters if present
+	const [filters, setFilters] = useState<ListingFilters>(() => {
+		const initialFilters: ListingFilters = {
+			page: Number(searchParams.get('page')) || 1,
+			limit: Number(searchParams.get('limit')) || 12,
+			status: ListingStatus.ACTIVE, // Default to ACTIVE
+		};
+
+		const q = searchParams.get('q');
+		if (q) initialFilters.q = q;
+
+		const location = searchParams.get('location');
+		if (location) initialFilters.location = location;
+
+		const minPrice = searchParams.get('minPrice');
+		if (minPrice) initialFilters.minPrice = Number(minPrice);
+
+		const maxPrice = searchParams.get('maxPrice');
+		if (maxPrice) initialFilters.maxPrice = Number(maxPrice);
+
+		const minCapacity = searchParams.get('minCapacity');
+		if (minCapacity) initialFilters.minCapacity = Number(minCapacity);
+
+		const maxCapacity = searchParams.get('maxCapacity');
+		if (maxCapacity) initialFilters.maxCapacity = Number(maxCapacity);
+
+		const categories = searchParams.get('categories');
+		if (categories) initialFilters.categories = categories.split(',');
+
+		return initialFilters;
+	});
+
+	// UI specific state that doesn't trigger immediate search
+	const [searchQuery, setSearchQuery] = useState(filters.q || '');
+	const [locationInput, setLocationInput] = useState(filters.location || '');
 	const [date, setDate] = useState<Date>();
+	const [priceRange, setPriceRange] = useState<number[]>([
+		filters.minPrice || 0,
+		filters.maxPrice || 10000000,
+	]);
 
-	// Mock filtering state
-	const [priceRange, setPriceRange] = useState<number[]>([0, 10000000]);
+	const { listings, meta, isLoading, error } = useListings(filters);
 
-	// Filter to show only ACTIVE listings
-	let activeListings =
-		listings?.filter((listing) => listing.status === ListingStatus.ACTIVE) ||
-		[];
+	// Update URL when filters change
+	useEffect(() => {
+		const params = new URLSearchParams();
+		Object.entries(filters).forEach(([key, value]) => {
+			if (value !== undefined && value !== null && value !== '') {
+				if (Array.isArray(value)) {
+					if (value.length > 0) params.append(key, value.join(','));
+				} else {
+					params.append(key, String(value));
+				}
+			}
+		});
 
-	// Apply search filter (Basic implementation)
-	if (searchQuery) {
-		activeListings = activeListings.filter(
-			(listing) =>
-				listing.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				listing.city?.toLowerCase().includes(searchQuery.toLowerCase()),
-		);
-	}
+		// Remove status from URL if it's the default ACTIVE
+		if (params.get('status') === ListingStatus.ACTIVE) {
+			params.delete('status');
+		}
+
+		router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+	}, [filters, pathname, router]);
+
+	const handleSearch = () => {
+		setFilters((prev) => ({
+			...prev,
+			q: searchQuery || undefined,
+			location: locationInput || undefined,
+			page: 1, // Reset to page 1 on search
+		}));
+	};
+
+	const handleCategoryToggle = (categoryStr: string) => {
+		setFilters((prev) => {
+			const currentCategories = prev.categories || [];
+			const newCategories = currentCategories.includes(categoryStr)
+				? currentCategories.filter((c) => c !== categoryStr)
+				: [...currentCategories, categoryStr];
+
+			return {
+				...prev,
+				categories: newCategories.length ? newCategories : undefined,
+				page: 1,
+			};
+		});
+	};
+
+	const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const val = Number(e.target.value);
+		setPriceRange([0, val]); // Simple implementation, slider typically needs Min/Max thumbs
+	};
+
+	const handlePriceMouseUp = () => {
+		setFilters((prev) => ({
+			...prev,
+			maxPrice: priceRange[1] || undefined,
+			page: 1,
+		}));
+	};
+
+	const handleCapacityChange = (type: 'min' | 'max', value: string) => {
+		const numValue = value ? Number(value) : undefined;
+		setFilters((prev) => ({
+			...prev,
+			[type === 'min' ? 'minCapacity' : 'maxCapacity']: numValue,
+			page: 1,
+		}));
+	};
+
+	const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		const val = e.target.value;
+		setFilters((prev) => ({
+			...prev,
+			type:
+				val && val !== 'Any Type'
+					? (val.toUpperCase() as ListingType)
+					: undefined,
+			page: 1,
+		}));
+	};
+
+	const handlePageChange = (newPage: number) => {
+		setFilters((prev) => ({ ...prev, page: newPage }));
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	};
+
+	const handleResetFilters = () => {
+		setSearchQuery('');
+		setLocationInput('');
+		setDate(undefined);
+		setPriceRange([0, 10000000]);
+		setFilters({
+			page: 1,
+			limit: 12,
+			status: ListingStatus.ACTIVE,
+		});
+	};
 
 	return (
 		<div className="bg-neutral-bg min-h-screen pb-20">
@@ -72,73 +201,100 @@ export default function ListingsLandingPage() {
 						</div>
 
 						{/* Search Bar Strip */}
-						<div className="w-full max-w-3xl bg-white rounded-2xl shadow-xl shadow-black/5 border border-neutral-100 p-2">
-							<div className="flex flex-col md:flex-row gap-2">
+						<div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl shadow-black/5 border border-neutral-100 p-2">
+							<div className="flex flex-col md:flex-row items-stretch">
 								{/* Location Input */}
-								<div className="flex-1 relative border-b md:border-b-0 md:border-r border-neutral-100 px-2 py-2 md:py-0">
-									<label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-0.5 block px-2">
-										Location
-									</label>
-									<div className="flex items-center px-2">
-										<MapPin className="h-4 w-4 text-neutral-400 mr-2 shrink-0" />
+								<div className="flex-1 px-4 border-b md:border-b-0 md:border-r border-neutral-100 py-3 md:py-2 flex items-center gap-3">
+									<div className="h-8 w-8 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-blue-600">
+										<MapPin className="h-4 w-4" />
+									</div>
+									<div className="flex flex-col items-start w-full">
+										<label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-0.5">
+											Location
+										</label>
 										<input
 											type="text"
 											placeholder="Lagos, Abuja, PH..."
-											className="w-full outline-none text-neutral-900 font-medium placeholder:text-neutral-300 text-sm"
-											value={searchQuery}
-											onChange={(e) => setSearchQuery(e.target.value)}
+											className="w-full outline-none text-neutral-900 font-medium placeholder:text-neutral-300 text-sm bg-transparent"
+											value={locationInput}
+											onChange={(e) => setLocationInput(e.target.value)}
+											onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
 										/>
 									</div>
 								</div>
 
 								{/* Date Input */}
-								<div className="flex-1 relative border-b md:border-b-0 md:border-r border-neutral-100 px-2 py-2 md:py-0">
-									<label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-0.5 block px-2">
-										Date
-									</label>
-									<Popover>
-										<PopoverTrigger asChild>
-											<div className="flex items-center px-2 cursor-pointer hover:bg-neutral-50 rounded-md py-1 transition-colors group">
-												<CalendarIcon className="h-4 w-4 text-neutral-400 mr-2 shrink-0 group-hover:text-primary-blue transition-colors" />
-												<span
+								<div className="flex-1 px-4 border-b md:border-b-0 md:border-r border-neutral-100 py-3 md:py-2 flex items-center gap-3">
+									<div className="h-8 w-8 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-blue-600">
+										<CalendarIcon className="h-4 w-4" />
+									</div>
+									<div className="flex flex-col items-start w-full">
+										<label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-0.5">
+											Date
+										</label>
+										<Popover>
+											<PopoverTrigger asChild>
+												<button
 													className={cn(
-														'text-sm font-medium w-full text-left truncate',
-														!date && 'text-neutral-300',
+														'w-full text-left font-medium outline-none text-sm bg-transparent truncate',
+														!date ? 'text-neutral-300' : 'text-neutral-900',
 													)}
 												>
-													{date ? format(date, 'PPP') : <span>Add dates</span>}
-												</span>
-											</div>
-										</PopoverTrigger>
-										<PopoverContent className="w-auto p-0" align="start">
-											<Calendar
-												mode="single"
-												selected={date}
-												onSelect={setDate}
-												initialFocus
-											/>
-										</PopoverContent>
-									</Popover>
+													{date ? format(date, 'PPP') : 'Add dates'}
+												</button>
+											</PopoverTrigger>
+											<PopoverContent className="w-auto p-0" align="start">
+												<Calendar
+													mode="single"
+													selected={date}
+													onSelect={setDate}
+													initialFocus
+													disabled={(date) =>
+														date < new Date(new Date().setHours(0, 0, 0, 0))
+													}
+												/>
+											</PopoverContent>
+										</Popover>
+									</div>
 								</div>
 
 								{/* Type Input */}
-								<div className="flex-1 relative px-2 py-2 md:py-0">
-									<label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-0.5 block px-2">
-										Event Type
-									</label>
-									<div className="flex items-center px-2">
-										<Building2 className="h-4 w-4 text-neutral-400 mr-2 shrink-0" />
-										<select className="w-full outline-none text-neutral-900 font-medium bg-transparent text-sm appearance-none cursor-pointer">
-											<option>Any Type</option>
-											<option>Wedding</option>
-											<option>Corporate</option>
-											<option>Party</option>
+								<div className="flex-1 px-4 py-3 md:py-2 flex items-center gap-3">
+									<div className="h-8 w-8 bg-blue-50 rounded-full flex items-center justify-center shrink-0 text-blue-600">
+										<Building2 className="h-4 w-4" />
+									</div>
+									<div className="flex flex-col items-start w-full">
+										<label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-0.5">
+											Category
+										</label>
+										<select
+											className="w-full outline-none text-neutral-900 font-medium bg-transparent text-sm appearance-none cursor-pointer capitalize"
+											value={filters.categories?.[0] || 'All Categories'}
+											onChange={(e) => {
+												const val = e.target.value;
+												setFilters((prev) => ({
+													...prev,
+													categories:
+														val !== 'All Categories' ? [val] : undefined,
+													page: 1,
+												}));
+											}}
+										>
+											<option value="All Categories">All Categories</option>
+											{Object.values(ListingCategory).map((category) => (
+												<option key={category} value={category}>
+													{category.toLowerCase().replace('_', ' ')}
+												</option>
+											))}
 										</select>
 									</div>
 								</div>
 
-								<div className="p-1">
-									<Button className="w-full md:w-auto h-full min-h-[48px] px-8 bg-brand-blue hover:bg-brand-blue-hover text-white font-bold rounded-lg shadow-sm">
+								<div className="p-2 flex items-stretch">
+									<Button
+										onClick={handleSearch}
+										className="w-full md:w-auto h-full min-h-[48px] px-8 bg-brand-blue hover:bg-brand-blue-hover text-white font-bold rounded-lg shadow-sm"
+									>
 										<Search className="h-4 w-4 mr-2" />
 										Search
 									</Button>
@@ -154,7 +310,7 @@ export default function ListingsLandingPage() {
 				<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
 					<div>
 						<h2 className="text-xl font-bold text-neutral-900">
-							240 Venues found
+							{meta?.total || 0} Venues found
 						</h2>
 					</div>
 
@@ -190,9 +346,29 @@ export default function ListingsLandingPage() {
 						<div className="flex items-center justify-between pointer-events-none opacity-50">
 							{/* Placeholder for "Reset all" functionality */}
 							<h3 className="font-bold text-neutral-900">Filters</h3>
-							<button className="text-xs font-semibold text-primary-blue hover:underline pointer-events-auto">
+							<button
+								onClick={handleResetFilters}
+								className="text-xs font-semibold text-primary-blue hover:underline pointer-events-auto"
+							>
 								Reset all
 							</button>
+						</div>
+
+						{/* Main Search Filter */}
+						<div className="space-y-3">
+							<label className="text-sm font-semibold text-neutral-900">
+								Search Term
+							</label>
+							<div className="relative">
+								<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+								<Input
+									placeholder="e.g. Civic Centre, Beach"
+									className="pl-9 bg-white border-neutral-200 text-sm"
+									value={searchQuery}
+									onChange={(e) => setSearchQuery(e.target.value)}
+									onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+								/>
+							</div>
 						</div>
 
 						{/* Location Filter */}
@@ -205,6 +381,9 @@ export default function ListingsLandingPage() {
 								<Input
 									placeholder="e.g. Ikeja, Lekki, Yaba"
 									className="pl-9 bg-white border-neutral-200 text-sm"
+									value={locationInput}
+									onChange={(e) => setLocationInput(e.target.value)}
+									onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
 								/>
 							</div>
 						</div>
@@ -234,12 +413,16 @@ export default function ListingsLandingPage() {
 									placeholder="Min"
 									className="bg-white border-neutral-200 text-sm"
 									type="number"
+									value={filters.minCapacity || ''}
+									onChange={(e) => handleCapacityChange('min', e.target.value)}
 								/>
 								<span className="text-neutral-400">-</span>
 								<Input
 									placeholder="Max"
 									className="bg-white border-neutral-200 text-sm"
 									type="number"
+									value={filters.maxCapacity || ''}
+									onChange={(e) => handleCapacityChange('max', e.target.value)}
 								/>
 							</div>
 						</div>
@@ -248,14 +431,21 @@ export default function ListingsLandingPage() {
 						<div className="space-y-3">
 							<div className="flex items-center justify-between">
 								<label className="text-sm font-semibold text-neutral-900">
-									Price Range (₦)
+									Max Price (₦)
 								</label>
 								<div className="text-[10px] font-medium bg-neutral-100 px-2 py-0.5 rounded text-neutral-500">
-									₦0 - ₦5m+
+									₦{priceRange[1].toLocaleString()}
 								</div>
 							</div>
 							<input
 								type="range"
+								min="0"
+								max="10000000"
+								step="50000"
+								value={priceRange[1]}
+								onChange={handlePriceChange}
+								onMouseUp={handlePriceMouseUp}
+								onTouchEnd={handlePriceMouseUp}
 								className="w-full accent-primary-blue h-1 bg-neutral-200 rounded-lg appearance-none cursor-pointer"
 							/>
 							<div className="flex justify-between text-xs text-neutral-400">
@@ -264,29 +454,28 @@ export default function ListingsLandingPage() {
 							</div>
 						</div>
 
-						{/* Venue Type */}
+						{/* Categories */}
 						<div className="space-y-3">
 							<label className="text-sm font-semibold text-neutral-900">
-								Venue Type
+								Categories
 							</label>
 							<div className="space-y-2.5">
-								{[
-									'Banquet Hall',
-									'Marquee / Tent',
-									'Wedding Venue',
-									'Conference Center',
-									'Outdoor Space',
-								].map((type) => (
-									<div key={type} className="flex items-center space-x-2">
+								{Object.values(ListingCategory).map((categoryStr) => (
+									<div
+										key={categoryStr}
+										className="flex items-center space-x-2"
+									>
 										<Checkbox
-											id={type}
+											id={categoryStr}
 											className="border-neutral-300 data-[state=checked]:bg-primary-blue"
+											checked={(filters.categories || []).includes(categoryStr)}
+											onCheckedChange={() => handleCategoryToggle(categoryStr)}
 										/>
 										<label
-											htmlFor={type}
-											className="text-sm text-neutral-600 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+											htmlFor={categoryStr}
+											className="text-sm text-neutral-600 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
 										>
-											{type}
+											{categoryStr.toLowerCase().replace('_', ' ')}
 										</label>
 									</div>
 								))}
@@ -317,7 +506,6 @@ export default function ListingsLandingPage() {
 						</div>
 					</div>
 
-					{/* Venues Grid */}
 					<div className="lg:col-span-3">
 						{isLoading ? (
 							<div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -328,7 +516,7 @@ export default function ListingsLandingPage() {
 									/>
 								))}
 							</div>
-						) : activeListings.length === 0 ? (
+						) : listings.length === 0 ? (
 							<EmptyState
 								icon={<Building2 className="h-16 w-16 text-neutral-300" />}
 								title="No venues found"
@@ -337,54 +525,84 @@ export default function ListingsLandingPage() {
 						) : (
 							<>
 								<div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
-									{activeListings.map((listing) => (
+									{listings.map((listing) => (
 										<VenueListingCard key={listing.id} listing={listing} />
 									))}
 								</div>
 
-								{/* Pagination (Mockup) */}
-								<div className="flex justify-center">
-									<div className="flex items-center gap-2">
-										<Button
-											variant="outline"
-											size="icon"
-											className="h-10 w-10 text-neutral-400 hover:text-primary-blue border-neutral-200"
-										>
-											<span className="sr-only">Previous</span>
-											&lt;
-										</Button>
-										<Button className="h-10 w-10 bg-primary-blue hover:bg-primary-blue-hover text-white font-bold">
-											1
-										</Button>
-										<Button
-											variant="ghost"
-											className="h-10 w-10 text-neutral-600 hover:bg-neutral-100"
-										>
-											2
-										</Button>
-										<Button
-											variant="ghost"
-											className="h-10 w-10 text-neutral-600 hover:bg-neutral-100"
-										>
-											3
-										</Button>
-										<span className="text-neutral-400">...</span>
-										<Button
-											variant="ghost"
-											className="h-10 w-10 text-neutral-600 hover:bg-neutral-100"
-										>
-											10
-										</Button>
-										<Button
-											variant="outline"
-											size="icon"
-											className="h-10 w-10 text-neutral-400 hover:text-primary-blue border-neutral-200"
-										>
-											<span className="sr-only">Next</span>
-											&gt;
-										</Button>
+								{/* Pagination */}
+								{meta && meta.totalPages > 1 && (
+									<div className="flex justify-center mt-12 pb-8">
+										<div className="flex items-center gap-2">
+											<Button
+												variant="outline"
+												size="icon"
+												className="h-10 w-10 text-neutral-400 hover:text-primary-blue border-neutral-200"
+												onClick={() => handlePageChange(meta.page - 1)}
+												disabled={meta.page <= 1}
+											>
+												<span className="sr-only">Previous</span>
+												&lt;
+											</Button>
+
+											{/* Simple pagination generation */}
+											{Array.from(
+												{ length: Math.min(5, meta.totalPages) },
+												(_, i) => {
+													let pageNum;
+													if (meta.totalPages <= 5) pageNum = i + 1;
+													else if (meta.page <= 3) pageNum = i + 1;
+													else if (meta.page >= meta.totalPages - 2)
+														pageNum = meta.totalPages - 4 + i;
+													else pageNum = meta.page - 2 + i;
+
+													return (
+														<Button
+															key={pageNum}
+															variant={
+																pageNum === meta.page ? 'default' : 'ghost'
+															}
+															className={cn(
+																'h-10 w-10',
+																pageNum === meta.page
+																	? 'bg-primary-blue hover:bg-primary-blue-hover text-white font-bold'
+																	: 'text-neutral-600 hover:bg-neutral-100',
+															)}
+															onClick={() => handlePageChange(pageNum)}
+														>
+															{pageNum}
+														</Button>
+													);
+												},
+											)}
+
+											{meta.totalPages > 5 &&
+												meta.page < meta.totalPages - 2 && (
+													<>
+														<span className="text-neutral-400">...</span>
+														<Button
+															variant="ghost"
+															className="h-10 w-10 text-neutral-600 hover:bg-neutral-100"
+															onClick={() => handlePageChange(meta.totalPages)}
+														>
+															{meta.totalPages}
+														</Button>
+													</>
+												)}
+
+											<Button
+												variant="outline"
+												size="icon"
+												className="h-10 w-10 text-neutral-400 hover:text-primary-blue border-neutral-200"
+												onClick={() => handlePageChange(meta.page + 1)}
+												disabled={meta.page >= meta.totalPages}
+											>
+												<span className="sr-only">Next</span>
+												&gt;
+											</Button>
+										</div>
 									</div>
-								</div>
+								)}
 							</>
 						)}
 					</div>

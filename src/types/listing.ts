@@ -131,3 +131,17 @@ export interface ListingFormData {
 	imageUrls: string[]; // For preview
 	imageFiles: File[]; // For upload
 }
+
+export interface ListingFilters {
+	q?: string;
+	location?: string;
+	minPrice?: number;
+	maxPrice?: number;
+	minCapacity?: number;
+	maxCapacity?: number;
+	categories?: string[];
+	type?: ListingType;
+	status?: ListingStatus;
+	page?: number;
+	limit?: number;
+}

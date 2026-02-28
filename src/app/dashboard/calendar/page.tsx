@@ -17,7 +17,7 @@ export default function CalendarPage() {
 	const [selectedBooking, setSelectedBooking] =
 		useState<CalendarBooking | null>(null);
 
-	const { data: apiBookings, isLoading } = useQuery({
+	const { data: apiPaginatedData, isLoading } = useQuery({
 		queryKey: ['bookings', 'calendar', user?.type],
 		queryFn: () =>
 			user?.type === 'ADMIN'
@@ -26,8 +26,10 @@ export default function CalendarPage() {
 		enabled: !!user,
 	});
 
+	const apiBookings = apiPaginatedData?.data || [];
+
 	// Map API bookings to Calendar format
-	const mappedBookings: CalendarBooking[] = (apiBookings || []).map((b) => ({
+	const mappedBookings: CalendarBooking[] = apiBookings.map((b) => ({
 		id: b.id,
 		title: b.listing?.name || 'Event Booking',
 		date: new Date(b.startDate),
