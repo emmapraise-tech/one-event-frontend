@@ -1,5 +1,5 @@
 import api from '@/lib/axios';
-import { ApiResponse } from '@/types/api';
+import { ApiResponse, PaginatedData } from '@/types/api';
 import {
 	Booking,
 	CreateBookingData,
@@ -24,18 +24,30 @@ export const bookingService = {
 		return response.data.data;
 	},
 
-	async findAllMyBookings(): Promise<Booking[]> {
-		const response = await api.get<ApiResponse<Booking[]>>('/bookings');
+	async findAllMyBookings(
+		page = 1,
+		limit = 10,
+	): Promise<PaginatedData<Booking>> {
+		const response = await api.get<ApiResponse<PaginatedData<Booking>>>(
+			`/bookings?page=${page}&limit=${limit}`,
+		);
 		return response.data.data;
 	},
 
-	async findAll(): Promise<Booking[]> {
-		const response = await api.get<ApiResponse<Booking[]>>('/admin/bookings');
+	async findAll(page = 1, limit = 10): Promise<PaginatedData<Booking>> {
+		const response = await api.get<ApiResponse<PaginatedData<Booking>>>(
+			`/admin/bookings?page=${page}&limit=${limit}`,
+		);
 		return response.data.data;
 	},
 
-	async findAllForVendor(): Promise<Booking[]> {
-		const response = await api.get<ApiResponse<Booking[]>>('/bookings/vendor');
+	async findAllForVendor(
+		page = 1,
+		limit = 10,
+	): Promise<PaginatedData<Booking>> {
+		const response = await api.get<ApiResponse<PaginatedData<Booking>>>(
+			`/bookings/vendor?page=${page}&limit=${limit}`,
+		);
 		return response.data.data;
 	},
 
@@ -44,9 +56,13 @@ export const bookingService = {
 		return response.data.data;
 	},
 
-	async findByListingId(listingId: string): Promise<Booking[]> {
-		const response = await api.get<ApiResponse<Booking[]>>(
-			`/bookings/listing/${listingId}`,
+	async findByListingId(
+		listingId: string,
+		page = 1,
+		limit = 10,
+	): Promise<PaginatedData<Booking>> {
+		const response = await api.get<ApiResponse<PaginatedData<Booking>>>(
+			`/bookings/listing/${listingId}?page=${page}&limit=${limit}`,
 		);
 		return response.data.data;
 	},

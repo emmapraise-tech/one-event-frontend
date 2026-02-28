@@ -3,40 +3,47 @@ import { vendorService } from '@/services/vendor.service';
 import { CreateVendorData, Vendor } from '@/types/vendor';
 import { useAuth } from './useAuth';
 
-export function useVendors() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
+export function useVendors(page = 1, limit = 10) {
+	const queryClient = useQueryClient();
+	const { user } = useAuth();
 
-  const { data: vendors, isLoading, error } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: vendorService.findAll,
-  });
+	const {
+		data: paginatedData,
+		isLoading,
+		error,
+	} = useQuery({
+		queryKey: ['vendors', page, limit],
+		queryFn: () => vendorService.findAll(page, limit),
+	});
 
-  const createVendorMutation = useMutation({
-    mutationFn: vendorService.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
-    },
-  });
+	const vendors = paginatedData?.data || [];
+	const meta = paginatedData?.meta;
 
-  // Get current user's vendor profile
-  const vendor = vendors?.find((v) => v.userId === user?.id);
+	const createVendorMutation = useMutation({
+		mutationFn: vendorService.create,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['vendors'] });
+		},
+	});
 
-  return {
-    vendors,
-    vendor,
-    isLoading,
-    error,
-    createVendor: createVendorMutation.mutate,
-    isCreating: createVendorMutation.isPending,
-  };
+	// Get current user's vendor profile
+	const vendor = vendors?.find((v) => v.userId === user?.id);
+
+	return {
+		vendors,
+		meta,
+		vendor,
+		isLoading,
+		error,
+		createVendor: createVendorMutation.mutate,
+		isCreating: createVendorMutation.isPending,
+	};
 }
 
 export function useVendor(id: string) {
-  return useQuery({
-    queryKey: ['vendor', id],
-    queryFn: () => vendorService.findOne(id),
-    enabled: !!id,
-  });
+	return useQuery({
+		queryKey: ['vendor', id],
+		queryFn: () => vendorService.findOne(id),
+		enabled: !!id,
+	});
 }
-

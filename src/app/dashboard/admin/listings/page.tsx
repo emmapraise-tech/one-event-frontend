@@ -27,16 +27,14 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { PageHeaderSkeleton, CardSkeleton } from '@/components/ui/skeletons';
 
-async function getAdminListings(): Promise<Listing[]> {
-	return listingService.adminFindAll();
-}
-
 export default function AdminListingsPage() {
 	const queryClient = useQueryClient();
-	const { data: listings, isLoading } = useQuery({
+	const { data: paginatedData, isLoading } = useQuery({
 		queryKey: ['admin', 'listings'],
-		queryFn: getAdminListings,
+		queryFn: () => listingService.adminFindAll(),
 	});
+
+	const listings = paginatedData?.data || [];
 
 	const statusMutation = useMutation({
 		mutationFn: ({ id, status }: { id: string; status: ListingStatus }) =>

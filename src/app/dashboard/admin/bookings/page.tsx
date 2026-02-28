@@ -1,8 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/axios';
-import { ApiResponse } from '@/types/api';
+import { bookingService } from '@/services/booking.service';
 import { Booking, BookingStatus } from '@/types/booking';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -20,20 +19,17 @@ import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-async function getAllBookings(): Promise<Booking[]> {
-	const response = await api.get<ApiResponse<Booking[]>>('/admin/bookings');
-	return response.data.data;
-}
-
 export default function AdminBookingsPage() {
 	const {
-		data: bookings,
+		data: paginatedData,
 		isLoading,
 		error,
 	} = useQuery({
 		queryKey: ['admin', 'bookings'],
-		queryFn: getAllBookings,
+		queryFn: () => bookingService.findAll(),
 	});
+
+	const bookings = paginatedData?.data || [];
 
 	if (isLoading) {
 		return (
@@ -75,14 +71,14 @@ export default function AdminBookingsPage() {
 						<p className="text-xl font-black text-neutral-900">
 							₦
 							{bookings
-								?.reduce((acc, b) => acc + (b.totalAmount || 0), 0)
+								.reduce((acc: number, b: any) => acc + (b.totalAmount || 0), 0)
 								.toLocaleString() || 0}
 						</p>
 					</div>
 				</div>
 			</div>
 
-			{bookings?.length === 0 ? (
+			{bookings.length === 0 ? (
 				<div className="bg-white rounded-[40px] border border-neutral-100 p-20 text-center shadow-soft">
 					<div className="h-20 w-20 bg-neutral-50 rounded-full flex items-center justify-center mx-auto mb-6">
 						<Calendar className="h-10 w-10 text-neutral-200" />
@@ -97,7 +93,7 @@ export default function AdminBookingsPage() {
 				</div>
 			) : (
 				<div className="grid gap-4">
-					{bookings?.map((booking) => (
+					{bookings.map((booking) => (
 						<Card
 							key={booking.id}
 							className="group border-none shadow-soft rounded-[32px] overflow-hidden bg-white hover:shadow-xl transition-all duration-300"

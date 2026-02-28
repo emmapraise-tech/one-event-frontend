@@ -1,17 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { bookingService } from '@/services/booking.service';
 
-export function useVendorBookings() {
+export function useVendorBookings(page = 1, limit = 10) {
 	const queryClient = useQueryClient();
 
 	const {
-		data: bookings,
+		data: paginatedData,
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: ['vendor-bookings'],
-		queryFn: bookingService.findAllForVendor,
+		queryKey: ['vendor-bookings', page, limit],
+		queryFn: () => bookingService.findAllForVendor(page, limit),
 	});
+
+	const bookings = paginatedData?.data || [];
+	const meta = paginatedData?.meta;
 
 	const cancelBookingMutation = useMutation({
 		mutationFn: bookingService.cancel,
@@ -22,6 +25,7 @@ export function useVendorBookings() {
 
 	return {
 		bookings,
+		meta,
 		isLoading,
 		error,
 		cancelBooking: cancelBookingMutation.mutate,

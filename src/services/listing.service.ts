@@ -1,11 +1,12 @@
 import api from '@/lib/axios';
-import { ApiResponse } from '@/types/api';
+import { ApiResponse, PaginatedData } from '@/types/api';
 import {
 	CreateListingData,
 	Listing,
 	ListingFormData,
 	ListingStatus,
 	ListingType,
+	ListingFilters,
 } from '@/types/listing';
 
 export const listingService = {
@@ -81,13 +82,45 @@ export const listingService = {
 		return response.data.data;
 	},
 
-	async findAll(): Promise<Listing[]> {
-		const response = await api.get<ApiResponse<Listing[]>>('/listings');
+	async findAll(filters: ListingFilters = {}): Promise<PaginatedData<Listing>> {
+		const queryParams = new URLSearchParams();
+		if (filters.page) queryParams.append('page', filters.page.toString());
+		if (filters.limit) queryParams.append('limit', filters.limit.toString());
+		if (filters.q) queryParams.append('q', filters.q);
+		if (filters.location) queryParams.append('location', filters.location);
+		if (filters.minPrice !== undefined)
+			queryParams.append('minPrice', filters.minPrice.toString());
+		if (filters.maxPrice !== undefined)
+			queryParams.append('maxPrice', filters.maxPrice.toString());
+		if (filters.minCapacity !== undefined)
+			queryParams.append('minCapacity', filters.minCapacity.toString());
+		if (filters.maxCapacity !== undefined)
+			queryParams.append('maxCapacity', filters.maxCapacity.toString());
+		if (filters.type) queryParams.append('type', filters.type);
+		if (filters.status) queryParams.append('status', filters.status);
+		if (filters.categories && filters.categories.length > 0) {
+			queryParams.append('categories', filters.categories.join(','));
+		}
+
+		const queryString = queryParams.toString();
+		const url = `/listings${queryString ? `?${queryString}` : ''}`;
+
+		const response = await api.get<ApiResponse<PaginatedData<Listing>>>(url);
 		return response.data.data;
 	},
 
-	async adminFindAll(): Promise<Listing[]> {
-		const response = await api.get<ApiResponse<Listing[]>>('/admin/listings');
+	async adminFindAll(
+		filters: ListingFilters = {},
+	): Promise<PaginatedData<Listing>> {
+		const queryParams = new URLSearchParams();
+		if (filters.page) queryParams.append('page', filters.page.toString());
+		if (filters.limit) queryParams.append('limit', filters.limit.toString());
+		// ... add other admin filters if needed in the future
+
+		const queryString = queryParams.toString();
+		const url = `/admin/listings${queryString ? `?${queryString}` : ''}`;
+
+		const response = await api.get<ApiResponse<PaginatedData<Listing>>>(url);
 		return response.data.data;
 	},
 
@@ -103,23 +136,53 @@ export const listingService = {
 		return response.data.data;
 	},
 
-	async findByVendorId(vendorId: string): Promise<Listing[]> {
-		const response = await api.get<ApiResponse<Listing[]>>(
-			`/listings/vendor/${vendorId}`,
+	async findByVendorId(
+		vendorId: string,
+		page = 1,
+		limit = 10,
+	): Promise<PaginatedData<Listing>> {
+		const response = await api.get<ApiResponse<PaginatedData<Listing>>>(
+			`/listings/vendor/${vendorId}?page=${page}&limit=${limit}`,
 		);
 		return response.data.data;
 	},
 
-	async findByType(type: ListingType): Promise<Listing[]> {
-		const response = await api.get<ApiResponse<Listing[]>>(
-			`/listings/type/${type}`,
+	async findByType(
+		type: ListingType,
+		page = 1,
+		limit = 10,
+	): Promise<PaginatedData<Listing>> {
+		const response = await api.get<ApiResponse<PaginatedData<Listing>>>(
+			`/listings/type/${type}?page=${page}&limit=${limit}`,
 		);
 		return response.data.data;
 	},
 
-	async search(query: string): Promise<Listing[]> {
-		const response = await api.get<ApiResponse<Listing[]>>(
-			`/listings/search?q=${query}`,
+	async search(
+		query: string,
+		filters: ListingFilters = {},
+	): Promise<PaginatedData<Listing>> {
+		const queryParams = new URLSearchParams();
+		queryParams.append('q', query);
+		if (filters.page) queryParams.append('page', filters.page.toString());
+		if (filters.limit) queryParams.append('limit', filters.limit.toString());
+		if (filters.location) queryParams.append('location', filters.location);
+		if (filters.minPrice !== undefined)
+			queryParams.append('minPrice', filters.minPrice.toString());
+		if (filters.maxPrice !== undefined)
+			queryParams.append('maxPrice', filters.maxPrice.toString());
+		if (filters.minCapacity !== undefined)
+			queryParams.append('minCapacity', filters.minCapacity.toString());
+		if (filters.maxCapacity !== undefined)
+			queryParams.append('maxCapacity', filters.maxCapacity.toString());
+		if (filters.type) queryParams.append('type', filters.type);
+		if (filters.status) queryParams.append('status', filters.status);
+		if (filters.categories && filters.categories.length > 0) {
+			queryParams.append('categories', filters.categories.join(','));
+		}
+
+		const response = await api.get<ApiResponse<PaginatedData<Listing>>>(
+			`/listings/search?${queryParams.toString()}`,
 		);
 		return response.data.data;
 	},

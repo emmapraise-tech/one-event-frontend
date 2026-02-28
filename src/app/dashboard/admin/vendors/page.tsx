@@ -28,15 +28,13 @@ import {
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-async function getAdminVendors(): Promise<any[]> {
-	return vendorService.adminFindAll();
-}
-
 export default function AdminVendorsPage() {
-	const { data: vendors, isLoading } = useQuery({
+	const { data: paginatedData, isLoading } = useQuery({
 		queryKey: ['admin', 'vendors'],
-		queryFn: getAdminVendors,
+		queryFn: () => vendorService.adminFindAll(),
 	});
+
+	const vendors = paginatedData?.data || [];
 
 	if (isLoading) {
 		return (
