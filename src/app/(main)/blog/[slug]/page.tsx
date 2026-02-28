@@ -11,8 +11,11 @@ import {
 	Facebook,
 	Twitter,
 	Linkedin,
+	Mail,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export const metadata: Metadata = {
 	title: 'Blog Post | OneEvent',
@@ -25,6 +28,10 @@ const BLOG_POSTS = [
 		desc: 'Discover the most sought-after locations for your special day.',
 		date: 'Feb 28, 2026',
 		author: 'Editorial Team',
+		authorRole: 'Content Creators',
+		authorBio:
+			'The OneEvent Editorial Team brings you the latest insights, trends, and inspiration from the event industry in Nigeria.',
+		authorImage: '/images/auth-sidebar.png',
 		category: 'Weddings',
 		slug: 'top-10-wedding-venues-lagos-2026',
 		image: '/images/blog/blog_post_1.png',
@@ -43,6 +50,10 @@ const BLOG_POSTS = [
 		desc: 'A guide for partners on optimizing listings and attracting more clients.',
 		date: 'Feb 20, 2026',
 		author: 'Partner Success',
+		authorRole: 'Venue Optimization Team',
+		authorBio:
+			'Our partner success team works closely with venue owners to maximize their digital presence and booking volumes.',
+		authorImage: '/images/venue-2.jpg',
 		category: 'Business',
 		slug: 'maximize-venue-booking-rate',
 		image: '/images/venue-2.jpg',
@@ -61,6 +72,10 @@ const BLOG_POSTS = [
 		desc: 'The ultimate checklist for organizing a productive and memorable tech getaway.',
 		date: 'Jan 15, 2026',
 		author: 'Event Planning',
+		authorRole: 'Corporate Strategist',
+		authorBio:
+			'Specialists in curating impactful corporate retreat experiences that foster team cohesion and creativity.',
+		authorImage: '/images/venue-3.jpg',
 		category: 'Corporate',
 		slug: 'corporate-retreat-planning',
 		image: '/images/venue-3.jpg',
@@ -76,8 +91,13 @@ const BLOG_POSTS = [
 	},
 ];
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-	const post = BLOG_POSTS.find((p) => p.slug === params.slug);
+export default async function BlogPostPage({
+	params,
+}: {
+	params: Promise<{ slug: string }>;
+}) {
+	const resolvedParams = await params;
+	const post = BLOG_POSTS.find((p) => p.slug === resolvedParams.slug);
 
 	if (!post) {
 		notFound();
@@ -178,39 +198,168 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 						</div>
 					</div>
 
-					{/* Main Content */}
-					<div
-						className="flex-1 prose prose-lg md:prose-xl prose-neutral max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary-blue prose-img:rounded-2xl"
-						dangerouslySetInnerHTML={{ __html: post.content }}
-					/>
+					{/* Main Content & Author Bio */}
+					<div className="flex-1">
+						<div
+							className="prose prose-lg md:prose-xl prose-neutral max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary-blue prose-img:rounded-2xl mb-12"
+							dangerouslySetInnerHTML={{ __html: post.content }}
+						/>
+
+						{/* Author Bio Box */}
+						<div className="bg-neutral-50 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 items-start border border-neutral-100">
+							<Avatar className="w-16 h-16 shrink-0 border-2 border-white shadow-sm">
+								<AvatarImage
+									src={post.authorImage}
+									alt={post.author}
+									className="object-cover"
+								/>
+								<AvatarFallback className="bg-primary-blue text-white font-bold">
+									{post.author.charAt(0)}
+								</AvatarFallback>
+							</Avatar>
+							<div>
+								<h3 className="text-lg font-bold text-neutral-900 mb-1">
+									Written by {post.author}
+								</h3>
+								<p className="text-sm text-primary-blue font-medium mb-3">
+									{post.authorRole}
+								</p>
+								<p className="text-neutral-600 leading-relaxed text-sm md:text-base">
+									{post.authorBio}
+								</p>
+							</div>
+						</div>
+					</div>
 				</div>
 
 				{/* Mobile Share */}
-				<div className="lg:hidden flex items-center gap-4 mt-12 py-6 border-t border-y-neutral-100">
+				<div className="lg:hidden flex items-center gap-4 mt-12 py-6 border-t border-b border-neutral-100">
 					<span className="font-bold text-neutral-900">Share:</span>
 					<Button
 						variant="ghost"
 						size="icon"
-						className="rounded-full text-neutral-500"
+						className="rounded-full text-neutral-500 hover:text-[#1877F2]"
 					>
 						<Facebook className="w-5 h-5" />
 					</Button>
 					<Button
 						variant="ghost"
 						size="icon"
-						className="rounded-full text-neutral-500"
+						className="rounded-full text-neutral-500 hover:text-[#1DA1F2]"
 					>
 						<Twitter className="w-5 h-5" />
 					</Button>
 					<Button
 						variant="ghost"
 						size="icon"
-						className="rounded-full text-neutral-500"
+						className="rounded-full text-neutral-500 hover:text-[#0A66C2]"
 					>
 						<Linkedin className="w-5 h-5" />
 					</Button>
 				</div>
 			</article>
+
+			{/* Newsletter Subscription */}
+			<section className="bg-[#0B1120] py-20 relative overflow-hidden">
+				<div className="absolute inset-0 bg-linear-to-b from-blue-900/10 to-transparent" />
+				<div className="container mx-auto px-4 relative z-10">
+					<div className="max-w-2xl mx-auto text-center">
+						<h2 className="text-3xl font-bold text-white mb-4">
+							Subscribe to our Newsletter
+						</h2>
+						<p className="text-neutral-400 mb-8 leading-relaxed">
+							Get the best event planning tips, venue recommendations, and
+							exclusive offers delivered straight to your inbox.
+						</p>
+						<div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+							<div className="relative flex-1">
+								<Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500" />
+								<Input
+									type="email"
+									placeholder="Enter your email"
+									className="bg-white/5 border-white/10 text-white pl-10 h-12 focus-visible:ring-brand-gold focus-visible:border-brand-gold rounded-xl placeholder:text-neutral-500"
+								/>
+							</div>
+							<Button className="h-12 px-8 bg-brand-gold hover:bg-brand-gold-hover text-white rounded-xl font-bold shadow-lg shadow-amber-500/20">
+								Subscribe
+							</Button>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Related Articles */}
+			<section className="py-24 bg-neutral-50">
+				<div className="container mx-auto px-4">
+					<div className="flex justify-between items-end mb-12">
+						<h2 className="text-3xl font-bold text-neutral-900 tracking-tight">
+							More from our blog
+						</h2>
+						<Link
+							href="/blog"
+							className="text-primary-blue font-semibold hover:underline hidden sm:block"
+						>
+							View all posts &rarr;
+						</Link>
+					</div>
+
+					<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+						{BLOG_POSTS.filter((p) => p.slug !== post.slug)
+							.slice(0, 3)
+							.map((relatedPost, i) => (
+								<Link
+									href={`/blog/${relatedPost.slug}`}
+									key={i}
+									className="group flex"
+								>
+									<article className="bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 group-hover:shadow-xl transition-shadow flex flex-col h-full w-full">
+										<div className="h-48 bg-neutral-200 w-full relative overflow-hidden">
+											<Image
+												src={relatedPost.image}
+												alt={relatedPost.title}
+												fill
+												className="object-cover group-hover:scale-105 transition-transform duration-500"
+											/>
+											<div className="absolute inset-0 bg-linear-to-b from-transparent to-black/20 group-hover:bg-black/10 transition-colors" />
+											<span className="absolute top-4 left-4 bg-primary-blue text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+												{relatedPost.category}
+											</span>
+										</div>
+										<div className="p-6 flex-1 flex flex-col">
+											<h3 className="text-lg font-bold text-neutral-900 mb-3 group-hover:text-primary-blue transition-colors leading-tight">
+												{relatedPost.title}
+											</h3>
+											<p className="text-neutral-600 text-sm mb-6 flex-1 line-clamp-2">
+												{relatedPost.desc}
+											</p>
+											<div className="flex items-center justify-between mt-auto pt-4 border-t border-neutral-100 text-xs text-neutral-500">
+												<div className="flex items-center gap-2">
+													<Calendar className="w-3 h-3" />
+													{relatedPost.date}
+												</div>
+												<div className="flex items-center gap-2">
+													<Clock className="w-3 h-3" />
+													{relatedPost.readTime}
+												</div>
+											</div>
+										</div>
+									</article>
+								</Link>
+							))}
+					</div>
+
+					<div className="mt-8 text-center sm:hidden">
+						<Link href="/blog">
+							<Button
+								variant="outline"
+								className="w-full border-neutral-200 text-neutral-900 hover:bg-neutral-100"
+							>
+								View all posts
+							</Button>
+						</Link>
+					</div>
+				</div>
+			</section>
 		</div>
 	);
 }
