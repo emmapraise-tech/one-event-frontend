@@ -99,7 +99,7 @@ export function Header() {
 						</Link>
 					)}
 
-					{/* List your venue (Icon only) - visible to unauthenticated or CUSTOMER */}
+					{/* List your venue (Icon only) - visible to CUSTOMER or guests */}
 					{(!isAuthenticated || user?.type === 'CUSTOMER') && (
 						<div
 							className="hidden md:flex relative group cursor-pointer"
@@ -363,19 +363,7 @@ export function Header() {
 								</>
 							)}
 
-							{isAuthenticated && user?.type === 'CUSTOMER' && (
-								<>
-									<div className="h-px bg-neutral-100 my-1" />
-									<Link
-										href="/onboard-vendor"
-										onClick={() => setIsMobileMenuOpen(false)}
-										className="text-brand-gold font-bold p-2 hover:bg-amber-50 rounded-lg"
-									>
-										List your venue
-									</Link>
-								</>
-							)}
-							{!isAuthenticated && (
+							{(!isAuthenticated || user?.type === 'CUSTOMER') && (
 								<>
 									<div className="h-px bg-neutral-100 my-1" />
 									<Link

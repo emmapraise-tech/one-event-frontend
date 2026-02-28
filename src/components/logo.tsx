@@ -11,7 +11,7 @@ export function Logo({ variant = 'default', className = '' }: LogoProps) {
 	// Text: Dark (Neutral-900)
 	let iconBg = 'bg-primary-blue';
 	let iconColor = 'text-white';
-	let textColor = 'text-neutral-900';
+	let textColor = 'text-primary-blue';
 
 	if (variant === 'transparent') {
 		// Used on Hero Overlay (e.g., Unscrolled Header)
@@ -22,10 +22,10 @@ export function Logo({ variant = 'default', className = '' }: LogoProps) {
 		textColor = 'text-white';
 	} else if (variant === 'dark') {
 		// Used on Dark Backgrounds (e.g., Footer)
-		// Icon: Blue BG, White Text (Same as default)
+		// Icon: White BG, Blue Text
 		// Text: White
-		iconBg = 'bg-primary-blue';
-		iconColor = 'text-white';
+		iconBg = 'bg-white';
+		iconColor = 'text-primary-blue';
 		textColor = 'text-white';
 	}
 
