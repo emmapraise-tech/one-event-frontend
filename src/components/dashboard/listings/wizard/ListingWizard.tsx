@@ -17,6 +17,8 @@ import { useListings } from '@/hooks/useListings';
 import { useVendors } from '@/hooks/useVendors';
 import { toast } from 'sonner';
 
+import { FormFieldsStep } from './steps/FormFieldsStep';
+
 const initialData: ListingFormData = {
 	type: ListingType.VENUE,
 	categories: [], // Initialize empty categories
@@ -24,7 +26,6 @@ const initialData: ListingFormData = {
 	slug: '',
 	description: '',
 	currency: 'NGN',
-	priceStrategy: 'weekday_weekend',
 	addressLine: '',
 	city: '',
 	state: '',
@@ -34,6 +35,7 @@ const initialData: ListingFormData = {
 	longitude: undefined,
 	amenities: [],
 	addOns: [],
+	formFields: [],
 	imageUrls: [],
 	imageFiles: [],
 };
@@ -42,17 +44,33 @@ const STEPS = [
 	{ id: 1, label: 'Basic Info', component: BasicInfoStep },
 	{ id: 2, label: 'Location', component: LocationStep },
 	{ id: 3, label: 'Specification', component: SpecificationStep },
-	{ id: 4, label: 'Media', component: MediaStep },
-	{ id: 5, label: 'Pricing', component: PricingStep },
+	{ id: 4, label: 'Custom Fields', component: FormFieldsStep },
+	{ id: 5, label: 'Media', component: MediaStep },
+	{ id: 6, label: 'Pricing', component: PricingStep },
 ];
 
-export function ListingWizard() {
+export interface ListingWizardProps {
+	mode?: 'create' | 'edit';
+	initialListingData?: ListingFormData;
+	listingId?: string;
+}
+
+export function ListingWizard({
+	mode = 'create',
+	initialListingData,
+	listingId,
+}: ListingWizardProps) {
 	const router = useRouter();
 	const [currentStep, setCurrentStep] = useState(1);
-	const [formData, setFormData] = useState<ListingFormData>(initialData);
+	const [formData, setFormData] = useState<ListingFormData>(
+		initialListingData || initialData
+	);
 
-	const { createListing, isCreating } = useListings();
+	const { createListing, updateListing, isCreating, isUpdating } = useListings();
 	const { vendor } = useVendors();
+
+	const isEditing = mode === 'edit';
+	const isProcessing = isEditing ? isUpdating : isCreating;
 
 	const updateFormData = (data: Partial<ListingFormData>) => {
 		setFormData((prev) => ({ ...prev, ...data }));
@@ -70,35 +88,44 @@ export function ListingWizard() {
 		}
 	};
 
-	const handlePublish = async () => {
-		if (!vendor) {
+	const handleSave = async () => {
+		if (!vendor && !isEditing) {
 			alert('Please create a vendor profile first');
 			router.push('/dashboard/vendors');
 			return;
 		}
 
 		try {
-			toast.loading('Publishing your listing...', { id: 'publish-listing' });
-			await createListing(
-				{ data: formData, vendorId: vendor.id },
-				{
-					onSuccess: () => {
-						toast.success('Listing published successfully!', {
-							id: 'publish-listing',
-						});
-						router.push('/dashboard/listings');
-					},
-					onError: (error: Error) => {
-						toast.error('Failed to publish: ' + error.message, {
-							id: 'publish-listing',
-						});
-						console.error(error);
-					},
-				},
-			);
+			toast.loading(isEditing ? 'Saving changes...' : 'Publishing your listing...', { id: 'save-listing' });
+			
+			const onSuccess = () => {
+				toast.success(isEditing ? 'Changes saved successfully!' : 'Listing published successfully!', {
+					id: 'save-listing',
+				});
+				router.push('/dashboard/listings');
+			};
+
+			const onError = (error: Error) => {
+				toast.error(`Failed to ${isEditing ? 'save' : 'publish'}: ` + error.message, {
+					id: 'save-listing',
+				});
+				console.error(error);
+			};
+
+			if (isEditing && listingId) {
+				updateListing(
+					{ id: listingId, data: formData },
+					{ onSuccess, onError }
+				);
+			} else if (vendor) {
+				createListing(
+					{ data: formData, vendorId: vendor.id },
+					{ onSuccess, onError }
+				);
+			}
 		} catch (error) {
-			console.error('Failed to create listing:', error);
-			toast.error('An unexpected error occurred', { id: 'publish-listing' });
+			console.error(`Failed to ${isEditing ? 'save' : 'publish'} listing:`, error);
+			toast.error('An unexpected error occurred', { id: 'save-listing' });
 		}
 	};
 
@@ -118,10 +145,10 @@ export function ListingWizard() {
 					</Link>
 					<div>
 						<h1 className="text-3xl font-bold tracking-tight text-gray-900">
-							Add New Event Center
+							{isEditing ? 'Edit Event Center' : 'Add New Event Center'}
 						</h1>
 						<p className="text-muted-foreground mt-2 text-base max-w-2xl">
-							Fill in the details below to publish your new venue listing.
+							{isEditing ? 'Update the details for your venue listing.' : 'Fill in the details below to publish your new venue listing.'}
 						</p>
 					</div>
 				</div>
@@ -133,11 +160,11 @@ export function ListingWizard() {
 						Save Draft
 					</Button>
 					<Button
-						onClick={handlePublish}
-						disabled={isCreating}
+						onClick={handleSave}
+						disabled={isProcessing}
 						className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold px-6 py-6 h-auto shadow-sm shadow-orange-200"
 					>
-						{isCreating ? 'Publishing...' : 'Publish Listing'}
+						{isProcessing ? (isEditing ? 'Saving...' : 'Publishing...') : (isEditing ? 'Save Changes' : 'Publish Listing')}
 					</Button>
 				</div>
 			</div>

@@ -29,6 +29,7 @@ export interface Booking {
 	customer?: User;
 	payments?: Payment[];
 	details?: any;
+	formData?: Record<string, any>;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -41,6 +42,7 @@ export interface CreateBookingData {
 	specialRequests?: string;
 	currency?: string;
 	details?: any;
+	formData?: Record<string, any>;
 }
 
 export interface UpdateBookingData {

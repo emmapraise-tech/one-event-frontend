@@ -22,7 +22,7 @@ export function ListingSidebar({
     if (formData.addressLine && formData.city) score += 20;
     if (formData.totalArea || formData.amenities?.length) score += 20;
     if (formData.imageUrls && formData.imageUrls.length > 5) score += 20;
-    if (formData.basePrice || (formData.weekdayPrice && formData.weekendPrice))
+    if (formData.basePrice)
       score += 20;
     return score;
   };
@@ -45,9 +45,7 @@ export function ListingSidebar({
     {
       id: 5,
       label: "Set pricing information",
-      completed:
-        !!formData.basePrice ||
-        (!!formData.weekdayPrice && !!formData.weekendPrice),
+      completed: !!formData.basePrice,
     },
   ];
 

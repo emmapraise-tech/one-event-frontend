@@ -433,17 +433,11 @@ export default function Home() {
 								payments effortlessly.
 							</p>
 							<div className="flex flex-col sm:flex-row gap-4">
-								<Link href="/onboard-vendor">
+								<Link href="/partners">
 									<Button className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold h-14 px-12 rounded-xl shadow-lg shadow-amber-500/20 text-lg border border-transparent w-full sm:w-auto">
 										Become a Partner
 									</Button>
 								</Link>
-								<Button
-									variant="outline"
-									className="border-white/30 text-white bg-white/5 hover:bg-white/20 h-14 px-12 rounded-xl text-lg backdrop-blur-sm transition-all"
-								>
-									Learn More
-								</Button>
 							</div>
 						</div>
 						<div className="md:w-1/2 min-h-[500px] relative z-10">

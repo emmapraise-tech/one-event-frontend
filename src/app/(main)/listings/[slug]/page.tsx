@@ -392,6 +392,7 @@ export default function ListingDetailPage() {
 								rating={listing.rating}
 								reviewCount={listing.reviewCount}
 								listingId={listing.id}
+								formFields={listing.formFields || []}
 							/>
 						</div>
 					</div>

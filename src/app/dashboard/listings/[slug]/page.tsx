@@ -51,6 +51,7 @@ const bookingSchema = z.object({
 	endDate: z.string().optional(),
 	numberOfGuests: z.number().min(1).optional(),
 	specialRequests: z.string().optional(),
+	formData: z.record(z.string(), z.any()).optional(),
 });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
@@ -75,6 +76,7 @@ export default function ListingDetailPage() {
 			endDate: '',
 			numberOfGuests: undefined,
 			specialRequests: '',
+			formData: {},
 		},
 	});
 
@@ -561,6 +563,56 @@ export default function ListingDetailPage() {
 																/>
 															</div>
 														)}
+
+														{listing.formFields?.map((field: any) => (
+															<div key={field.id} className="grid gap-2">
+																<Label className="font-bold text-gray-700 flex items-center gap-1">
+																	{field.label}
+																	{field.required && <span className="text-red-500">*</span>}
+																</Label>
+																{field.type === 'textarea' ? (
+																	<Textarea
+																		{...form.register(`formData.${field.label}`)}
+																		required={field.required}
+																		className="min-h-[100px] rounded-xl border-gray-100 focus:ring-blue-500/20"
+																	/>
+																) : field.type === 'date' ? (
+																	<Input
+																		type="date"
+																		{...form.register(`formData.${field.label}`)}
+																		required={field.required}
+																		className="h-12 rounded-xl border-gray-100 focus:ring-blue-500/20"
+																	/>
+																) : field.type === 'number' ? (
+																	<Input
+																		type="number"
+																		{...form.register(`formData.${field.label}`, {
+																			valueAsNumber: true,
+																		})}
+																		required={field.required}
+																		className="h-12 rounded-xl border-gray-100 focus:ring-blue-500/20"
+																	/>
+																) : field.type === 'image' ? (
+																	<div className="text-sm text-gray-500 italic">
+																		Image upload support coming soon. Please provide a link instead:
+																		<Input
+																			type="url"
+																			placeholder="https://"
+																			{...form.register(`formData.${field.label}`)}
+																			required={field.required}
+																			className="mt-2 h-12 rounded-xl border-gray-100 focus:ring-blue-500/20"
+																		/>
+																	</div>
+																) : (
+																	<Input
+																		type="text"
+																		{...form.register(`formData.${field.label}`)}
+																		required={field.required}
+																		className="h-12 rounded-xl border-gray-100 focus:ring-blue-500/20"
+																	/>
+																)}
+															</div>
+														))}
 
 														<div className="pt-4 flex gap-3">
 															<Button

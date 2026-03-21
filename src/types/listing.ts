@@ -51,6 +51,24 @@ export interface ListingImage {
 	updatedAt: Date;
 }
 
+export interface FormField {
+	id: string;
+	type:
+		| 'text'
+		| 'textarea'
+		| 'date'
+		| 'image'
+		| 'number'
+		| 'color'
+		| 'checkbox'
+		| 'radio'
+		| 'select'
+		| 'file';
+	label: string;
+	required: boolean;
+	options?: string[];
+}
+
 export interface Listing {
 	id: string;
 	vendorId: string;
@@ -80,6 +98,7 @@ export interface Listing {
 	venueDetail?: VenueDetail;
 	details?: VenueDetail; // Fallback for 'details' key
 	standing_capacity?: number; // Another potential fallback
+	formFields?: FormField[];
 }
 
 export interface CreateListingData {
@@ -104,10 +123,7 @@ export interface ListingFormData {
 	slug: string;
 	description?: string;
 	// Pricing
-	priceStrategy: 'daily' | 'weekday_weekend';
 	basePrice?: number; // Used for "Single Daily Price"
-	weekdayPrice?: number;
-	weekendPrice?: number;
 	currency?: string;
 	addressLine: string;
 	city: string;
@@ -126,6 +142,7 @@ export interface ListingFormData {
 	hasOutdoor?: boolean;
 	amenities: string[];
 	addOns: { name: string; price: number }[];
+	formFields: FormField[];
 
 	// Media
 	imageUrls: string[]; // For preview

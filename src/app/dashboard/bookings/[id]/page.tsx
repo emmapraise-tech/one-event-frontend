@@ -345,6 +345,38 @@ export default function BookingDetailsPage({ params }: PageProps) {
 								</div>
 							</div>
 
+							{booking.formData && Object.keys(booking.formData).length > 0 && (
+								<div className="mt-6 pt-6 border-t border-dashed">
+									<h4 className="text-sm font-medium mb-4 flex items-center gap-2 uppercase tracking-widest text-muted-foreground text-[10px]">
+										<span className="w-1 h-4 bg-primary rounded-full" />
+										Additional Information
+									</h4>
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										{Object.entries(booking.formData).map(([key, value]) => {
+											const fieldConfig = booking.listing?.formFields?.find((f: any) => f.id === key);
+											const label = fieldConfig ? fieldConfig.label : key;
+											const isColor = fieldConfig?.type === 'color' || (typeof value === 'string' && value.startsWith('#') && value.length === 7);
+											
+											return (
+												<div key={key} className="p-3 bg-gray-50 rounded-lg border border-border/50">
+													<div className="text-xs text-muted-foreground mb-1 font-medium">{label}</div>
+													<div className="flex items-center gap-2">
+														{isColor && (
+															<div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: String(value) }} />
+														)}
+														<div className="text-sm font-semibold text-gray-900 break-words whitespace-pre-line">
+															{fieldConfig?.type === 'checkbox' 
+																? (value ? 'Yes' : 'No') 
+																: (String(value) || '—')}
+														</div>
+													</div>
+												</div>
+											);
+										})}
+									</div>
+								</div>
+							)}
+
 							{booking.specialRequests && (
 								<div className="mt-6 pt-6 border-t border-dashed">
 									<h4 className="text-sm font-medium mb-2 flex items-center gap-2">

@@ -149,6 +149,26 @@ export default function VendorBookingsPage() {
 											<p className="text-sm">{booking.specialRequests}</p>
 										</div>
 									)}
+
+									{booking.formData && Object.keys(booking.formData).length > 0 && (
+										<div className="pt-4 mt-4 border-t border-gray-100">
+											<span className="text-sm font-bold text-gray-900 mb-3 block">
+												Customer Responses:
+											</span>
+											<div className="grid gap-3">
+												{Object.entries(booking.formData).map(([key, value]) => (
+													<div key={key} className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+														<span className="text-xs text-muted-foreground block mb-1">
+															{key}
+														</span>
+														<p className="text-sm font-medium">
+															{String(value)}
+														</p>
+													</div>
+												))}
+											</div>
+										</div>
+									)}
 								</div>
 							</CardContent>
 						</Card>

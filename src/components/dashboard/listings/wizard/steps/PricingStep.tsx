@@ -76,13 +76,6 @@ export function PricingStep({
     onNext();
   };
 
-  const handleStrategyChange = (isSinglePrice: boolean) => {
-    updateFormData({
-      priceStrategy: isSinglePrice ? "daily" : "weekday_weekend",
-      // Optional: Clear or reset separate/base prices if needed, keeping simple for now
-    });
-  };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex items-center gap-2 mb-6">
@@ -95,89 +88,6 @@ export function PricingStep({
       <div className="grid gap-12 lg:grid-cols-[360px_1fr]">
         {/* Pricing Section */}
         <div className="space-y-8">
-          {/* Strategy Toggle */}
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-            <div className="flex items-start gap-3">
-              <div className="flex h-6 items-center">
-                <input
-                  id="price-strategy"
-                  name="price-strategy"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer"
-                  checked={formData.priceStrategy === "daily"}
-                  onChange={(e) => handleStrategyChange(e.target.checked)}
-                />
-              </div>
-              <div className="text-sm">
-                <label
-                  htmlFor="price-strategy"
-                  className="font-medium text-gray-900 cursor-pointer"
-                >
-                  I use the same price for all days
-                </label>
-                <p className="text-gray-500 mt-1">
-                  Check this if your pricing is flat regardless of whether it's
-                  a weekday or weekend.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {formData.priceStrategy === "weekday_weekend" ? (
-            <div className="space-y-6 animate-in slide-in-from-top-2 duration-300">
-              <div className="grid gap-3">
-                <Label
-                  htmlFor="weekdayPrice"
-                  className="text-base font-medium text-gray-700"
-                >
-                  Weekday Price (Mon-Thu)
-                </Label>
-                <div className="relative shadow-sm">
-                  <div className="flex">
-                    <div className="flex items-center justify-center border border-r-0 border-gray-200 rounded-l-lg bg-gray-50 px-4 text-gray-500 font-medium min-w-[48px]">
-                      ₦
-                    </div>
-                    <Input
-                      id="weekdayPrice"
-                      type="number"
-                      className="rounded-l-none rounded-r-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base h-12"
-                      placeholder="0.00"
-                      value={formData.weekdayPrice || ""}
-                      onChange={(e) =>
-                        updateFormData({ weekdayPrice: Number(e.target.value) })
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-3">
-                <Label
-                  htmlFor="weekendPrice"
-                  className="text-base font-medium text-gray-700"
-                >
-                  Weekend Price (Fri-Sun)
-                </Label>
-                <div className="relative shadow-sm">
-                  <div className="flex">
-                    <div className="flex items-center justify-center border border-r-0 border-gray-200 rounded-l-lg bg-gray-50 px-4 text-gray-500 font-medium min-w-[48px]">
-                      ₦
-                    </div>
-                    <Input
-                      id="weekendPrice"
-                      type="number"
-                      className="rounded-l-none rounded-r-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base h-12"
-                      placeholder="0.00"
-                      value={formData.weekendPrice || ""}
-                      onChange={(e) =>
-                        updateFormData({ weekendPrice: Number(e.target.value) })
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
             <div className="grid gap-3 animate-in slide-in-from-top-2 duration-300">
               <Label
                 htmlFor="basePrice"
@@ -203,31 +113,6 @@ export function PricingStep({
                 </div>
               </div>
             </div>
-          )}
-
-          <div className="grid gap-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-base font-medium text-gray-700">
-                Cleaning Fee
-              </Label>
-              <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
-                Optional
-              </span>
-            </div>
-            <div className="relative shadow-sm">
-              <div className="flex">
-                <div className="flex items-center justify-center border border-r-0 border-gray-200 rounded-l-lg bg-gray-50 px-4 text-gray-500 font-medium min-w-[48px]">
-                  ₦
-                </div>
-                <Input
-                  id="cleaningFee"
-                  type="number"
-                  className="rounded-l-none rounded-r-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base h-12"
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-          </div>
 
           {/* Add-ons Section */}
           <div className="space-y-4 pt-4 border-t border-gray-100">
