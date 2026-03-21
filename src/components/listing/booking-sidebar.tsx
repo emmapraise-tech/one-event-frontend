@@ -39,10 +39,13 @@ import {
 	ShieldCheck,
 	X,
 	AlertCircle,
+	Sparkles,
+	List,
 } from 'lucide-react';
 
+import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from 'next/navigation';
-import { AddOn } from '@/types/listing';
+import { AddOn, FormField } from '@/types/listing';
 import { bookingService } from '@/services/booking.service';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -56,6 +59,7 @@ interface BookingSidebarProps {
 	rating?: number;
 	reviewCount?: number;
 	listingId: string;
+	formFields?: FormField[];
 }
 
 export function BookingSidebar({
@@ -68,6 +72,7 @@ export function BookingSidebar({
 	reviewCount = 0,
 	addOns = [],
 	listingId,
+	formFields = [],
 }: BookingSidebarProps) {
 	const router = useRouter();
 	const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -79,6 +84,8 @@ export function BookingSidebar({
 	const [customGuests, setCustomGuests] = useState('');
 	const [selectedAddOnIds, setSelectedAddOnIds] = useState<string[]>([]);
 	const [paymentPreference, setPaymentPreference] = useState('full');
+	const [customFormData, setCustomFormData] = useState<Record<string, any>>({});
+	const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
 	// Default date range: today for 1 day
 	const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -173,6 +180,21 @@ export function BookingSidebar({
 	};
 
 	const handleProceed = () => {
+		// Validating custom form fields
+		if (formFields.length > 0) {
+			const errors: Record<string, string> = {};
+			for (const field of formFields) {
+				if (field.required && !customFormData[field.id]) {
+					errors[field.id] = `${field.label} is required`;
+				}
+			}
+			if (Object.keys(errors).length > 0) {
+				setFormErrors(errors);
+				return;
+			}
+			setFormErrors({});
+		}
+
 		const selectedAddOnsData = addOns.filter((addon) =>
 			selectedAddOnIds.includes(addon.id),
 		);
@@ -192,6 +214,7 @@ export function BookingSidebar({
 			numberOfDays,
 			date: dateRange?.from ? format(dateRange.from, 'PPP') : '',
 			listingId,
+			formData: customFormData,
 		};
 
 		localStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
@@ -416,6 +439,147 @@ export function BookingSidebar({
 									</div>
 								);
 							})}
+						</div>
+					</div>
+				)}
+
+				{/* Custom Form Fields */}
+				{formFields.length > 0 && (
+					<div className="space-y-4">
+						<Label className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
+							Additional Information
+						</Label>
+						<div className="space-y-5">
+							{formFields.map((field) => (
+								<div key={field.id} className="space-y-2">
+									<Label className="text-[13px] font-bold text-neutral-800 flex items-center gap-1.5">
+										{field.label} {field.required && <span className="text-red-500">*</span>}
+									</Label>
+									
+									{field.type === 'textarea' ? (
+										<Textarea
+											placeholder={`Enter ${field.label.toLowerCase()}`}
+											value={customFormData[field.id] || ''}
+											onChange={(e) => setCustomFormData({ ...customFormData, [field.id]: e.target.value })}
+											className={`resize-none bg-neutral-50 border-neutral-200 focus:bg-white transition-all rounded-xl ${formErrors[field.id] ? 'border-red-500 bg-red-50/30' : ''}`}
+											rows={3}
+										/>
+									) : field.type === 'date' ? (
+										<Input
+											type="date"
+											value={customFormData[field.id] || ''}
+											onChange={(e) => setCustomFormData({ ...customFormData, [field.id]: e.target.value })}
+											className={`bg-neutral-50 border-neutral-200 focus:bg-white transition-all rounded-xl ${formErrors[field.id] ? 'border-red-500 bg-red-50/30' : ''}`}
+										/>
+									) : field.type === 'color' ? (
+										<div className="flex items-center gap-3">
+											<Input
+												type="color"
+												value={customFormData[field.id] || '#000000'}
+												onChange={(e) => setCustomFormData({ ...customFormData, [field.id]: e.target.value })}
+												className="w-12 h-10 p-1 rounded-lg cursor-pointer border-neutral-200"
+											/>
+											<span className="text-sm font-medium text-neutral-600 uppercase">
+												{customFormData[field.id] || '#000000'}
+											</span>
+										</div>
+									) : field.type === 'checkbox' ? (
+										<div className="flex items-center space-x-2 py-1">
+											<Checkbox
+												id={field.id}
+												checked={customFormData[field.id] || false}
+												onCheckedChange={(checked: boolean) => 
+													setCustomFormData({ ...customFormData, [field.id]: checked })
+												}
+												className="data-[state=checked]:bg-brand-blue data-[state=checked]:border-brand-blue"
+											/>
+											<label htmlFor={field.id} className="text-sm font-medium text-neutral-600 cursor-pointer">
+												{field.label}
+											</label>
+										</div>
+									) : field.type === 'radio' ? (
+										<RadioGroup
+											value={customFormData[field.id] || ''}
+											onValueChange={(val) => setCustomFormData({ ...customFormData, [field.id]: val })}
+											className="grid gap-2 pt-1"
+										>
+											{field.options?.map((option) => (
+												<div key={option} className="flex items-center space-x-2">
+													<RadioGroupItem value={option} id={`${field.id}-${option}`} className="text-brand-blue border-neutral-300" />
+													<Label htmlFor={`${field.id}-${option}`} className="text-sm font-medium text-neutral-600 cursor-pointer">
+														{option}
+													</Label>
+												</div>
+											))}
+										</RadioGroup>
+									) : field.type === 'select' ? (
+										<Select
+											value={customFormData[field.id] || ''}
+											onValueChange={(val) => setCustomFormData({ ...customFormData, [field.id]: val })}
+										>
+											<SelectTrigger className={`bg-neutral-50 border-neutral-200 focus:bg-white transition-all rounded-xl ${formErrors[field.id] ? 'border-red-500 bg-red-50/30' : ''}`}>
+												<SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
+											</SelectTrigger>
+											<SelectContent className="bg-white">
+												{field.options?.map((option) => (
+													<SelectItem key={option} value={option}>{option}</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									) : (field.type === 'image' || field.type === 'file') ? (
+										<div className="space-y-2">
+											<div 
+												className={`relative border-2 border-dashed rounded-xl p-4 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer ${
+													customFormData[field.id] 
+														? 'border-brand-blue/50 bg-brand-blue/5' 
+														: 'border-neutral-200 bg-neutral-50 hover:bg-neutral-100 hover:border-neutral-300'
+												} ${formErrors[field.id] ? 'border-red-500 bg-red-50/30' : ''}`}
+												onClick={() => document.getElementById(`file-${field.id}`)?.click()}
+											>
+												<input
+													id={`file-${field.id}`}
+													type="file"
+													className="hidden"
+													accept={field.type === 'image' ? "image/*" : "*/*"}
+													onChange={(e) => {
+														const file = e.target.files?.[0];
+														if (file) {
+															// For now, we store the file name or a base64 preview
+															// In a real app, you'd upload this to a server
+															setCustomFormData({ ...customFormData, [field.id]: file.name });
+														}
+													}}
+												/>
+												<div className={`w-8 h-8 rounded-full flex items-center justify-center ${customFormData[field.id] ? 'bg-brand-blue-soft text-brand-blue' : 'bg-white text-neutral-400 border border-neutral-100'}`}>
+													{field.type === 'image' ? <Sparkles className="h-4 w-4" /> : <List className="h-4 w-4" />}
+												</div>
+												<div className="text-center">
+													<p className="text-[13px] font-bold text-neutral-800">
+														{customFormData[field.id] || `Upload ${field.type === 'image' ? 'Image' : 'Document'}`}
+													</p>
+													<p className="text-[11px] text-neutral-500">
+														{customFormData[field.id] ? 'Click to change file' : 'Maximum file size: 5MB'}
+													</p>
+												</div>
+											</div>
+										</div>
+									) : (
+										<Input
+											type={field.type === 'number' ? 'number' : 'text'}
+											placeholder={`Enter ${field.label.toLowerCase()}`}
+											value={customFormData[field.id] || ''}
+											onChange={(e) => setCustomFormData({ ...customFormData, [field.id]: e.target.value })}
+											className={`bg-neutral-50 border-neutral-200 focus:bg-white transition-all rounded-xl ${formErrors[field.id] ? 'border-red-500 bg-red-50/30' : ''}`}
+										/>
+									)}
+									
+									{formErrors[field.id] && (
+										<p className="text-[11px] text-red-500 font-bold mt-1 flex items-center gap-1">
+											<AlertCircle className="h-3 w-3" /> {formErrors[field.id]}
+										</p>
+									)}
+								</div>
+							))}
 						</div>
 					</div>
 				)}

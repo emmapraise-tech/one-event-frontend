@@ -29,16 +29,7 @@ export const listingService = {
 		if (data.longitude) formData.append('longitude', data.longitude.toString());
 		formData.append('currency', data.currency || 'NGN');
 		formData.append('isPublished', 'true');
-		formData.append(
-			'isDailyPrice',
-			(data.priceStrategy === 'daily').toString(),
-		);
-
 		if (data.basePrice) formData.append('basePrice', data.basePrice.toString());
-		if (data.weekdayPrice)
-			formData.append('weekDayPrice', data.weekdayPrice.toString());
-		if (data.weekendPrice)
-			formData.append('weekendPrice', data.weekendPrice.toString());
 
 		// Categories (Multiple fields with same name)
 		if (data.categories) {
@@ -61,6 +52,11 @@ export const listingService = {
 		// Add-ons
 		if (data.addOns && data.addOns.length > 0) {
 			formData.append('addOns', JSON.stringify(data.addOns));
+		}
+
+		// Form Fields
+		if (data.formFields && data.formFields.length > 0) {
+			formData.append('formFields', JSON.stringify(data.formFields));
 		}
 
 		// Files
@@ -187,10 +183,72 @@ export const listingService = {
 		return response.data.data;
 	},
 
-	async update(id: string, data: Partial<CreateListingData>): Promise<Listing> {
+	async update(id: string, data: Partial<ListingFormData>): Promise<Listing> {
+		const formData = new FormData();
+
+		// Top-level fields mapping
+		if (data.type) formData.append('type', data.type);
+		if (data.title) formData.append('name', data.title);
+		if (data.slug) formData.append('slug', data.slug);
+		if (data.description !== undefined) formData.append('description', data.description || '');
+		if (data.zipCode !== undefined) formData.append('zipCode', data.zipCode || '00000');
+		if (data.addressLine) {
+			formData.append('streetAddress', data.addressLine);
+			formData.append('addressLine', data.addressLine);
+		}
+		if (data.city) formData.append('city', data.city);
+		if (data.state) formData.append('state', data.state);
+		if (data.country) formData.append('country', data.country);
+		if (data.latitude) formData.append('latitude', data.latitude.toString());
+		if (data.longitude) formData.append('longitude', data.longitude.toString());
+		if (data.currency) formData.append('currency', data.currency);
+		if (data.basePrice !== undefined) formData.append('basePrice', data.basePrice.toString());
+
+		// Categories
+		if (data.categories) {
+			data.categories.forEach((cat) => {
+				formData.append('category', cat);
+			});
+		}
+
+		// Details (Venue Specifics)
+		const details: any = {};
+		if (data.seatedCapacity !== undefined) details.capacity = data.seatedCapacity;
+		if (data.totalArea !== undefined) details.floorArea = data.totalArea;
+		if (data.parkingCap !== undefined) details.parkingCap = data.parkingCap;
+		if (data.hasIndoor !== undefined) details.hasIndoor = data.hasIndoor;
+		if (data.hasOutdoor !== undefined) details.hasOutdoor = data.hasOutdoor;
+		if (data.amenities !== undefined) details.amenities = data.amenities;
+		
+		if (Object.keys(details).length > 0) {
+			formData.append('details', JSON.stringify(details));
+		}
+
+		// Add-ons
+		if (data.addOns) {
+			formData.append('addOns', JSON.stringify(data.addOns));
+		}
+
+		// Form Fields
+		if (data.formFields) {
+			formData.append('formFields', JSON.stringify(data.formFields));
+		}
+
+		// Files
+		if (data.imageFiles && data.imageFiles.length > 0) {
+			data.imageFiles.forEach((file) => {
+				formData.append('images', file);
+			});
+		}
+
 		const response = await api.put<ApiResponse<Listing>>(
 			`/listings/${id}`,
-			data,
+			formData,
+			{
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			},
 		);
 		return response.data.data;
 	},

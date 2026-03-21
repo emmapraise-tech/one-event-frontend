@@ -483,18 +483,47 @@ export default function DashboardPage() {
 									Browse Venues
 								</Button>
 							</Link>
-							<Link href="/onboard-vendor">
+							<Link href="/partners">
 								<Button
 									variant="outline"
 									className="border-brand-gold/30 text-brand-gold hover:bg-brand-gold/5 h-11 px-6 font-bold rounded-xl transition-all"
 								>
-									List your venue
+									Become a Partner
 								</Button>
 							</Link>
 						</>
 					)}
 				</div>
 			</div>
+
+			{/* Become a Partner Banner for Customers */}
+			{!isVendor && !isAdmin && (
+				<div className="relative overflow-hidden rounded-[32px] bg-linear-to-r from-brand-blue to-blue-900 p-6 md:p-10 text-white shadow-xl shadow-blue-500/20 animate-in fade-in slide-in-from-top-4 duration-700">
+					<div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+						<div className="max-w-2xl">
+							<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+								<Sparkles className="h-3 w-3 text-brand-gold" /> Partner Opportunity
+							</div>
+							<h2 className="text-2xl md:text-3xl font-black mb-3 leading-tight tracking-tight">
+								Start earning by listing your event centers
+							</h2>
+							<p className="text-blue-100/80 font-medium leading-relaxed">
+								Join Nigeria's fastest growing event marketplace as a vendor. List your venues, manage bookings, and grow your business today.
+							</p>
+						</div>
+						<Link href="/partners" className="shrink-0">
+							<Button size="lg" className="bg-brand-gold hover:bg-brand-gold-hover text-white px-8 h-14 rounded-2xl font-black text-lg shadow-2xl shadow-amber-500/30 transition-all hover:scale-105 active:scale-95 border-none">
+								Be a Partner
+							</Button>
+						</Link>
+					</div>
+					
+					{/* Decorative Elements */}
+					<div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
+					<div className="absolute bottom-0 left-0 w-32 h-32 bg-brand-gold/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl pointer-events-none" />
+					<Building2 className="absolute -right-10 -bottom-10 h-64 w-64 text-white/5 -rotate-12 pointer-events-none" />
+				</div>
+			)}
 
 			{/* Stats Grid */}
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">

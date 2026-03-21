@@ -87,42 +87,12 @@ export function Header() {
 					{(!isAuthenticated || user?.type === 'CUSTOMER') && (
 						<Link href="/listings">
 							<Button
-								variant="outline"
-								className={`hidden md:flex rounded-full px-5 font-bold border-2 transition-all ${
-									isTransparent
-										? 'text-white border-white/30 hover:bg-white/10'
-										: 'text-brand-blue border-brand-blue/20 hover:bg-neutral-50'
-								}`}
+								variant="default"
+								className="hidden md:flex rounded-full px-6 font-black bg-brand-gold hover:bg-brand-gold-hover text-white shadow-lg shadow-amber-500/10 transition-all active:scale-95 h-11"
 							>
 								Book a venue
 							</Button>
 						</Link>
-					)}
-
-					{/* List your venue (Icon only) - visible to CUSTOMER or guests */}
-					{(!isAuthenticated || user?.type === 'CUSTOMER') && (
-						<div
-							className="hidden md:flex relative group cursor-pointer"
-							title="List your venue"
-						>
-							<Link href="/onboard-vendor">
-								<Button
-									variant="ghost"
-									size="icon"
-									className={`rounded-full h-10 w-10 transition-all ${
-										isTransparent
-											? 'text-white hover:bg-white/10 hover:text-white'
-											: 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
-									}`}
-								>
-									<PlusCircle className="h-5 w-5" />
-								</Button>
-							</Link>
-							{/* Custom Tooltip */}
-							<div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-neutral-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none">
-								List your venue
-							</div>
-						</div>
 					)}
 
 					{isAuthenticated && user ? (
@@ -367,11 +337,11 @@ export function Header() {
 								<>
 									<div className="h-px bg-neutral-100 my-1" />
 									<Link
-										href="/onboard-vendor"
+										href="/partners"
 										onClick={() => setIsMobileMenuOpen(false)}
 										className="text-brand-gold font-bold p-2 hover:bg-amber-50 rounded-lg"
 									>
-										List your venue
+										Become a Partner
 									</Link>
 								</>
 							)}
