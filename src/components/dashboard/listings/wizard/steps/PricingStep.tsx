@@ -31,8 +31,9 @@ interface StepProps {
 export function PricingStep({
   formData,
   updateFormData,
-  onNext, // This will likely be "Publish" or similar for the last step
+  onNext,
   onBack,
+  isLastStep,
 }: StepProps) {
   // Local state for calendar interactions (simple single date toggling for now to block dates)
   // In a real app, this might be a date range picker or multi-select
@@ -112,6 +113,24 @@ export function PricingStep({
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Service Charge (Commission) */}
+            <div className="grid gap-3 pt-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-medium text-gray-700">
+                  Service Charge (10%)
+                </Label>
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                  <Info className="h-3 w-3" />
+                </div>
+              </div>
+              <div className="flex h-12 w-full items-center rounded-lg border border-gray-200 bg-gray-50/50 px-4 text-gray-600 font-semibold shadow-inner">
+                ₦ {((formData.basePrice || 0) * 0.1).toLocaleString()}
+              </div>
+              <p className="text-[11px] text-gray-400 font-medium">
+                Automatically calculated based on your daily price.
+              </p>
             </div>
 
           {/* Add-ons Section */}
@@ -272,11 +291,23 @@ export function PricingStep({
         </div>
       </div>
 
-      <div className="flex justify-between pt-4">
-        <Button type="button" variant="outline" onClick={onBack}>
+      <div className="flex justify-between pt-8 border-t border-gray-100">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onBack}
+          className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 h-12 px-6 rounded-xl font-bold"
+        >
+          <ChevronLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
-        {/* Button logic handled in wrapper mostly, but good to have here too */}
+        <Button
+          type="submit"
+          className="bg-brand-gold hover:bg-brand-gold-hover text-white h-12 px-10 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-orange-100"
+        >
+          {isLastStep ? "Publish Listing" : "Continue"}
+          <ChevronRight className="h-4 w-4 ml-2" />
+        </Button>
       </div>
     </form>
   );

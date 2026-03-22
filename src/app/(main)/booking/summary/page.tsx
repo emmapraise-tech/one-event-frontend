@@ -147,7 +147,7 @@ function BookingSummaryContent() {
 				details: {
 					selectedAddOns: bookingData.selectedAddOns,
 					venueFee: bookingData.venueFee,
-					cleaningFee: bookingData.cleaningFee,
+					serviceCharge: bookingData.serviceCharge,
 					vat,
 				},
 			});
@@ -463,50 +463,64 @@ function BookingSummaryContent() {
 						</Card>
 
 						{/* Custom Form Fields Summary */}
-						{bookingData?.formData && Object.keys(bookingData.formData).length > 0 && (
-							<Card className="border-neutral-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-								<div className="p-6 border-b border-neutral-100 flex justify-between items-center">
-									<h3 className="font-bold text-lg text-neutral-900">
-										Additional Information
-									</h3>
-									<Button
-										variant="ghost"
-										size="sm"
-										className="text-brand-blue hover:text-brand-blue/80 h-auto p-0 font-medium"
-										onClick={() =>
-											router.push(`/listings/${bookingData.listingId}`)
-										}
-									>
-										Edit <Edit className="w-3 h-3 ml-1" />
-									</Button>
-								</div>
-								<CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-									{Object.entries(bookingData.formData).map(([key, value]) => {
-										const fieldConfig = listingData?.formFields?.find((f: any) => f.id === key);
-										const label = fieldConfig ? fieldConfig.label : key;
-										const isColor = fieldConfig?.type === 'color' || (typeof value === 'string' && value.startsWith('#') && value.length === 7);
-										
-										return (
-											<div key={key}>
-												<span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide block mb-1">
-													{label}
-												</span>
-												<div className="flex items-center gap-2">
-													{isColor && (
-														<div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: String(value) }} />
-													)}
-													<span className="font-medium text-neutral-900 break-words whitespace-pre-line">
-														{fieldConfig?.type === 'checkbox' 
-															? (value ? 'Yes' : 'No') 
-															: (String(value) || '—')}
-													</span>
-												</div>
-											</div>
-										);
-									})}
-								</CardContent>
-							</Card>
-						)}
+						{bookingData?.formData &&
+							Object.keys(bookingData.formData).length > 0 && (
+								<Card className="border-neutral-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+									<div className="p-6 border-b border-neutral-100 flex justify-between items-center">
+										<h3 className="font-bold text-lg text-neutral-900">
+											Additional Information
+										</h3>
+										<Button
+											variant="ghost"
+											size="sm"
+											className="text-brand-blue hover:text-brand-blue/80 h-auto p-0 font-medium"
+											onClick={() =>
+												router.push(`/listings/${bookingData.listingId}`)
+											}
+										>
+											Edit <Edit className="w-3 h-3 ml-1" />
+										</Button>
+									</div>
+									<CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+										{Object.entries(bookingData.formData).map(
+											([key, value]) => {
+												const fieldConfig = listingData?.formFields?.find(
+													(f: any) => f.id === key,
+												);
+												const label = fieldConfig ? fieldConfig.label : key;
+												const isColor =
+													fieldConfig?.type === 'color' ||
+													(typeof value === 'string' &&
+														value.startsWith('#') &&
+														value.length === 7);
+
+												return (
+													<div key={key}>
+														<span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide block mb-1">
+															{label}
+														</span>
+														<div className="flex items-center gap-2">
+															{isColor && (
+																<div
+																	className="w-4 h-4 rounded-full border border-gray-200"
+																	style={{ backgroundColor: String(value) }}
+																/>
+															)}
+															<span className="font-medium text-neutral-900 wrap-break-word whitespace-pre-line">
+																{fieldConfig?.type === 'checkbox'
+																	? value
+																		? 'Yes'
+																		: 'No'
+																	: String(value) || '—'}
+															</span>
+														</div>
+													</div>
+												);
+											},
+										)}
+									</CardContent>
+								</Card>
+							)}
 
 						{/* Special Requests */}
 						<Card className="border-neutral-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
@@ -547,9 +561,9 @@ function BookingSummaryContent() {
 											</span>
 										</div>
 										<div className="flex justify-between items-center text-neutral-600">
-											<span>Cleaning & Caution Fee</span>
+											<span>Service Charge (10%)</span>
 											<span className="font-bold text-neutral-900">
-												₦{bookingData.cleaningFee.toLocaleString()}
+												₦{bookingData.serviceCharge.toLocaleString()}
 											</span>
 										</div>
 										{bookingData.selectedAddOns?.map((addon: any) => (

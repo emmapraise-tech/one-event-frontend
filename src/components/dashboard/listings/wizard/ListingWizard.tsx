@@ -21,7 +21,7 @@ import { FormFieldsStep } from './steps/FormFieldsStep';
 
 const initialData: ListingFormData = {
 	type: ListingType.VENUE,
-	categories: [], // Initialize empty categories
+	categories: [],
 	title: '',
 	slug: '',
 	description: '',
@@ -34,12 +34,12 @@ const initialData: ListingFormData = {
 	latitude: undefined,
 	longitude: undefined,
 	amenities: [],
+	specialties: [],
 	addOns: [],
 	formFields: [],
 	imageUrls: [],
 	imageFiles: [],
 };
-
 const STEPS = [
 	{ id: 1, label: 'Basic Info', component: BasicInfoStep },
 	{ id: 2, label: 'Location', component: LocationStep },
@@ -77,7 +77,9 @@ export function ListingWizard({
 	};
 
 	const handleNext = () => {
-		if (currentStep < STEPS.length) {
+		if (currentStep === STEPS.length) {
+			handleSave();
+		} else {
 			setCurrentStep((prev) => prev + 1);
 		}
 	};
@@ -144,11 +146,15 @@ export function ListingWizard({
 						Back to Listings
 					</Link>
 					<div>
-						<h1 className="text-3xl font-bold tracking-tight text-gray-900">
-							{isEditing ? 'Edit Event Center' : 'Add New Event Center'}
+						<h1 className="text-3xl font-bold tracking-tight text-gray-900 leading-tight">
+							{isEditing 
+								? `Edit ${formData.type === ListingType.VENUE ? 'Venue' : 'Service'}` 
+								: `Add New ${formData.type === ListingType.VENUE ? 'Venue' : 'Service'}`}
 						</h1>
-						<p className="text-muted-foreground mt-2 text-base max-w-2xl">
-							{isEditing ? 'Update the details for your venue listing.' : 'Fill in the details below to publish your new venue listing.'}
+						<p className="text-gray-500 mt-2 text-base max-w-2xl font-medium">
+							{isEditing 
+								? `Update the details for your ${formData.type === ListingType.VENUE ? 'venue' : 'service'} listing.` 
+								: `Fill in the details below to publish your new ${formData.type === ListingType.VENUE ? 'venue' : 'service'} listing.`}
 						</p>
 					</div>
 				</div>
@@ -179,16 +185,13 @@ export function ListingWizard({
 						return (
 							<button
 								key={step.id}
-								onClick={() => isCompleted && setCurrentStep(step.id)}
-								disabled={!isCompleted && !isCurrent}
+								type="button"
+								onClick={() => setCurrentStep(step.id)}
 								className={cn(
-									'group flex items-center gap-3 px-6 py-4 border-b-2 transition-all duration-200 outline-none',
+									'group flex items-center gap-3 px-6 py-4 border-b-2 transition-all duration-200 outline-none cursor-pointer',
 									isCurrent
 										? 'border-primary bg-primary/5'
 										: 'border-transparent hover:bg-gray-50',
-									!isCompleted &&
-										!isCurrent &&
-										'opacity-50 cursor-not-allowed hover:bg-transparent',
 								)}
 							>
 								<div

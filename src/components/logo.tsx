@@ -3,9 +3,14 @@ import Link from 'next/link';
 interface LogoProps {
 	variant?: 'default' | 'transparent' | 'dark';
 	className?: string;
+	asLink?: boolean;
 }
 
-export function Logo({ variant = 'default', className = '' }: LogoProps) {
+export function Logo({
+	variant = 'default',
+	className = '',
+	asLink = true,
+}: LogoProps) {
 	// Default: Used on white backgrounds (e.g., Scrolled Header, Auth pages)
 	// Icon: Blue BG, White Text
 	// Text: Dark (Neutral-900)
@@ -29,11 +34,8 @@ export function Logo({ variant = 'default', className = '' }: LogoProps) {
 		textColor = 'text-white';
 	}
 
-	return (
-		<Link
-			href="/"
-			className={`flex items-center gap-2 group z-50 ${className}`}
-		>
+	const content = (
+		<>
 			<div
 				className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 shadow-sm ${iconBg}`}
 			>
@@ -44,6 +46,23 @@ export function Logo({ variant = 'default', className = '' }: LogoProps) {
 			>
 				OneEvent
 			</span>
+		</>
+	);
+
+	if (!asLink) {
+		return (
+			<div className={`flex items-center gap-2 group z-50 ${className}`}>
+				{content}
+			</div>
+		);
+	}
+
+	return (
+		<Link
+			href="/"
+			className={`flex items-center gap-2 group z-50 ${className}`}
+		>
+			{content}
 		</Link>
 	);
 }

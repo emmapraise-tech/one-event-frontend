@@ -24,7 +24,14 @@ export function ImageGrid({ images, title }: ImageGridProps) {
 		'/images/venue-4.jpg',
 	];
 
-	const validImages = images?.filter((img) => img && img.url) || [];
+	const isImageUrl = (url: string) => {
+		if (!url) return false;
+		const videoHosts = ['youtube.com', 'youtu.be', 'vimeo.com'];
+		return !videoHosts.some((host) => url.includes(host));
+	};
+
+	const validImages =
+		images?.filter((img) => img && img.url && isImageUrl(img.url)) || [];
 	const displayImages = [...validImages];
 	while (displayImages.length < 5) {
 		displayImages.push({

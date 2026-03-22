@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ListingCategory } from "@/types/listing";
+import { ListingCategory, ListingType } from "@/types/listing";
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
 import { FileText } from "lucide-react";
@@ -34,21 +34,44 @@ export function BasicInfoStep({ formData, updateFormData, onNext }: StepProps) {
       </div>
 
       <div className="space-y-6">
-        <div className="grid gap-3">
-          <Label
-            htmlFor="title"
-            className="text-base font-medium text-gray-700"
-          >
-            Venue Name
-          </Label>
-          <Input
-            id="title"
-            placeholder="e.g. Grand Imperial Ballroom"
-            value={formData.title}
-            onChange={(e) => updateFormData({ title: e.target.value })}
-            required
-            className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base"
-          />
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div className="grid gap-3">
+            <Label
+              htmlFor="type"
+              className="text-base font-medium text-gray-700"
+            >
+              Listing Type
+            </Label>
+            <select
+              id="type"
+              value={formData.type || ListingType.VENUE}
+              onChange={(e) => updateFormData({ type: e.target.value as ListingType })}
+              className="flex h-12 w-full items-center justify-between rounded-md border border-gray-200 bg-transparent px-3 py-2 text-base shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50 focus:border-blue-500 focus:ring-blue-500/20"
+            >
+              {Object.values(ListingType).map((type) => (
+                <option key={type} value={type}>
+                  {type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid gap-3">
+            <Label
+              htmlFor="title"
+              className="text-base font-medium text-gray-700"
+            >
+              {formData.type === ListingType.VENUE ? "Venue Name" : "Service Name"}
+            </Label>
+            <Input
+              id="title"
+              placeholder={formData.type === ListingType.VENUE ? "e.g. Grand Imperial Ballroom" : "e.g. DJ Khaleed Services"}
+              value={formData.title}
+              onChange={(e) => updateFormData({ title: e.target.value })}
+              required
+              className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base"
+            />
+          </div>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-1">

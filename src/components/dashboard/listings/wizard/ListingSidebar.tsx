@@ -15,28 +15,57 @@ export function ListingSidebar({
   totalSteps,
   formData,
 }: ListingSidebarProps) {
+  const isService = formData.type !== 'VENUE';
+
   // Calculate completion percentage based on steps and filled fields
   const calculateCompletion = () => {
     let score = 0;
-    if (formData.title && formData.description) score += 20;
-    if (formData.addressLine && formData.city) score += 20;
-    if (formData.totalArea || formData.amenities?.length) score += 20;
-    if (formData.imageUrls && formData.imageUrls.length > 5) score += 20;
-    if (formData.basePrice)
-      score += 20;
-    return score;
+    // Step 1: Basic Info
+    if (formData.title) score += 10;
+    if (formData.description) score += 10;
+    
+    // Step 2: Location (Less strict for services)
+    if (isService) {
+      if (formData.city) score += 20;
+    } else {
+      if (formData.addressLine && formData.city) score += 20;
+    }
+
+    // Step 3: Specs
+    if (isService) {
+      if (formData.specialties?.length) score += 20;
+    } else {
+      if (formData.totalArea || formData.amenities?.length) score += 20;
+    }
+
+    // Step 4: Media
+    if ((formData.imageUrls?.length || 0) >= 1) score += 10;
+    if ((formData.imageUrls?.length || 0) >= 5) score += 10;
+
+    // Step 5: Pricing
+    if (formData.basePrice) score += 20;
+
+    return Math.min(score, 100);
   };
 
   const completionPercentage = calculateCompletion();
 
   const steps = [
-    { id: 1, label: "Basic venue details", completed: !!formData.title },
+    { 
+      id: 1, 
+      label: `Basic ${isService ? 'service' : 'venue'} details`, 
+      completed: !!(formData.title && (formData.description?.length || 0) > 10) 
+    },
     {
       id: 2,
-      label: "Verify location on map",
-      completed: !!formData.addressLine,
+      label: isService ? "Set service location" : "Verify location on map",
+      completed: isService ? !!formData.city : !!(formData.addressLine && formData.city),
     },
-    { id: 3, label: "Add specification", completed: !!formData.totalArea },
+    { 
+      id: 3, 
+      label: isService ? "Add specialties" : "Add specifications", 
+      completed: isService ? (formData.specialties?.length || 0) > 0 : !!(formData.totalArea || formData.amenities?.length),
+    },
     {
       id: 4,
       label: "Add at least 5 photos",
