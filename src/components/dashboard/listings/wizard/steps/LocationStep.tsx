@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { MapPin, Loader2 } from "lucide-react";
-import { ListingFormData } from "@/types/listing";
+import { ListingFormData, ListingType } from "@/types/listing";
 
 interface StepProps {
   formData: ListingFormData;
@@ -164,68 +164,74 @@ export function LocationStep({
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
           <MapPin className="h-5 w-5" />
         </div>
-        <h2 className="text-lg font-semibold">Location</h2>
+        <h2 className="text-lg font-semibold">
+          {formData.type === ListingType.VENUE ? "Location" : "Base Location & Coverage"}
+        </h2>
       </div>
 
       <div className="space-y-6">
-        <div className="grid gap-3">
-          <Label
-            htmlFor="address"
-            className="text-base font-medium text-gray-700"
-          >
-            Street Address
-          </Label>
-          <div className="relative">
-            <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
-            <Input
-              id="address"
-              ref={addressInputRef}
-              placeholder={
-                isScriptLoaded
-                  ? "Search address on Google..."
-                  : "Enter street address"
-              }
-              className="pl-12 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base shadow-sm"
-              value={formData.addressLine}
-              onChange={(e) => updateFormData({ addressLine: e.target.value })}
-            />
-            {isLoadingScript && (
-              <div className="absolute right-4 top-3.5">
-                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+        {formData.type === ListingType.VENUE && (
+          <div className="grid gap-3">
+            <Label
+              htmlFor="address"
+              className="text-base font-medium text-gray-700"
+            >
+              Street Address
+            </Label>
+            <div className="relative">
+              <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+              <Input
+                id="address"
+                ref={addressInputRef}
+                placeholder={
+                  isScriptLoaded
+                    ? "Search address on Google..."
+                    : "Enter street address"
+                }
+                className="pl-12 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base shadow-sm"
+                value={formData.addressLine}
+                onChange={(e) => updateFormData({ addressLine: e.target.value })}
+              />
+              {isLoadingScript && (
+                <div className="absolute right-4 top-3.5">
+                  <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                </div>
+              )}
+            </div>
+            {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
+              <p className="text-xs text-amber-600">
+                * Google Maps API Key missing in environment settings.
+                Autocomplete disabled.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Map Placeholder */}
+        {formData.type === ListingType.VENUE && (
+          <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-gray-100 shadow-sm bg-gray-50 group">
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50">
+              <iframe
+                src={mapSrc}
+                width="100%"
+                height="100%"
+                style={{ border: 0, opacity: 0.9 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="transition-all duration-500"
+              ></iframe>
+            </div>
+            {/* Interactive overlay only if address is missing, otherwise let user interact with map (albeit limited in embed) */}
+            {!formData.addressLine && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-gray-200 text-sm font-medium text-gray-600">
+                  Enter an address to update map
+                </div>
               </div>
             )}
           </div>
-          {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
-            <p className="text-xs text-amber-600">
-              * Google Maps API Key missing in environment settings.
-              Autocomplete disabled.
-            </p>
-          )}
-        </div>
-
-        {/* Map Placeholder */}
-        <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-gray-100 shadow-sm bg-gray-50 group">
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50">
-            <iframe
-              src={mapSrc}
-              width="100%"
-              height="100%"
-              style={{ border: 0, opacity: 0.9 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="transition-all duration-500"
-            ></iframe>
-          </div>
-          {/* Interactive overlay only if address is missing, otherwise let user interact with map (albeit limited in embed) */}
-          {!formData.addressLine && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-gray-200 text-sm font-medium text-gray-600">
-                Enter an address to update map
-              </div>
-            </div>
-          )}
-        </div>
+        )}
 
         <div className="grid gap-6 sm:grid-cols-3">
           <div className="grid gap-3">
@@ -258,22 +264,26 @@ export function LocationStep({
               className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base"
             />
           </div>
-          <div className="grid gap-3">
-            <Label
-              htmlFor="zip"
-              className="text-base font-medium text-gray-700"
-            >
-              Zip Code
-            </Label>
-            <Input
-              id="zip"
-              placeholder="Zip Code"
-              value={formData.zipCode || ""}
-              onChange={(e) => updateFormData({ zipCode: e.target.value })}
-              className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base"
-            />
-          </div>
+          {formData.type === ListingType.VENUE && (
+            <div className="grid gap-3">
+              <Label
+                htmlFor="zip"
+                className="text-base font-medium text-gray-700"
+              >
+                Zip Code
+              </Label>
+              <Input
+                id="zip"
+                placeholder="Zip Code"
+                value={formData.zipCode || ""}
+                onChange={(e) => updateFormData({ zipCode: e.target.value })}
+                className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 text-base"
+              />
+            </div>
+          )}
         </div>
+
+
       </div>
 
       <div className="flex justify-between pt-4">

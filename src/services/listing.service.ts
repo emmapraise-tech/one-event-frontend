@@ -15,18 +15,26 @@ export const listingService = {
 
 		// Top-level fields
 		formData.append('vendorId', vendorId);
-		formData.append('type', data.type);
+		
+		// Map frontend ListingType to backend ListingType and ServiceType
+		let backendListingType = 'VENUE';
+		let backendServiceType: string | undefined = undefined;
+		
+		if (data.type !== ListingType.VENUE) {
+			backendListingType = 'SERVICE';
+			if (data.type === ListingType.PHOTOGRAPHER) backendServiceType = 'PHOTOGRAPHY';
+			else if (data.type === ListingType.ENTERTAINMENT) backendServiceType = 'DJ';
+			else backendServiceType = data.type;
+		}
+
+		formData.append('type', backendListingType);
 		formData.append('name', data.title);
 		if (data.slug) formData.append('slug', data.slug);
 		formData.append('description', data.description || '');
-		formData.append('zipCode', data.zipCode || '00000');
-		formData.append('streetAddress', data.addressLine);
 		formData.append('addressLine', data.addressLine);
 		formData.append('city', data.city);
 		formData.append('state', data.state);
 		formData.append('country', data.country);
-		if (data.latitude) formData.append('latitude', data.latitude.toString());
-		if (data.longitude) formData.append('longitude', data.longitude.toString());
 		formData.append('currency', data.currency || 'NGN');
 		formData.append('isPublished', 'true');
 		if (data.basePrice) formData.append('basePrice', data.basePrice.toString());
@@ -38,16 +46,31 @@ export const listingService = {
 			});
 		}
 
-		// Details (Venue Specifics)
-		const details = {
-			capacity: data.seatedCapacity,
-			floorArea: data.totalArea,
-			parkingCap: data.parkingCap,
-			hasIndoor: data.hasIndoor,
-			hasOutdoor: data.hasOutdoor,
-			amenities: data.amenities,
-		};
-		formData.append('details', JSON.stringify(details));
+		// Details (Venue Specifics or Service Specifics)
+		if (backendListingType === 'VENUE') {
+			const venueDetails = {
+				capacity: data.seatedCapacity || 50,
+				floorArea: data.totalArea,
+				parkingCap: data.parkingCap,
+				hasIndoor: data.hasIndoor,
+				hasOutdoor: data.hasOutdoor,
+				amenities: data.amenities || [],
+				zipCode: data.zipCode || '00000',
+				streetAddress: data.addressLine,
+				latitude: data.latitude,
+				longitude: data.longitude,
+			};
+			formData.append('venueDetails', JSON.stringify(venueDetails));
+		} else {
+			const serviceDetails = {
+				serviceType: backendServiceType,
+				minBookingHrs: data.minBookingHrs || 1,
+				specialties: data.specialties || '',
+				coverageArea: data.coverageArea || '',
+				coverageAreaKm: data.coverageAreaKm || 50,
+			};
+			formData.append('serviceDetails', JSON.stringify(serviceDetails));
+		}
 
 		// Add-ons
 		if (data.addOns && data.addOns.length > 0) {
@@ -64,6 +87,11 @@ export const listingService = {
 			data.imageFiles.forEach((file) => {
 				formData.append('images', file);
 			});
+		}
+
+		// Video URLs
+		if (data.videoUrls && data.videoUrls.length > 0) {
+			formData.append('videoUrls', JSON.stringify(data.videoUrls));
 		}
 
 		const response = await api.post<ApiResponse<Listing>>(
@@ -187,20 +215,30 @@ export const listingService = {
 		const formData = new FormData();
 
 		// Top-level fields mapping
-		if (data.type) formData.append('type', data.type);
+		let backendListingType = undefined;
+		let backendServiceType: string | undefined = undefined;
+
+		if (data.type) {
+			if (data.type !== ListingType.VENUE) {
+				backendListingType = 'SERVICE';
+				if (data.type === ListingType.PHOTOGRAPHER) backendServiceType = 'PHOTOGRAPHY';
+				else if (data.type === ListingType.ENTERTAINMENT) backendServiceType = 'DJ';
+				else backendServiceType = data.type;
+			} else {
+				backendListingType = 'VENUE';
+			}
+			formData.append('type', backendListingType);
+		}
+
 		if (data.title) formData.append('name', data.title);
 		if (data.slug) formData.append('slug', data.slug);
 		if (data.description !== undefined) formData.append('description', data.description || '');
-		if (data.zipCode !== undefined) formData.append('zipCode', data.zipCode || '00000');
 		if (data.addressLine) {
-			formData.append('streetAddress', data.addressLine);
 			formData.append('addressLine', data.addressLine);
 		}
 		if (data.city) formData.append('city', data.city);
 		if (data.state) formData.append('state', data.state);
 		if (data.country) formData.append('country', data.country);
-		if (data.latitude) formData.append('latitude', data.latitude.toString());
-		if (data.longitude) formData.append('longitude', data.longitude.toString());
 		if (data.currency) formData.append('currency', data.currency);
 		if (data.basePrice !== undefined) formData.append('basePrice', data.basePrice.toString());
 
@@ -211,17 +249,34 @@ export const listingService = {
 			});
 		}
 
-		// Details (Venue Specifics)
-		const details: any = {};
-		if (data.seatedCapacity !== undefined) details.capacity = data.seatedCapacity;
-		if (data.totalArea !== undefined) details.floorArea = data.totalArea;
-		if (data.parkingCap !== undefined) details.parkingCap = data.parkingCap;
-		if (data.hasIndoor !== undefined) details.hasIndoor = data.hasIndoor;
-		if (data.hasOutdoor !== undefined) details.hasOutdoor = data.hasOutdoor;
-		if (data.amenities !== undefined) details.amenities = data.amenities;
-		
-		if (Object.keys(details).length > 0) {
-			formData.append('details', JSON.stringify(details));
+		// Details (Venue Specifics or Service Specifics)
+		if (backendListingType === 'VENUE' || data.seatedCapacity !== undefined || data.totalArea !== undefined || data.amenities !== undefined || data.latitude !== undefined) {
+			const venueDetails: any = {};
+			if (data.seatedCapacity !== undefined) venueDetails.capacity = data.seatedCapacity;
+			if (data.totalArea !== undefined) venueDetails.floorArea = data.totalArea;
+			if (data.parkingCap !== undefined) venueDetails.parkingCap = data.parkingCap;
+			if (data.hasIndoor !== undefined) venueDetails.hasIndoor = data.hasIndoor;
+			if (data.hasOutdoor !== undefined) venueDetails.hasOutdoor = data.hasOutdoor;
+			if (data.amenities !== undefined) venueDetails.amenities = data.amenities;
+			if (data.zipCode !== undefined) venueDetails.zipCode = data.zipCode || '00000';
+			if (data.addressLine) venueDetails.streetAddress = data.addressLine;
+			if (data.latitude !== undefined) venueDetails.latitude = data.latitude;
+			if (data.longitude !== undefined) venueDetails.longitude = data.longitude;
+			
+			if (Object.keys(venueDetails).length > 0) {
+				formData.append('venueDetails', JSON.stringify(venueDetails));
+			}
+		} else if (backendListingType === 'SERVICE' || backendServiceType) {
+			const serviceDetails: any = {};
+			if (backendServiceType) serviceDetails.serviceType = backendServiceType;
+			if (data.minBookingHrs !== undefined) serviceDetails.minBookingHrs = data.minBookingHrs;
+			if (data.specialties !== undefined) serviceDetails.specialties = data.specialties;
+			if (data.coverageArea !== undefined) serviceDetails.coverageArea = data.coverageArea;
+			if (data.coverageAreaKm !== undefined) serviceDetails.coverageAreaKm = data.coverageAreaKm;
+			
+			if (Object.keys(serviceDetails).length > 0) {
+				formData.append('serviceDetails', JSON.stringify(serviceDetails));
+			}
 		}
 
 		// Add-ons

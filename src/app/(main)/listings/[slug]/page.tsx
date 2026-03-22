@@ -12,14 +12,13 @@ import {
 	Heart,
 	Home,
 	Users,
-	Ruler,
 	DoorOpen,
-	Utensils,
 	Zap,
 	ShieldCheck,
 	Calendar,
 	ChevronRight,
 	Sparkles,
+	Tags,
 } from 'lucide-react';
 import { useState } from 'react';
 import { ImageGrid } from '@/components/listing/image-grid';
@@ -28,6 +27,7 @@ import { ListingDetailSkeleton } from '@/components/ui/skeletons';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AMENITY_MAP } from '@/constants/amenities';
+import { ListingMediaType, ListingMedia } from '@/types/listing';
 
 export default function ListingDetailPage() {
 	const params = useParams();
@@ -155,22 +155,41 @@ export default function ListingDetailPage() {
 								</h2>
 								<div className="text-neutral-text-muted">
 									{(() => {
-										const detail = listing.venueDetail || listing.details;
-										if (listing.type === 'VENUE' && detail) {
+										const vDetail = listing.venueDetail || listing.details;
+										const sDetail = listing.serviceDetail;
+										
+										if (listing.type === 'VENUE' && vDetail) {
 											return (
 												<span>
-													{detail.capacity || detail.seatedCapacity || 0} guests
-													{detail.standingCapacity
-														? ` (${detail.standingCapacity} standing)`
+													{vDetail.capacity || vDetail.seatedCapacity || 0} guests
+													{vDetail.standingCapacity
+														? ` (${vDetail.standingCapacity} standing)`
 														: ''}{' '}
-													• {detail.floorArea || detail.totalArea || 0} sq ft •{' '}
-													{detail.parkingCap || 0} parking •{' '}
-													{detail.hasIndoor ? 'Indoor' : ''}
-													{detail.hasIndoor && detail.hasOutdoor ? ' & ' : ''}
-													{detail.hasOutdoor ? 'Outdoor' : ''}
+													• {vDetail.floorArea || vDetail.totalArea || 0} sq ft •{' '}
+													{vDetail.parkingCap || 0} parking •{' '}
+													{vDetail.hasIndoor ? 'Indoor' : ''}
+													{vDetail.hasIndoor && vDetail.hasOutdoor ? ' & ' : ''}
+													{vDetail.hasOutdoor ? 'Outdoor' : ''}
 												</span>
 											);
 										}
+										
+										if (sDetail) {
+											return (
+												<span className="flex flex-wrap gap-x-2 items-center">
+													{sDetail.serviceType && (
+														<span className="capitalize">{sDetail.serviceType.toLowerCase()}</span>
+													)}
+													{sDetail.minBookingHrs && (
+														<>
+															<span className="text-neutral-300">•</span>
+															<span>Min. {sDetail.minBookingHrs} hrs</span>
+														</>
+													)}
+												</span>
+											);
+										}
+										
 										return (
 											<span>
 												{listing.type.charAt(0) +
@@ -253,70 +272,99 @@ export default function ListingDetailPage() {
 							)}
 						</div>
 
-						{/* Amenities */}
-						<div className="border-b border-neutral-border pb-6">
-							<h2 className="text-xl font-semibold text-neutral-text-primary mb-4">
-								What this place offers
-							</h2>
-							<div className="grid sm:grid-cols-2 gap-4">
+						{/* Amenities (Only for Venues) */}
+						{listing.type === 'VENUE' && (
+							<div className="border-b border-neutral-border pb-6">
+								<h2 className="text-xl font-semibold text-neutral-text-primary mb-4">
+									What this place offers
+								</h2>
+								<div className="grid sm:grid-cols-2 gap-4">
+									{(() => {
+										const detail = listing.venueDetail || listing.details;
+										const rawAmenities = detail?.amenities || [];
+										const amenities = Array.isArray(rawAmenities)
+											? rawAmenities
+											: Object.entries(rawAmenities)
+													.filter(([_, v]) => v)
+													.map(([k]) => k);
+
+										if (amenities.length === 0) {
+											return (
+												<div className="text-neutral-500 italic">
+													No amenities listed.
+												</div>
+											);
+										}
+
+										const displayAmenities = showAllAmenities
+											? amenities
+											: (amenities as any[]).slice(0, 6);
+
+										return (displayAmenities as string[]).map((slug) => {
+											const config =
+												AMENITY_MAP[slug as keyof typeof AMENITY_MAP];
+											if (!config) return null;
+											return (
+												<AmenityItem
+													key={slug}
+													icon={config.icon}
+													label={config.label}
+												/>
+											);
+										});
+									})()}
+								</div>
 								{(() => {
 									const detail = listing.venueDetail || listing.details;
 									const rawAmenities = detail?.amenities || [];
-									const amenities = Array.isArray(rawAmenities)
-										? rawAmenities
-										: Object.entries(rawAmenities)
-												.filter(([_, v]) => v)
-												.map(([k]) => k);
+									const amenitiesCount = Array.isArray(rawAmenities)
+										? rawAmenities.length
+										: Object.values(rawAmenities).filter(Boolean).length;
 
-									if (amenities.length === 0) {
+									if (amenitiesCount > 6) {
 										return (
-											<div className="text-neutral-500 italic">
-												No amenities listed.
-											</div>
+											<Button
+												variant="outline"
+												className="mt-6 border-neutral-200 text-neutral-900 hover:border-neutral-900 transition-colors px-6 h-12 font-bold rounded-xl"
+												onClick={() => setShowAllAmenities(!showAllAmenities)}
+											>
+												{showAllAmenities
+													? 'Show less'
+													: `Show all ${amenitiesCount} amenities`}
+											</Button>
 										);
 									}
-
-									const displayAmenities = showAllAmenities
-										? amenities
-										: (amenities as any[]).slice(0, 6);
-
-									return (displayAmenities as string[]).map((slug) => {
-										const config =
-											AMENITY_MAP[slug as keyof typeof AMENITY_MAP];
-										if (!config) return null;
-										return (
-											<AmenityItem
-												key={slug}
-												icon={config.icon}
-												label={config.label}
-											/>
-										);
-									});
+									return null;
 								})()}
 							</div>
-							{(() => {
-								const detail = listing.venueDetail || listing.details;
-								const rawAmenities = detail?.amenities || [];
-								const amenitiesCount = Array.isArray(rawAmenities)
-									? rawAmenities.length
-									: Object.values(rawAmenities).filter(Boolean).length;
+						)}
 
-								if (amenitiesCount > 6) {
-									return (
-										<Button
-											variant="outline"
-											className="mt-6 border-neutral-200 text-neutral-900 hover:border-neutral-900 transition-colors px-6 h-12 font-bold rounded-xl"
-											onClick={() => setShowAllAmenities(!showAllAmenities)}
-										>
-											{showAllAmenities
-												? 'Show less'
-												: `Show all ${amenitiesCount} amenities`}
-										</Button>
-									);
-								}
-								return null;
-							})()}
-						</div>
+						{/* Specialties (Only for Services) */}
+						{listing.type !== 'VENUE' && listing.serviceDetail?.specialties && (
+							<div className="border-b border-neutral-border pb-6">
+								<h2 className="text-xl font-semibold text-neutral-text-primary mb-4">
+									Specialties & Expertise
+								</h2>
+								<div className="grid sm:grid-cols-2 gap-4">
+									{(() => {
+										const specialties = Array.isArray(listing.serviceDetail.specialties)
+											? listing.serviceDetail.specialties
+											: [listing.serviceDetail.specialties];
+										
+										return specialties.map((spec: string, idx: number) => (
+											<div key={idx} className="flex items-center gap-3 text-neutral-text-muted">
+												<div className="text-brand-blue">
+													<Tags className="h-5 w-5" />
+												</div>
+												<span className="font-medium">
+													{spec}
+												</span>
+											</div>
+										));
+									})()}
+								</div>
+							</div>
+						)}
 
 						{/* Reviews Summary */}
 						<div className="pb-8">
@@ -341,42 +389,77 @@ export default function ListingDetailPage() {
 							</div>
 						</div>
 
-						{/* Map Placeholder */}
-						<div className="border-t border-neutral-border pt-8">
-							<h2 className="text-xl font-semibold text-neutral-text-primary mb-2">
-								Where you'll be
-							</h2>
-							<p className="text-neutral-text-muted mb-6">
-								{listing.addressLine}, {listing.city}
-							</p>
-							{(() => {
-								const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-								const hasCoords =
-									listing.latitude != null && listing.longitude != null;
-								const addressQuery = `${listing.addressLine}, ${listing.city}, ${listing.state}`;
-								const q = hasCoords
-									? `${listing.latitude},${listing.longitude}`
-									: addressQuery;
+						{/* Map Location (Only for Venues) */}
+						{listing.type === 'VENUE' && (
+							<div className="border-t border-neutral-border pt-8">
+								<h2 className="text-xl font-semibold text-neutral-text-primary mb-2">
+									Where you'll be
+								</h2>
+								<p className="text-neutral-text-muted mb-6">
+									{listing.addressLine}, {listing.city}
+								</p>
+								{(() => {
+									const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+									const hasCoords =
+										listing.latitude != null && listing.longitude != null;
+									const addressQuery = `${listing.addressLine}, ${listing.city}, ${listing.state}`;
+									const q = hasCoords
+										? `${listing.latitude},${listing.longitude}`
+										: addressQuery;
 
-								const mapSrc = apiKey
-									? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(q)}&zoom=15`
-									: `https://maps.google.com/maps?q=${encodeURIComponent(q)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+									const mapSrc = apiKey
+										? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(q)}&zoom=15`
+										: `https://maps.google.com/maps?q=${encodeURIComponent(q)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
 
-								return (
-									<div className="aspect-video w-full rounded-xl relative overflow-hidden border border-neutral-border shadow-sm bg-neutral-100">
-										<iframe
-											width="100%"
-											height="100%"
-											style={{ border: 0 }}
-											loading="lazy"
-											allowFullScreen
-											referrerPolicy="no-referrer-when-downgrade"
-											src={mapSrc}
-										></iframe>
-									</div>
-								);
-							})()}
-						</div>
+									return (
+										<div className="aspect-video w-full rounded-xl relative overflow-hidden border border-neutral-border shadow-sm bg-neutral-100">
+											<iframe
+												width="100%"
+												height="100%"
+												style={{ border: 0 }}
+												loading="lazy"
+												allowFullScreen
+												referrerPolicy="no-referrer-when-downgrade"
+												src={mapSrc}
+											></iframe>
+										</div>
+									);
+								})()}
+							</div>
+						)}
+
+						{/* Video Section (If Any) */}
+						{listing.media?.some((m: ListingMedia) => m.type === ListingMediaType.VIDEO) && (
+							<div className="border-t border-neutral-border pt-8">
+								<h2 className="text-xl font-semibold text-neutral-text-primary mb-6 flex items-center gap-2">
+									<Zap className="h-5 w-5 text-brand-gold" />
+									Featured Videos
+								</h2>
+								<div className="grid gap-6 sm:grid-cols-2">
+									{listing.media
+										.filter((m: ListingMedia) => m.type === ListingMediaType.VIDEO)
+										.map((video: ListingMedia, idx: number) => (
+											<div
+												key={idx}
+												className="aspect-video w-full rounded-xl overflow-hidden bg-black border border-neutral-border shadow-sm"
+											>
+											{/* Simple iFrame for YouTube/Vimeo links */}
+											<iframe
+												width="100%"
+												height="100%"
+												src={video.url.includes('youtube.com') || video.url.includes('youtu.be') 
+													? video.url.replace('watch?v=', 'embed/').split('&')[0]
+													: video.url
+												}
+												style={{ border: 0 }}
+												allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+												allowFullScreen
+											></iframe>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
 					</div>
 
 					{/* Right Sidebar */}

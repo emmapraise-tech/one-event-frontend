@@ -58,7 +58,7 @@ export function FormFieldsStep({
 		<div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 			<div>
 				<h2 className="text-2xl font-black text-gray-900 tracking-tight">
-					Custom Form Fields
+					Additional Information
 				</h2>
 				<p className="text-gray-500 mt-2 font-medium">
 					Add specific questions or requests for information from customers booking this listing.

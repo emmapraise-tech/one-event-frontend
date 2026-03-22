@@ -36,8 +36,12 @@ export function useListings(filters: ListingFilters = { page: 1, limit: 10 }) {
 			id: string;
 			data: Partial<CreateListingData>;
 		}) => listingService.update(id, data),
-		onSuccess: () => {
+		onSuccess: (_, variables) => {
 			queryClient.invalidateQueries({ queryKey: ['listings'] });
+			queryClient.invalidateQueries({ queryKey: ['my-listings'] });
+			if (variables?.id) {
+				queryClient.invalidateQueries({ queryKey: ['listing', variables.id] });
+			}
 		},
 	});
 

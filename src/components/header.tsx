@@ -85,14 +85,13 @@ export function Header() {
 				<div className="flex items-center gap-4 z-50">
 					{/* Always visible "Book a Venue" button except for Vendors */}
 					{(!isAuthenticated || user?.type === 'CUSTOMER') && (
-						<Link href="/listings">
-							<Button
-								variant="default"
-								className="hidden md:flex rounded-full px-6 font-black bg-brand-gold hover:bg-brand-gold-hover text-white shadow-lg shadow-amber-500/10 transition-all active:scale-95 h-11"
-							>
-								Book a venue
-							</Button>
-						</Link>
+						<Button
+							asChild
+							variant="default"
+							className="hidden md:flex rounded-full px-6 font-black bg-brand-gold hover:bg-brand-gold-hover text-white shadow-lg shadow-amber-500/10 transition-all active:scale-95 h-11"
+						>
+							<Link href="/listings">Book a venue</Link>
+						</Button>
 					)}
 
 					{isAuthenticated && user ? (
@@ -208,19 +207,21 @@ export function Header() {
 								className="hidden md:flex relative group cursor-pointer"
 								title="Login / Sign up"
 							>
-								<Link href="/login">
-									<Button
-										variant="ghost"
-										size="icon"
-										className={`rounded-full h-10 w-10 transition-all ${
-											isTransparent
-												? 'text-white hover:bg-white/10 hover:text-white border border-white/30'
-												: 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 border border-neutral-200'
-										}`}
-									>
+								<Button
+									asChild
+									variant="ghost"
+									size="icon"
+									className={`rounded-full h-10 w-10 transition-all ${
+										isTransparent
+											? 'text-white hover:bg-white/10 hover:text-white border border-white/30'
+											: 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 border border-neutral-200'
+									}`}
+								>
+									<Link href="/login">
 										<User className="h-5 w-5" />
-									</Button>
-								</Link>
+										<span className="sr-only">Login / Sign Up</span>
+									</Link>
+								</Button>
 								{/* Custom Tooltip */}
 								<div className="absolute top-full mt-2 right-0 opacity-0 group-hover:opacity-100 transition-opacity bg-neutral-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none">
 									Login / Sign Up

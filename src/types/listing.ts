@@ -31,6 +31,10 @@ export interface AddOn {
 }
 export interface VenueDetail {
 	id: string;
+	zipCode?: string;
+	streetAddress?: string;
+	latitude?: number;
+	longitude?: number;
 	capacity?: number;
 	seatedCapacity?: number;
 	floorArea?: number;
@@ -42,11 +46,35 @@ export interface VenueDetail {
 	amenities: string[] | Record<string, boolean>;
 }
 
+export interface ServiceDetail {
+	id: string;
+	serviceType: string;
+	minBookingHrs?: number;
+	coverageAreaKm?: number;
+	coverageArea?: string;
+	specialties?: string;
+}
+
 export interface ListingImage {
 	id: string;
 	listingId: string;
 	url: string;
 	alt?: string;
+	createdAt: Date;
+	updatedAt: Date;
+	type?: string;
+}
+
+export enum ListingMediaType {
+	IMAGE = 'IMAGE',
+	VIDEO = 'VIDEO',
+}
+
+export interface ListingMedia {
+	id: string;
+	listingId: string;
+	url: string;
+	type: ListingMediaType;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -97,9 +125,12 @@ export interface Listing {
 	addons?: AddOn[]; // Fallback for lowercase
 	venueDetail?: VenueDetail;
 	details?: VenueDetail; // Fallback for 'details' key
+	serviceDetail?: ServiceDetail;
 	standing_capacity?: number; // Another potential fallback
 	formFields?: FormField[];
+	media?: ListingMedia[];
 }
+
 
 export interface CreateListingData {
 	vendorId: string;
@@ -133,7 +164,7 @@ export interface ListingFormData {
 	latitude?: number;
 	longitude?: number;
 
-	// Specs
+	// Specs (Venue)
 	totalArea?: number;
 	seatedCapacity?: number;
 	standingCapacity?: number;
@@ -141,12 +172,20 @@ export interface ListingFormData {
 	hasIndoor?: boolean;
 	hasOutdoor?: boolean;
 	amenities: string[];
+
+	// Specs (Service)
+	minBookingHrs?: number;
+	specialties: string[];
+	coverageArea?: string;
+	coverageAreaKm?: number;
+
 	addOns: { name: string; price: number }[];
 	formFields: FormField[];
 
 	// Media
 	imageUrls: string[]; // For preview
 	imageFiles: File[]; // For upload
+	videoUrls?: string[]; // For upload
 }
 
 export interface ListingFilters {

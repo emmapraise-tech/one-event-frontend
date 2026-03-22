@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Image as ImageIcon, Upload, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Image as ImageIcon, Upload, X, Video, Plus } from "lucide-react";
 import { ListingFormData } from "@/types/listing";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +21,7 @@ export function MediaStep({
   onNext,
   onBack,
 }: StepProps) {
+  const [videoInput, setVideoInput] = useState("");
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
@@ -42,6 +46,21 @@ export function MediaStep({
       imageFiles: newFiles,
       imageUrls: newUrls,
     });
+  };
+
+  const handleAddVideo = () => {
+    if (videoInput.trim()) {
+      updateFormData({
+        videoUrls: [...(formData.videoUrls || []), videoInput.trim()],
+      });
+      setVideoInput("");
+    }
+  };
+
+  const removeVideo = (index: number) => {
+    const newVideos = [...(formData.videoUrls || [])];
+    newVideos.splice(index, 1);
+    updateFormData({ videoUrls: newVideos });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -145,6 +164,75 @@ export function MediaStep({
             </div>
           </div>
         )}
+
+        {/* Video Links Section */}
+        <div className="pt-8 border-t border-gray-100">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 text-red-600">
+              <Video className="h-5 w-5" />
+            </div>
+            <h3 className="text-lg font-semibold">Video Links</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="flex gap-3">
+              <Input
+                placeholder="Paste YouTube, Vimeo, or direct video link here..."
+                value={videoInput}
+                onChange={(e) => setVideoInput(e.target.value)}
+                className="h-12 border-gray-200 focus:border-red-500 focus:ring-red-500/20"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddVideo();
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                className="h-12 px-6 bg-gray-900 text-white hover:bg-gray-800"
+                onClick={handleAddVideo}
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Add Link
+              </Button>
+            </div>
+
+            {formData.videoUrls && formData.videoUrls.length > 0 && (
+              <div className="space-y-3 mt-4">
+                {formData.videoUrls.map((url, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl gap-4"
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="h-10 w-10 flex border border-red-200 items-center justify-center rounded-lg bg-red-50 text-red-500 shrink-0">
+                        <Video className="h-5 w-5" />
+                      </div>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm font-medium text-blue-600 hover:underline truncate"
+                      >
+                        {url}
+                      </a>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeVideo(i)}
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 shrink-0"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-between pt-4">
