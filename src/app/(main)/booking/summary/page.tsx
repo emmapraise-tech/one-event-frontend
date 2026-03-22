@@ -506,7 +506,7 @@ function BookingSummaryContent() {
 																	style={{ backgroundColor: String(value) }}
 																/>
 															)}
-															<span className="font-medium text-neutral-900 break-words whitespace-pre-line">
+															<span className="font-medium text-neutral-900 wrap-break-word whitespace-pre-line">
 																{fieldConfig?.type === 'checkbox'
 																	? value
 																		? 'Yes'

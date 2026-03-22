@@ -62,6 +62,11 @@ export default function EditListingPage() {
 		hasIndoor: listing.venueDetail?.hasIndoor,
 		hasOutdoor: listing.venueDetail?.hasOutdoor,
 		
+		minBookingHrs: listing.serviceDetail?.minBookingHrs,
+		specialties: listing.serviceDetail?.specialties ? (Array.isArray(listing.serviceDetail.specialties) ? listing.serviceDetail.specialties : listing.serviceDetail.specialties.split(',').map((s: string) => s.trim())) : [],
+		coverageArea: listing.serviceDetail?.coverageArea,
+		coverageAreaKm: listing.serviceDetail?.coverageAreaKm,
+
 		amenities: listing.venueDetail?.amenities ? (Array.isArray(listing.venueDetail.amenities) ? listing.venueDetail.amenities : Object.entries(listing.venueDetail.amenities).filter(([_, v]) => v).map(([k]) => k)) : [],
 		addOns: listing.addOns || listing.addons || [],
 		formFields: listing.formFields || [],
