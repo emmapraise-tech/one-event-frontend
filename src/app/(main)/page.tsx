@@ -177,8 +177,8 @@ export default function Home() {
 				</section>
 
 				{/* EXPLORE BY CATEGORY */}
-				{/* Users requested removal of category section (commented out) 
-				<section className="bg-white py-20 px-4">
+				{/* Users requested removal of category section (commented out)  */}
+				{/* <section className="bg-white py-20 px-4">
 					<div className="container mx-auto">
 						<div className="flex justify-between items-end mb-12">
 							<div>
@@ -222,7 +222,7 @@ export default function Home() {
 						</div>
 					</div>
 				</section>
-				*/}
+				 */}
 
 				{/* FEATURED EVENT CENTERS */}
 				<section className="bg-neutral-50 py-20 px-4">

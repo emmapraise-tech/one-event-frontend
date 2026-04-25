@@ -292,7 +292,7 @@ export function LocationStep({
         </Button>
         <Button
           type="submit"
-          className="bg-brand-gold hover:bg-brand-gold-hover text-white w-full sm:w-auto font-bold shadow-sm"
+          // className="bg-brand-gold hover:bg-brand-gold-hover text-white w-full sm:w-auto font-bold shadow-sm"
         >
           Continue
         </Button>

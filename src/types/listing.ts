@@ -131,7 +131,6 @@ export interface Listing {
 	media?: ListingMedia[];
 }
 
-
 export interface CreateListingData {
 	vendorId: string;
 	type: ListingType;

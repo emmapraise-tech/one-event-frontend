@@ -35,18 +35,25 @@ export function PricingStep({
   onBack,
   isLastStep,
 }: StepProps) {
-  // Local state for calendar interactions (simple single date toggling for now to block dates)
-  // In a real app, this might be a date range picker or multi-select
-  const [blockedDates, setBlockedDates] = useState<Date[]>([
-    new Date(2023, 9, 3),
-  ]); // Mock initial blocked date
+  // Local state for calendar interactions
+  const [currentViewDate, setCurrentViewDate] = useState(new Date());
+  const [blockedDates, setBlockedDates] = useState<Date[]>([]);
+
+  const handlePrevMonth = () => {
+    setCurrentViewDate(new Date(currentViewDate.getFullYear(), currentViewDate.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentViewDate(new Date(currentViewDate.getFullYear(), currentViewDate.getMonth() + 1, 1));
+  };
 
   const toggleDate = (day: number) => {
-    const date = new Date(2023, 9, day);
-    // check if exists
+    const date = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth(), day);
     const exists = blockedDates.some(
       (d) =>
-        d.getDate() === day && d.getMonth() === 9 && d.getFullYear() === 2023,
+        d.getDate() === day && 
+        d.getMonth() === currentViewDate.getMonth() && 
+        d.getFullYear() === currentViewDate.getFullYear()
     );
 
     if (exists) {
@@ -55,10 +62,10 @@ export function PricingStep({
           (d) =>
             !(
               d.getDate() === day &&
-              d.getMonth() === 9 &&
-              d.getFullYear() === 2023
-            ),
-        ),
+              d.getMonth() === currentViewDate.getMonth() &&
+              d.getFullYear() === currentViewDate.getFullYear()
+            )
+        )
       );
     } else {
       setBlockedDates((prev) => [...prev, date]);
@@ -68,9 +75,31 @@ export function PricingStep({
   const isBlocked = (day: number) => {
     return blockedDates.some(
       (d) =>
-        d.getDate() === day && d.getMonth() === 9 && d.getFullYear() === 2023,
+        d.getDate() === day && 
+        d.getMonth() === currentViewDate.getMonth() && 
+        d.getFullYear() === currentViewDate.getFullYear()
     );
   };
+
+  // Helper to get days in month
+  const getDaysInMonth = (year: number, month: number) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  // Helper to get day of week for first day of month (0 = Sunday, ..., 6 = Saturday)
+  const getFirstDayOfMonth = (year: number, month: number) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const daysInMonth = getDaysInMonth(currentViewDate.getFullYear(), currentViewDate.getMonth());
+  const firstDay = getFirstDayOfMonth(currentViewDate.getFullYear(), currentViewDate.getMonth());
+  const monthName = currentViewDate.toLocaleString('default', { month: 'long' });
+  const year = currentViewDate.getFullYear();
+
+  // Previous month days to fill the gap
+  const prevMonthDays = getDaysInMonth(currentViewDate.getFullYear(), currentViewDate.getMonth() - 1);
+  const emptyDays = Array.from({ length: firstDay }, (_, i) => prevMonthDays - firstDay + i + 1);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,12 +252,14 @@ export function PricingStep({
           <div className="rounded-2xl border border-gray-200 p-6 bg-white shadow-sm select-none">
             <div className="mb-6 flex items-center justify-between">
               <span className="text-lg font-bold text-gray-900">
-                October 2023
+                {monthName} {year}
               </span>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="icon"
+                  onClick={handlePrevMonth}
+                  type="button"
                   className="h-9 w-9 border-gray-200 hover:bg-gray-50 hover:text-blue-600"
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -236,6 +267,8 @@ export function PricingStep({
                 <Button
                   variant="outline"
                   size="icon"
+                  onClick={handleNextMonth}
+                  type="button"
                   className="h-9 w-9 border-gray-200 hover:bg-gray-50 hover:text-blue-600"
                 >
                   <ChevronRight className="h-5 w-5" />
@@ -254,12 +287,14 @@ export function PricingStep({
               <div>Sa</div>
             </div>
             <div className="grid grid-cols-7 gap-3 text-center text-sm font-medium">
-              {/* Empty days */}
-              <div className="h-10 p-2 text-gray-200">28</div>
-              <div className="h-10 p-2 text-gray-200">29</div>
-              <div className="h-10 p-2 text-gray-200">30</div>
-              {/* Days */}
-              {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => {
+              {/* Empty days from previous month */}
+              {emptyDays.map((day) => (
+                <div key={`empty-${day}`} className="h-10 w-10 flex items-center justify-center text-gray-300 mx-auto">
+                  {day}
+                </div>
+              ))}
+              {/* Days of current month */}
+              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
                 const blocked = isBlocked(day);
                 return (
                   <div
@@ -301,13 +336,13 @@ export function PricingStep({
           <ChevronLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
-        <Button
+        {/* <Button
           type="submit"
-          className="bg-brand-gold hover:bg-brand-gold-hover text-white h-12 px-10 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-orange-100"
+          className="hover:bg-blue-700 w-full sm:w-auto bg-brand-blue text-white px-10 h-12 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-100"
         >
           {isLastStep ? "Publish Listing" : "Continue"}
           <ChevronRight className="h-4 w-4 ml-2" />
-        </Button>
+        </Button> */}
       </div>
     </form>
   );
