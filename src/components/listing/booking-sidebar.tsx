@@ -136,13 +136,14 @@ export function BookingSidebar({
 	const activePrice = selectedHall ? selectedHall.price : basePrice;
 
 	const venueFee = activePrice * numberOfDays;
-	const serviceCharge = venueFee * 0.05;
-
 	const addOnsTotal = addOns
 		.filter((addon) => selectedAddOnIds.includes(addon.id))
 		.reduce((sum, addon) => sum + (addon.price || 0), 0);
 
-	const total = venueFee + serviceCharge + addOnsTotal;
+	const subTotal = venueFee + addOnsTotal;
+	const serviceCharge = subTotal * 0.05; // 5% Service Charge
+	const vat = (subTotal + serviceCharge) * 0.075; // 7.5% VAT on (Subtotal + Service Charge)
+	const total = subTotal + vat + serviceCharge;
 	const deposit = total * 0.7;
 
 	// Auto-select hall if only one exists
@@ -232,12 +233,17 @@ export function BookingSidebar({
 			venueImage,
 			venueStartPrice: basePrice,
 			venueFee,
+			vat,
 			serviceCharge,
 			addOnsTotal,
 			selectedAddOns: selectedAddOnsData,
+			totalAmount: total,
 			total,
 			guests: guests === 'others' ? customGuests : guests,
-			dateRange,
+			dateRange: {
+				from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+				to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
+			},
 			numberOfDays,
 			date: dateRange?.from ? format(dateRange.from, 'PPP') : '',
 			listingId,
@@ -802,16 +808,21 @@ export function BookingSidebar({
 						</span>
 					</div>
 					<div className="flex justify-between text-sm">
+						<span className="text-neutral-500">Add-ons</span>
+						<span className="font-medium text-neutral-900">
+							₦ {addOnsTotal.toLocaleString()}
+						</span>
+					</div>
+					<div className="flex justify-between text-sm">
 						<span className="text-neutral-500">Service Charge (5%)</span>
 						<span className="font-medium text-neutral-900">
 							₦ {serviceCharge.toLocaleString()}
 						</span>
 					</div>
-
 					<div className="flex justify-between text-sm">
-						<span className="text-neutral-500">Add-ons</span>
+						<span className="text-neutral-500">VAT (7.5%)</span>
 						<span className="font-medium text-neutral-900">
-							₦ {addOnsTotal.toLocaleString()}
+							₦ {vat.toLocaleString()}
 						</span>
 					</div>
 					<Separator className="my-2 bg-neutral-200" />

@@ -123,9 +123,12 @@ function BookingSummaryContent() {
 	}
 
 	// Calculations
-	const subtotal = bookingData.total;
-	const vat = subtotal * 0.075;
-	const grandTotal = subtotal + vat;
+	const venueFee = bookingData.venueFee || 0;
+	const addOnsTotal = bookingData.addOnsTotal || 0;
+	const subtotal = venueFee + addOnsTotal;
+	const serviceCharge = bookingData.serviceCharge || subtotal * 0.05;
+	const vat = bookingData.vat || (subtotal + serviceCharge) * 0.075;
+	const grandTotal = bookingData.totalAmount || subtotal + vat + serviceCharge;
 
 	const handlePayment = async () => {
 		if (!termsAccepted) {
@@ -148,8 +151,9 @@ function BookingSummaryContent() {
 				details: {
 					selectedAddOns: bookingData.selectedAddOns,
 					venueFee: bookingData.venueFee,
-					serviceCharge: bookingData.serviceCharge,
 					vat,
+					serviceCharge,
+					subTotal: subtotal,
 				},
 			});
 
@@ -566,20 +570,9 @@ function BookingSummaryContent() {
 										<div className="flex justify-between items-center text-neutral-600">
 											<span>Service Charge (5%)</span>
 											<span className="font-bold text-neutral-900">
-												₦{bookingData.serviceCharge.toLocaleString()}
+												₦{serviceCharge.toLocaleString()}
 											</span>
 										</div>
-										{bookingData.selectedAddOns?.map((addon: any) => (
-											<div
-												key={addon.id}
-												className="flex justify-between items-center text-neutral-600"
-											>
-												<span>{addon.name}</span>
-												<span className="font-bold text-neutral-900">
-													₦{addon.price.toLocaleString()}
-												</span>
-											</div>
-										))}
 										<div className="flex justify-between items-center text-neutral-600">
 											<span>VAT (7.5%)</span>
 											<span className="font-bold text-neutral-900">

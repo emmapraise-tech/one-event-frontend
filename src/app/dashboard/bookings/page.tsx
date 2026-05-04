@@ -70,7 +70,7 @@ export default function BookingsPage() {
 						Manage and track all event center bookings across Nigeria
 					</p>
 				</div>
-				<div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+				{/* <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
 					<Button
 						variant="outline"
 						size="icon"
@@ -82,7 +82,7 @@ export default function BookingsPage() {
 						<Plus className="h-4 w-4 mr-2" />
 						Create New
 					</Button>
-				</div>
+				</div> */}
 			</div>
 
 			{/* Stats */}

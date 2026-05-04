@@ -54,6 +54,9 @@ export interface UpdateBookingData {
 	endTime?: string;
 	numberOfGuests?: number;
 	specialRequests?: string;
+	status?: BookingStatus;
+	depositPaid?: boolean;
+	fullPaymentPaid?: boolean;
 }
 
 export interface CheckAvailabilityData {

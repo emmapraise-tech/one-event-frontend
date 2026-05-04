@@ -4,6 +4,8 @@ export interface Booking {
 	date: Date;
 	time: string;
 	location?: string;
+	hallName?: string;
+	hallId?: string;
 	type: 'wedding' | 'birthday' | 'corporate' | 'other';
 	status: 'confirmed' | 'pending' | 'blocked' | 'inquiry';
 	clientName: string;

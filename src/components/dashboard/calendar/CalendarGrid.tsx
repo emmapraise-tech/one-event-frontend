@@ -13,7 +13,7 @@ import {
 	addMonths,
 	subMonths,
 } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Booking } from './mockData';
@@ -205,8 +205,13 @@ export function CalendarGrid({
 													<div className="font-bold truncate">
 														{booking.title}
 													</div>
-													<div className="text-[10px] opacity-80 truncate">
-														{booking.time}
+													<div className="flex justify-between items-center text-[9px] opacity-80">
+														<span className="truncate">{booking.time}</span>
+														{booking.hallName && (
+															<span className="ml-1 px-1 bg-white/50 rounded shrink-0">
+																{booking.hallName}
+															</span>
+														)}
 													</div>
 												</div>
 											);
@@ -251,6 +256,7 @@ export function CalendarGrid({
 											<p className="font-bold text-gray-900">{booking.title}</p>
 											<p className="text-xs text-gray-500">
 												{booking.time} • {booking.location || 'No location'}
+												{booking.hallName && ` • ${booking.hallName}`}
 											</p>
 										</div>
 									</div>
@@ -271,6 +277,61 @@ export function CalendarGrid({
 							))}
 						</div>
 					)}
+				</div>
+			)}
+
+			{/* Day Summary Overlay/Section */}
+			{selectedDate && (
+				<div className="border-t border-gray-100 bg-gray-50 p-4">
+					<div className="flex items-center justify-between mb-3">
+						<h3 className="text-sm font-bold text-gray-900">
+							Schedule for {format(selectedDate, 'EEEE, MMMM do')}
+						</h3>
+						<Button 
+							variant="ghost" 
+							size="sm" 
+							className="h-7 text-xs"
+							onClick={() => setSelectedDate(null)}
+						>
+							Close
+						</Button>
+					</div>
+					<div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+						{getDayBookings(selectedDate).length > 0 ? (
+							getDayBookings(selectedDate).map(booking => (
+								<div 
+									key={booking.id}
+									onClick={() => onSelectBooking(booking)}
+									className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm cursor-pointer hover:border-brand-blue transition-colors"
+								>
+									<div className="flex justify-between items-start mb-2">
+										<span className={cn(
+											"text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider",
+											booking.status === 'confirmed' ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"
+										)}>
+											{booking.status}
+										</span>
+										<span className="text-[10px] font-medium text-gray-400">{booking.time}</span>
+									</div>
+									<p className="font-bold text-gray-900 text-sm mb-1">{booking.title}</p>
+									<div className="flex items-center gap-2 text-[10px] text-gray-500">
+										<span className="flex items-center gap-1">
+											<User className="h-3 w-3" />
+											{booking.clientName}
+										</span>
+										{booking.hallName && (
+											<span className="flex items-center gap-1">
+												<Building2 className="h-3 w-3" />
+												{booking.hallName}
+											</span>
+										)}
+									</div>
+								</div>
+							))
+						) : (
+							<p className="text-xs text-gray-400 italic py-2">No bookings for this date.</p>
+						)}
+					</div>
 				</div>
 			)}
 		</div>

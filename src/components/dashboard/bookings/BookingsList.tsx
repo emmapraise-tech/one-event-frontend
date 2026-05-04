@@ -191,7 +191,9 @@ export function BookingsList({
 										className="hover:bg-gray-50/50 transition-colors"
 									>
 										<td className="px-6 py-4 font-medium text-gray-900 hidden sm:table-cell">
-											#{booking.id.slice(-7).toUpperCase()}
+											<Link href={`/dashboard/bookings/${booking.id}`}>
+												#{booking.id.slice(-7).toUpperCase()}
+											</Link>
 										</td>
 										<td className="px-6 py-4">
 											<div className="flex items-center gap-3">
