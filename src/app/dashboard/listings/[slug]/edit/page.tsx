@@ -70,6 +70,7 @@ export default function EditListingPage() {
 		amenities: listing.venueDetail?.amenities ? (Array.isArray(listing.venueDetail.amenities) ? listing.venueDetail.amenities : Object.entries(listing.venueDetail.amenities).filter(([_, v]) => v).map(([k]) => k)) : [],
 		addOns: listing.addOns || listing.addons || [],
 		formFields: listing.formFields || [],
+		halls: listing.halls || [],
 		
 		imageUrls: listing.images?.map((img: any) => img.url) || [],
 		imageFiles: [],

@@ -44,7 +44,8 @@ import {
 } from 'lucide-react';
 
 import { Textarea } from '@/components/ui/textarea';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { AddOn, FormField } from '@/types/listing';
 import { bookingService } from '@/services/booking.service';
 import { useAuth } from '@/hooks/useAuth';
@@ -59,7 +60,9 @@ interface BookingSidebarProps {
 	rating?: number;
 	reviewCount?: number;
 	listingId: string;
+	slug?: string;
 	formFields?: FormField[];
+	halls?: any[];
 }
 
 export function BookingSidebar({
@@ -72,9 +75,13 @@ export function BookingSidebar({
 	reviewCount = 0,
 	addOns = [],
 	listingId,
+	slug,
 	formFields = [],
+	halls = [],
 }: BookingSidebarProps) {
+	const params = useParams();
 	const router = useRouter();
+	const currentSlug = slug || (params?.slug as string);
 	const { isAuthenticated, isLoading: authLoading } = useAuth();
 	const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 	const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
@@ -86,6 +93,7 @@ export function BookingSidebar({
 	const [paymentPreference, setPaymentPreference] = useState('full');
 	const [customFormData, setCustomFormData] = useState<Record<string, any>>({});
 	const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+	const [selectedHallId, setSelectedHallId] = useState<string>('');
 
 	// Default date range: today for 1 day
 	const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -94,8 +102,8 @@ export function BookingSidebar({
 	});
 
 	const { data: listingBookingsPaginated } = useQuery({
-		queryKey: ['bookings', 'listing', listingId],
-		queryFn: () => bookingService.findByListingId(listingId),
+		queryKey: ['bookings', 'listing', listingId, selectedHallId],
+		queryFn: () => bookingService.findByListingId(listingId, selectedHallId || undefined),
 	});
 
 	const listingBookings = listingBookingsPaginated?.data || [];
@@ -124,8 +132,11 @@ export function BookingSidebar({
 			? differenceInDays(dateRange.to, dateRange.from) + 1
 			: 1;
 
-	const venueFee = basePrice * numberOfDays;
-	const serviceCharge = venueFee * 0.1;
+	const selectedHall = halls.find(h => h.id === selectedHallId);
+	const activePrice = selectedHall ? selectedHall.price : basePrice;
+
+	const venueFee = activePrice * numberOfDays;
+	const serviceCharge = venueFee * 0.05;
 
 	const addOnsTotal = addOns
 		.filter((addon) => selectedAddOnIds.includes(addon.id))
@@ -134,9 +145,21 @@ export function BookingSidebar({
 	const total = venueFee + serviceCharge + addOnsTotal;
 	const deposit = total * 0.7;
 
+	// Auto-select hall if only one exists
+	useEffect(() => {
+		if (halls && halls.length === 1 && !selectedHallId) {
+			setSelectedHallId(halls[0].id);
+		}
+	}, [halls, selectedHallId]);
+
 	useEffect(() => {
 		const checkAvailability = async () => {
-			if (!dateRange?.from) return;
+			if (!dateRange?.from || (halls.length > 0 && !selectedHallId)) {
+				setIsAvailable(null);
+				setAvailabilityMessage(halls.length > 0 && dateRange?.from ? 'Select a hall to check availability' : '');
+				setIsCheckingAvailability(false);
+				return;
+			}
 
 			setIsCheckingAvailability(true);
 			setIsAvailable(null);
@@ -151,6 +174,7 @@ export function BookingSidebar({
 					listingId,
 					startDate,
 					endDate,
+					hallId: selectedHallId || undefined,
 				});
 
 				setIsAvailable(result.available);
@@ -169,7 +193,7 @@ export function BookingSidebar({
 		};
 
 		checkAvailability();
-	}, [dateRange, listingId]);
+	}, [dateRange, listingId, selectedHallId]);
 
 	const toggleAddOn = (id: string) => {
 		setSelectedAddOnIds((prev) =>
@@ -178,6 +202,11 @@ export function BookingSidebar({
 	};
 
 	const handleProceed = () => {
+		if (halls.length > 0 && !selectedHallId) {
+			toast.error('Please select a hall to book', { id: 'booking-error' });
+			return;
+		}
+
 		// Validating custom form fields
 		if (formFields.length > 0) {
 			const errors: Record<string, string> = {};
@@ -212,6 +241,9 @@ export function BookingSidebar({
 			numberOfDays,
 			date: dateRange?.from ? format(dateRange.from, 'PPP') : '',
 			listingId,
+			slug: currentSlug,
+			hallId: selectedHallId || undefined,
+			hallName: selectedHall?.name,
 			formData: customFormData,
 		};
 
@@ -244,10 +276,30 @@ export function BookingSidebar({
 					</div>
 					<div>
 						<span className="text-3xl font-bold text-brand-blue">
-							₦ {basePrice.toLocaleString()}
+							₦ {activePrice.toLocaleString()}
 						</span>
 						<span className="text-neutral-500 text-sm"> /day</span>
 					</div>
+
+					{halls && halls.length > 0 && (
+						<div className="space-y-2 mt-4">
+							<Label className="text-xs font-bold text-neutral-800 uppercase tracking-wide">
+								Select Hall
+							</Label>
+							<Select value={selectedHallId} onValueChange={setSelectedHallId}>
+								<SelectTrigger className="w-full bg-white border-neutral-200">
+									<SelectValue placeholder="Choose a hall" />
+								</SelectTrigger>
+								<SelectContent className="bg-white">
+									{halls.map(hall => (
+										<SelectItem key={hall.id} value={hall.id}>
+											{hall.name} - ₦{hall.price.toLocaleString()} (Cap: {hall.capacity})
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
 
 					{isCheckingAvailability ? (
 						<div className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-100">
@@ -750,7 +802,7 @@ export function BookingSidebar({
 						</span>
 					</div>
 					<div className="flex justify-between text-sm">
-						<span className="text-neutral-500">Service Charge (10%)</span>
+						<span className="text-neutral-500">Service Charge (5%)</span>
 						<span className="font-medium text-neutral-900">
 							₦ {serviceCharge.toLocaleString()}
 						</span>

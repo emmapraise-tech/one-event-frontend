@@ -9,10 +9,11 @@ import { VirtualTourModal } from './virtual-tour-modal';
 
 interface ImageGridProps {
 	images: { url: string; alt?: string }[];
+	media?: any[];
 	title: string;
 }
 
-export function ImageGrid({ images, title }: ImageGridProps) {
+export function ImageGrid({ images, media, title }: ImageGridProps) {
 	const [showGallery, setShowGallery] = useState(false);
 	const [showVirtualTour, setShowVirtualTour] = useState(false);
 
@@ -57,17 +58,19 @@ export function ImageGrid({ images, title }: ImageGridProps) {
 					/>
 					<div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
 
-					{/* Virtual Tour Button */}
-					<Button
-						onClick={(e) => {
-							e.stopPropagation();
-							setShowVirtualTour(true);
-						}}
-						className="absolute top-4 left-4 bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm border-none shadow-lg gap-2 font-bold z-10 rounded-full"
-					>
-						<PlayCircle className="h-4 w-4 text-brand-gold" />
-						360° Virtual Tour
-					</Button>
+					{/* Virtual Tour Button - Only show if videos exist */}
+					{media?.some((m: any) => m.type === 'VIDEO') && (
+						<Button
+							onClick={(e) => {
+								e.stopPropagation();
+								setShowVirtualTour(true);
+							}}
+							className="absolute top-4 left-4 bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm border-none shadow-lg gap-2 font-bold z-10 rounded-full"
+						>
+							<PlayCircle className="h-4 w-4 text-brand-gold" />
+							360° Virtual Tour
+						</Button>
+					)}
 				</div>
 
 				{/* Grid of 4 smaller images (hidden on mobile) */}

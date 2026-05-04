@@ -140,9 +140,14 @@ export default function ListingDetailPage() {
 					</div>
 				</div>
 
+
 				{/* Image Grid */}
 				<div className="mb-8">
-					<ImageGrid images={listing.images || []} title={listing.name} />
+					<ImageGrid 
+						images={listing.images || []} 
+						media={listing.media || []}
+						title={listing.name} 
+					/>
 				</div>
 
 				<div className="grid gap-8 lg:grid-cols-3">
@@ -272,6 +277,60 @@ export default function ListingDetailPage() {
 							)}
 						</div>
 
+						{/* Halls & Spaces (For Venues) */}
+						{listing.type === 'VENUE' && listing.halls && listing.halls.length > 0 && (
+							<div className="border-b border-neutral-border pb-6">
+								<h2 className="text-xl font-semibold text-neutral-text-primary mb-6 flex items-center gap-2">
+									<Sparkles className="h-5 w-5 text-brand-gold" />
+									Available Halls & Spaces
+								</h2>
+								<div className="grid gap-4">
+									{listing.halls.map((hall: any, idx: number) => (
+										<div 
+											key={hall.id || idx}
+											className="p-5 rounded-2xl border border-neutral-200 bg-white hover:border-brand-blue/30 hover:shadow-md transition-all duration-300"
+										>
+											<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+												<div className="space-y-3">
+													<div className="flex items-center gap-3">
+														<div className="h-10 w-10 rounded-xl bg-blue-50 text-brand-blue flex items-center justify-center font-bold text-lg">
+															{idx + 1}
+														</div>
+														<div>
+															<h3 className="font-bold text-neutral-900 text-lg">{hall.name}</h3>
+															<div className="flex items-center gap-2 text-sm text-neutral-500">
+																<Badge variant="outline" className="bg-neutral-50 text-neutral-600 border-neutral-200 rounded-md py-0.5">
+																	{hall.hasIndoor ? 'Indoor' : 'Outdoor'} Space
+																</Badge>
+															</div>
+														</div>
+													</div>
+													
+													<div className="grid grid-cols-2 gap-x-8 gap-y-2 pt-1">
+														<div className="flex items-center gap-2 text-neutral-600">
+															<Users className="h-4 w-4 text-neutral-400" />
+															<span className="text-sm font-medium">Seating: <span className="text-neutral-900">{hall.capacity.toLocaleString()}</span></span>
+														</div>
+														<div className="flex items-center gap-2 text-neutral-600">
+															<Users className="h-4 w-4 text-neutral-400 opacity-70" />
+															<span className="text-sm font-medium">Standing: <span className="text-neutral-900">{(hall.standingCapacity || hall.capacity * 1.5).toLocaleString()}</span></span>
+														</div>
+													</div>
+												</div>
+												
+												<div className="sm:text-right pt-4 sm:pt-0 border-t sm:border-t-0 border-neutral-100">
+													<div className="text-neutral-500 text-xs font-bold uppercase tracking-wider mb-1">Daily Price</div>
+													<div className="text-2xl font-bold text-brand-blue">
+														₦ {hall.price.toLocaleString()}
+													</div>
+												</div>
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
+
 						{/* Amenities (Only for Venues) */}
 						{listing.type === 'VENUE' && (
 							<div className="border-b border-neutral-border pb-6">
@@ -301,8 +360,10 @@ export default function ListingDetailPage() {
 											: (amenities as any[]).slice(0, 6);
 
 										return (displayAmenities as string[]).map((slug) => {
+											// Normalize slug for mapping (handles backend transformations)
+											const normalizedSlug = slug.toUpperCase().replace(/-/g, '_');
 											const config =
-												AMENITY_MAP[slug as keyof typeof AMENITY_MAP];
+												AMENITY_MAP[normalizedSlug as keyof typeof AMENITY_MAP];
 											if (!config) return null;
 											return (
 												<AmenityItem
@@ -475,7 +536,9 @@ export default function ListingDetailPage() {
 								rating={listing.rating}
 								reviewCount={listing.reviewCount}
 								listingId={listing.id}
+								slug={listing.slug}
 								formFields={listing.formFields || []}
+								halls={listing.halls || []}
 							/>
 						</div>
 					</div>

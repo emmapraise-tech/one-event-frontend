@@ -157,7 +157,7 @@ export function BookingsList({
 									Customer
 								</th>
 								<th className="px-6 py-4 font-semibold tracking-wider hidden lg:table-cell">
-									Event Center
+									Venue & Hall
 								</th>
 								<th className="px-6 py-4 font-semibold tracking-wider">Date</th>
 								<th className="px-6 py-4 font-semibold tracking-wider hidden xl:table-cell">
@@ -216,8 +216,15 @@ export function BookingsList({
 											</div>
 										</td>
 										<td className="px-6 py-4 hidden lg:table-cell">
-											<div className="font-medium text-gray-900 truncate max-w-[180px]">
-												{booking.listing?.name}
+											<div className="flex flex-col">
+												<span className="font-medium text-gray-900 truncate max-w-[180px]">
+													{booking.listing?.name}
+												</span>
+												{booking.hall && (
+													<span className="text-xs text-brand-blue font-medium mt-0.5">
+														{booking.hall.name}
+													</span>
+												)}
 											</div>
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap">

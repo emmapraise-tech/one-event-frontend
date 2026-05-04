@@ -39,6 +39,7 @@ const initialData: ListingFormData = {
 	formFields: [],
 	imageUrls: [],
 	imageFiles: [],
+	halls: [{ name: '', capacity: 0, standingCapacity: 0, hasIndoor: true, hasOutdoor: false, price: 0 }],
 };
 const STEPS = [
 	{ id: 1, label: 'Basic Info', component: BasicInfoStep },
@@ -240,7 +241,7 @@ export function ListingWizard({
 			<div className="grid gap-8 lg:grid-cols-[1fr_360px] items-start">
 				{/* Main Content */}
 				<div className="space-y-6">
-					<div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
+					<div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
 						{/* @ts-ignore - temporary until steps are fully typed */}
 						<CurrentStepComponent
 							formData={formData}

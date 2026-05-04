@@ -318,12 +318,21 @@ export default function BookingDetailsPage({ params }: PageProps) {
 										<h3 className="text-lg font-bold text-gray-900 leading-tight">
 											{booking.listing?.name}
 										</h3>
-										<div className="flex items-start gap-2 mt-2 text-muted-foreground">
-											<MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-											<p className="text-sm">
-												{booking.listing?.addressLine}, {booking.listing?.city},{' '}
-												{booking.listing?.state}
-											</p>
+										<div className="flex flex-col gap-1 mt-2">
+											<div className="flex items-start gap-2 text-muted-foreground">
+												<MapPin className="h-4 w-4 mt-0.5 shrink-0" />
+												<p className="text-sm">
+													{booking.listing?.addressLine}, {booking.listing?.city},{' '}
+													{booking.listing?.state}
+												</p>
+											</div>
+											{booking.hall && (
+												<div className="flex items-center gap-2 mt-1">
+													<Badge variant="outline" className="bg-blue-50 text-brand-blue border-blue-200 font-bold px-3 py-1 rounded-lg">
+														{booking.hall.name}
+													</Badge>
+												</div>
+											)}
 										</div>
 									</div>
 
@@ -417,7 +426,7 @@ export default function BookingDetailsPage({ params }: PageProps) {
 									<div className="flex items-center gap-2">
 										<Users className="h-4 w-4 text-brand-blue" />
 										<span className="text-sm font-bold text-gray-900">
-											{booking.listing?.venueDetail?.capacity || 'N/A'} Guests
+											{booking.hall?.capacity || booking.listing?.venueDetail?.capacity || 'N/A'} Guests
 										</span>
 									</div>
 								</div>
@@ -428,7 +437,7 @@ export default function BookingDetailsPage({ params }: PageProps) {
 									<div className="flex items-center gap-2">
 										<SquareStack className="h-4 w-4 text-brand-blue" />
 										<span className="text-sm font-bold text-gray-900">
-											{booking.listing?.venueDetail?.floorArea || 'N/A'} SQFT
+											{booking.hall?.floorArea || booking.listing?.venueDetail?.floorArea || 'N/A'} SQFT
 										</span>
 									</div>
 								</div>
@@ -448,12 +457,12 @@ export default function BookingDetailsPage({ params }: PageProps) {
 										Environment
 									</span>
 									<div className="flex items-center gap-2 text-sm font-bold text-gray-900">
-										{booking.listing?.venueDetail?.hasIndoor && (
+										{(booking.hall?.hasIndoor ?? booking.listing?.venueDetail?.hasIndoor) && (
 											<div className="px-1.5 py-0.5 bg-blue-50 text-brand-blue rounded text-[10px]">
 												Indoor
 											</div>
 										)}
-										{booking.listing?.venueDetail?.hasOutdoor && (
+										{(booking.hall?.hasOutdoor ?? booking.listing?.venueDetail?.hasOutdoor) && (
 											<div className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[10px]">
 												Outdoor
 											</div>

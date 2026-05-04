@@ -13,6 +13,7 @@ export interface Booking {
 	id: string;
 	customerId: string;
 	listingId: string;
+	hallId?: string;
 	startDate: string;
 	endDate?: string;
 	numberOfGuests?: number;
@@ -36,6 +37,7 @@ export interface Booking {
 
 export interface CreateBookingData {
 	listingId: string;
+	hallId?: string;
 	startDate: string;
 	endDate?: string;
 	numberOfGuests?: number;
