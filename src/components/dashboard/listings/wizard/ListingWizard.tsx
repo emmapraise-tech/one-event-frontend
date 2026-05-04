@@ -39,16 +39,17 @@ const initialData: ListingFormData = {
 	formFields: [],
 	imageUrls: [],
 	imageFiles: [],
+	halls: [
+		{
+			name: '',
+			capacity: 0,
+			standingCapacity: 0,
+			hasIndoor: true,
+			hasOutdoor: false,
+			price: 0,
+		},
+	],
 };
-const STEPS = [
-	{ id: 1, label: 'Basic Info', component: BasicInfoStep },
-	{ id: 2, label: 'Location', component: LocationStep },
-	{ id: 3, label: 'Specification', component: SpecificationStep },
-	{ id: 4, label: 'Custom Fields', component: FormFieldsStep },
-	{ id: 5, label: 'Media', component: MediaStep },
-	{ id: 6, label: 'Pricing', component: PricingStep },
-];
-
 export interface ListingWizardProps {
 	mode?: 'create' | 'edit';
 	initialListingData?: ListingFormData;
@@ -63,13 +64,27 @@ export function ListingWizard({
 	const router = useRouter();
 	const [currentStep, setCurrentStep] = useState(1);
 	const [formData, setFormData] = useState<ListingFormData>(
-		initialListingData || initialData
+		initialListingData || initialData,
 	);
 
-	const { createListing, updateListing, isCreating, isUpdating } = useListings();
+	const isEditing = mode === 'edit';
+
+	const STEPS = [
+		{ id: 1, label: 'Basic Info', component: BasicInfoStep },
+		{ id: 2, label: 'Location', component: LocationStep },
+		{ id: 3, label: 'Specification', component: SpecificationStep },
+		{ id: 4, label: 'Media', component: MediaStep },
+		{ id: 5, label: 'Pricing', component: PricingStep },
+	];
+
+	if (isEditing) {
+		STEPS.push({ id: 6, label: 'Custom Fields', component: FormFieldsStep });
+	}
+
+	const { createListing, updateListing, isCreating, isUpdating } =
+		useListings();
 	const { vendor } = useVendors();
 
-	const isEditing = mode === 'edit';
 	const isProcessing = isEditing ? isUpdating : isCreating;
 
 	const updateFormData = (data: Partial<ListingFormData>) => {
@@ -98,35 +113,49 @@ export function ListingWizard({
 		}
 
 		try {
-			toast.loading(isEditing ? 'Saving changes...' : 'Publishing your listing...', { id: 'save-listing' });
-			
+			toast.loading(
+				isEditing ? 'Saving changes...' : 'Publishing your listing...',
+				{ id: 'save-listing' },
+			);
+
 			const onSuccess = () => {
-				toast.success(isEditing ? 'Changes saved successfully!' : 'Listing published successfully!', {
-					id: 'save-listing',
-				});
+				toast.success(
+					isEditing
+						? 'Changes saved successfully!'
+						: 'Listing published successfully!',
+					{
+						id: 'save-listing',
+					},
+				);
 				router.push('/dashboard/listings');
 			};
 
 			const onError = (error: Error) => {
-				toast.error(`Failed to ${isEditing ? 'save' : 'publish'}: ` + error.message, {
-					id: 'save-listing',
-				});
+				toast.error(
+					`Failed to ${isEditing ? 'save' : 'publish'}: ` + error.message,
+					{
+						id: 'save-listing',
+					},
+				);
 				console.error(error);
 			};
 
 			if (isEditing && listingId) {
 				updateListing(
 					{ id: listingId, data: formData },
-					{ onSuccess, onError }
+					{ onSuccess, onError },
 				);
 			} else if (vendor) {
 				createListing(
 					{ data: formData, vendorId: vendor.id },
-					{ onSuccess, onError }
+					{ onSuccess, onError },
 				);
 			}
 		} catch (error) {
-			console.error(`Failed to ${isEditing ? 'save' : 'publish'} listing:`, error);
+			console.error(
+				`Failed to ${isEditing ? 'save' : 'publish'} listing:`,
+				error,
+			);
 			toast.error('An unexpected error occurred', { id: 'save-listing' });
 		}
 	};
@@ -147,13 +176,13 @@ export function ListingWizard({
 					</Link>
 					<div>
 						<h1 className="text-3xl font-bold tracking-tight text-gray-900 leading-tight">
-							{isEditing 
-								? `Edit ${formData.type === ListingType.VENUE ? 'Venue' : 'Service'}` 
+							{isEditing
+								? `Edit ${formData.type === ListingType.VENUE ? 'Venue' : 'Service'}`
 								: `Add New ${formData.type === ListingType.VENUE ? 'Venue' : 'Service'}`}
 						</h1>
 						<p className="text-gray-500 mt-2 text-base max-w-2xl font-medium">
-							{isEditing 
-								? `Update the details for your ${formData.type === ListingType.VENUE ? 'venue' : 'service'} listing.` 
+							{isEditing
+								? `Update the details for your ${formData.type === ListingType.VENUE ? 'venue' : 'service'} listing.`
 								: `Fill in the details below to publish your new ${formData.type === ListingType.VENUE ? 'venue' : 'service'} listing.`}
 						</p>
 					</div>
@@ -170,7 +199,13 @@ export function ListingWizard({
 						disabled={isProcessing}
 						className="bg-brand-gold hover:bg-brand-gold-hover text-white font-bold px-6 py-6 h-auto shadow-sm shadow-orange-200"
 					>
-						{isProcessing ? (isEditing ? 'Saving...' : 'Publishing...') : (isEditing ? 'Save Changes' : 'Publish Listing')}
+						{isProcessing
+							? isEditing
+								? 'Saving...'
+								: 'Publishing...'
+							: isEditing
+								? 'Save Changes'
+								: 'Publish Listing'}
 					</Button>
 				</div>
 			</div>
@@ -240,7 +275,7 @@ export function ListingWizard({
 			<div className="grid gap-8 lg:grid-cols-[1fr_360px] items-start">
 				{/* Main Content */}
 				<div className="space-y-6">
-					<div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
+					<div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
 						{/* @ts-ignore - temporary until steps are fully typed */}
 						<CurrentStepComponent
 							formData={formData}

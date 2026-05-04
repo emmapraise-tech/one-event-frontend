@@ -23,15 +23,16 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 		// Add logic to customize amenities based on real listing data if available
 	}
 
-	// Format price
-	const priceFormatted = listing.basePrice
-		? `₦${(listing.basePrice / 1000).toFixed(1)}m`
-		: '₦0';
+	// Calculate min hall price if halls exist
+	const startPrice = (listing.halls && listing.halls.length > 0)
+		? Math.min(...listing.halls.map(h => h.price).filter(p => p > 0)) || (listing.basePrice || 0)
+		: (listing.basePrice || 0);
+
 	// Fallback for smaller amounts if needed, mockup shows "N2.5m" or "N850k"
 	const priceDisplay =
-		listing.basePrice && listing.basePrice < 1000000
-			? `₦${(listing.basePrice / 1000).toFixed(0)}k`
-			: `₦${(listing.basePrice! / 1000000).toFixed(1)}m`;
+		startPrice < 1000000
+			? `₦${(startPrice / 1000).toFixed(0)}k`
+			: `₦${(startPrice / 1000000).toFixed(1)}m`;
 
 	const handleCardClick = () => {
 		router.push(`/listings/${listing.slug}`);

@@ -61,6 +61,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { InvoicePreviewDialog } from '@/components/dashboard/bookings/InvoicePreviewDialog';
 
 interface PageProps {
 	params: Promise<{ id: string }>;
@@ -76,6 +77,8 @@ export default function BookingDetailsPage({ params }: PageProps) {
 	const {
 		cancelBooking: cancelVendorBooking,
 		isCancelling: isCancellingVendor,
+		updateBooking: updateVendorBooking,
+		isUpdating: isUpdatingVendor,
 	} = useVendorBookings();
 	const {
 		cancelBooking: cancelCustomerBooking,
@@ -87,13 +90,45 @@ export default function BookingDetailsPage({ params }: PageProps) {
 		: cancelVendorBooking;
 	const isCancelling = isCustomer ? isCancellingCustomer : isCancellingVendor;
 	const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+	const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+	const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
 	const handleCancel = () => {
 		cancelBooking(id, {
 			onSuccess: () => {
 				setIsCancelDialogOpen(false);
+				setIsRejectDialogOpen(false);
 			},
 		});
+	};
+
+	const handleApprove = () => {
+		updateVendorBooking(
+			{ id, data: { status: BookingStatus.CONFIRMED } },
+			{
+				onSuccess: () => {
+					// Optionally show success toast
+				},
+			},
+		);
+	};
+
+	const handleUpdatePayment = (
+		field: 'depositPaid' | 'fullPaymentPaid',
+		value: boolean,
+	) => {
+		updateVendorBooking(
+			{ id, data: { [field]: value } },
+			{
+				onSuccess: () => {
+					// toast success
+				},
+			},
+		);
+	};
+
+	const handleDownloadInvoice = () => {
+		setIsInvoiceOpen(true);
 	};
 
 	if (isLoading) {
@@ -116,6 +151,19 @@ export default function BookingDetailsPage({ params }: PageProps) {
 			</div>
 		);
 	}
+
+	const venueRentalFee = Number(
+		booking.details?.venueRentalFee || booking.basePrice,
+	);
+	const addOnsTotal =
+		booking.details?.selectedAddOns?.reduce(
+			(sum: number, a: any) => sum + Number(a.price),
+			0,
+		) || 0;
+	const subTotal = venueRentalFee + addOnsTotal;
+	const vat = Number(booking.details?.vat || 0);
+	const platformFee = Number(booking.platformFee || 0);
+	const totalAmount = subTotal + vat + platformFee;
 
 	const getInitials = (first?: string, last?: string) => {
 		return `${first?.[0] || ''}${last?.[0] || ''}`.toUpperCase();
@@ -176,6 +224,7 @@ export default function BookingDetailsPage({ params }: PageProps) {
 						variant="outline"
 						size="sm"
 						className="hidden sm:flex border-border/60"
+						onClick={handleDownloadInvoice}
 					>
 						<Download className="mr-2 h-4 w-4" />
 						Download Invoice
@@ -184,8 +233,8 @@ export default function BookingDetailsPage({ params }: PageProps) {
 					{booking.status === BookingStatus.PENDING && !isCustomer && (
 						<>
 							<Dialog
-								open={isCancelDialogOpen}
-								onOpenChange={setIsCancelDialogOpen}
+								open={isRejectDialogOpen}
+								onOpenChange={setIsRejectDialogOpen}
 							>
 								<DialogTrigger asChild>
 									<Button
@@ -197,38 +246,45 @@ export default function BookingDetailsPage({ params }: PageProps) {
 										Reject
 									</Button>
 								</DialogTrigger>
-								<DialogContent>
-									<DialogHeader>
-										<DialogTitle>Cancel Booking</DialogTitle>
-										<DialogDescription>
-											Are you sure you want to cancel this booking? This action
-											cannot be undone.
+								<DialogContent className="sm:max-w-md rounded-3xl p-0 border-none overflow-hidden shadow-2xl">
+									<div className="p-8 pb-6 bg-red-50 border-b border-red-100">
+										<div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+											<XCircle className="h-6 w-6 text-red-600" />
+										</div>
+										<DialogTitle className="text-2xl font-black text-red-950">Reject Booking</DialogTitle>
+										<DialogDescription className="text-red-800/80 font-medium mt-2">
+											Are you sure you want to reject this booking request? This action cannot be undone and the customer will be notified.
 										</DialogDescription>
-									</DialogHeader>
-									<DialogFooter>
+									</div>
+									<div className="p-6 bg-white flex flex-col sm:flex-row gap-3 sm:justify-end">
 										<Button
 											variant="outline"
-											onClick={() => setIsCancelDialogOpen(false)}
+											className="rounded-xl h-12 px-6 border-gray-200 font-bold hover:bg-gray-50 flex-1 sm:flex-none"
+											onClick={() => setIsRejectDialogOpen(false)}
 										>
-											Keep Booking
+											Keep Request
 										</Button>
 										<Button
 											variant="destructive"
+											className="rounded-xl h-12 px-6 font-bold shadow-lg shadow-red-500/20 flex-1 sm:flex-none bg-red-600 hover:bg-red-700"
 											onClick={handleCancel}
 											disabled={isCancelling}
 										>
-											{isCancelling ? 'Cancelling...' : 'Yes, Cancel Booking'}
+											{isCancelling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+											{isCancelling ? 'Rejecting...' : 'Yes, Reject Booking'}
 										</Button>
-									</DialogFooter>
+									</div>
 								</DialogContent>
 							</Dialog>
 
 							<Button
 								size="sm"
 								className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shimmer"
+								onClick={handleApprove}
+								disabled={isUpdatingVendor}
 							>
 								<CheckCircle2 className="mr-2 h-4 w-4" />
-								Approve Booking
+								{isUpdatingVendor ? 'Approving...' : 'Approve Booking'}
 							</Button>
 						</>
 					)}
@@ -244,15 +300,47 @@ export default function BookingDetailsPage({ params }: PageProps) {
 								Contact Host
 							</Button>
 							{booking.status === BookingStatus.PENDING && (
-								<Button
-									variant="outline"
-									size="sm"
-									className="border-rose-200 text-rose-700 hover:bg-rose-50"
-									onClick={() => setIsCancelDialogOpen(true)}
+								<Dialog
+									open={isCancelDialogOpen}
+									onOpenChange={setIsCancelDialogOpen}
 								>
-									<XCircle className="mr-2 h-4 w-4" />
-									Cancel Request
-								</Button>
+									<DialogTrigger asChild>
+										<Button
+											variant="outline"
+											size="sm"
+											className="border-rose-200 text-rose-700 hover:bg-rose-50"
+										>
+											<XCircle className="mr-2 h-4 w-4" />
+											Cancel Request
+										</Button>
+									</DialogTrigger>
+									<DialogContent className="sm:max-w-md rounded-3xl p-0 border-none overflow-hidden shadow-2xl">
+										<div className="p-8 pb-6 bg-gray-900 text-white">
+											<DialogTitle className="text-2xl font-black">Cancel Request</DialogTitle>
+											<DialogDescription className="text-gray-400 font-medium mt-2">
+												Are you sure you want to cancel your booking request? You can always make a new request later.
+											</DialogDescription>
+										</div>
+										<div className="p-6 bg-white flex flex-col sm:flex-row gap-3 sm:justify-end">
+											<Button
+												variant="outline"
+												className="rounded-xl h-12 px-6 border-gray-200 font-bold hover:bg-gray-50 flex-1 sm:flex-none"
+												onClick={() => setIsCancelDialogOpen(false)}
+											>
+												Keep Request
+											</Button>
+											<Button
+												variant="destructive"
+												className="rounded-xl h-12 px-6 font-bold shadow-lg shadow-red-500/20 flex-1 sm:flex-none bg-red-600 hover:bg-red-700"
+												onClick={handleCancel}
+												disabled={isCancelling}
+											>
+												{isCancelling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+												{isCancelling ? 'Cancelling...' : 'Yes, Cancel Request'}
+											</Button>
+										</div>
+									</DialogContent>
+								</Dialog>
 							)}
 						</div>
 					)}
@@ -318,12 +406,24 @@ export default function BookingDetailsPage({ params }: PageProps) {
 										<h3 className="text-lg font-bold text-gray-900 leading-tight">
 											{booking.listing?.name}
 										</h3>
-										<div className="flex items-start gap-2 mt-2 text-muted-foreground">
-											<MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-											<p className="text-sm">
-												{booking.listing?.addressLine}, {booking.listing?.city},{' '}
-												{booking.listing?.state}
-											</p>
+										<div className="flex flex-col gap-1 mt-2">
+											<div className="flex items-start gap-2 text-muted-foreground">
+												<MapPin className="h-4 w-4 mt-0.5 shrink-0" />
+												<p className="text-sm">
+													{booking.listing?.addressLine},{' '}
+													{booking.listing?.city}, {booking.listing?.state}
+												</p>
+											</div>
+											{booking.hall && (
+												<div className="flex items-center gap-2 mt-1">
+													<Badge
+														variant="outline"
+														className="bg-blue-50 text-brand-blue border-blue-200 font-bold px-3 py-1 rounded-lg"
+													>
+														{booking.hall.name}
+													</Badge>
+												</div>
+											)}
 										</div>
 									</div>
 
@@ -353,21 +453,37 @@ export default function BookingDetailsPage({ params }: PageProps) {
 									</h4>
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 										{Object.entries(booking.formData).map(([key, value]) => {
-											const fieldConfig = booking.listing?.formFields?.find((f: any) => f.id === key);
+											const fieldConfig = booking.listing?.formFields?.find(
+												(f: any) => f.id === key,
+											);
 											const label = fieldConfig ? fieldConfig.label : key;
-											const isColor = fieldConfig?.type === 'color' || (typeof value === 'string' && value.startsWith('#') && value.length === 7);
-											
+											const isColor =
+												fieldConfig?.type === 'color' ||
+												(typeof value === 'string' &&
+													value.startsWith('#') &&
+													value.length === 7);
+
 											return (
-												<div key={key} className="p-3 bg-gray-50 rounded-lg border border-border/50">
-													<div className="text-xs text-muted-foreground mb-1 font-medium">{label}</div>
+												<div
+													key={key}
+													className="p-3 bg-gray-50 rounded-lg border border-border/50"
+												>
+													<div className="text-xs text-muted-foreground mb-1 font-medium">
+														{label}
+													</div>
 													<div className="flex items-center gap-2">
 														{isColor && (
-															<div className="w-4 h-4 rounded-full border border-gray-200" style={{ backgroundColor: String(value) }} />
+															<div
+																className="w-4 h-4 rounded-full border border-gray-200"
+																style={{ backgroundColor: String(value) }}
+															/>
 														)}
 														<div className="text-sm font-semibold text-gray-900 break-words whitespace-pre-line">
-															{fieldConfig?.type === 'checkbox' 
-																? (value ? 'Yes' : 'No') 
-																: (String(value) || '—')}
+															{fieldConfig?.type === 'checkbox'
+																? value
+																	? 'Yes'
+																	: 'No'
+																: String(value) || '—'}
 														</div>
 													</div>
 												</div>
@@ -417,7 +533,10 @@ export default function BookingDetailsPage({ params }: PageProps) {
 									<div className="flex items-center gap-2">
 										<Users className="h-4 w-4 text-brand-blue" />
 										<span className="text-sm font-bold text-gray-900">
-											{booking.listing?.venueDetail?.capacity || 'N/A'} Guests
+											{booking.hall?.capacity ||
+												booking.listing?.venueDetail?.capacity ||
+												'N/A'}{' '}
+											Guests
 										</span>
 									</div>
 								</div>
@@ -428,7 +547,10 @@ export default function BookingDetailsPage({ params }: PageProps) {
 									<div className="flex items-center gap-2">
 										<SquareStack className="h-4 w-4 text-brand-blue" />
 										<span className="text-sm font-bold text-gray-900">
-											{booking.listing?.venueDetail?.floorArea || 'N/A'} SQFT
+											{booking.hall?.floorArea ||
+												booking.listing?.venueDetail?.floorArea ||
+												'N/A'}{' '}
+											SQFT
 										</span>
 									</div>
 								</div>
@@ -448,12 +570,14 @@ export default function BookingDetailsPage({ params }: PageProps) {
 										Environment
 									</span>
 									<div className="flex items-center gap-2 text-sm font-bold text-gray-900">
-										{booking.listing?.venueDetail?.hasIndoor && (
+										{(booking.hall?.hasIndoor ??
+											booking.listing?.venueDetail?.hasIndoor) && (
 											<div className="px-1.5 py-0.5 bg-blue-50 text-brand-blue rounded text-[10px]">
 												Indoor
 											</div>
 										)}
-										{booking.listing?.venueDetail?.hasOutdoor && (
+										{(booking.hall?.hasOutdoor ??
+											booking.listing?.venueDetail?.hasOutdoor) && (
 											<div className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[10px]">
 												Outdoor
 											</div>
@@ -640,44 +764,27 @@ export default function BookingDetailsPage({ params }: PageProps) {
 									</div>
 								))}
 
-								{booking.details?.cleaningFee > 0 && (
-									<div className="flex items-center justify-between text-sm">
-										<span className="text-muted-foreground">Cleaning Fee</span>
-										<span className="font-medium">
-											{booking.currency}{' '}
-											{booking.details.cleaningFee.toLocaleString()}
-										</span>
-									</div>
-								)}
-
-								<Separator className="my-2 opacity-50" />
-
 								<div className="flex items-center justify-between text-sm">
 									<span className="text-muted-foreground italic">Subtotal</span>
 									<span className="font-bold">
-										{booking.currency}{' '}
-										{(
-											booking.details?.subTotal || booking.basePrice
-										).toLocaleString()}
+										{booking.currency} {subTotal.toLocaleString()}
 									</span>
 								</div>
 
 								<div className="flex items-center justify-between text-sm">
-									<span className="text-muted-foreground">Platform Fee</span>
+									<span className="text-muted-foreground">Service Charge (5%)</span>
 									<span className="font-medium text-amber-600">
 										+ {booking.currency} {booking.platformFee.toLocaleString()}
 									</span>
 								</div>
 
-								{booking.details?.vat > 0 && (
-									<div className="flex items-center justify-between text-sm">
-										<span className="text-muted-foreground">VAT</span>
-										<span className="font-medium text-amber-600">
-											+ {booking.currency}{' '}
-											{booking.details.vat.toLocaleString()}
-										</span>
-									</div>
-								)}
+								<div className="flex items-center justify-between text-sm">
+									<span className="text-muted-foreground">VAT (7.5%)</span>
+									<span className="font-medium text-amber-600">
+										+ {booking.currency}{' '}
+										{(booking.details?.vat || 0).toLocaleString()}
+									</span>
+								</div>
 							</div>
 
 							<div className="bg-gray-50/50 p-6 border-t border-border/60">
@@ -686,7 +793,7 @@ export default function BookingDetailsPage({ params }: PageProps) {
 										Total Amount
 									</span>
 									<span className="text-xl font-bold text-gray-900">
-										{booking.currency} {booking.totalAmount.toLocaleString()}
+										{booking.currency} {totalAmount.toLocaleString()}
 									</span>
 								</div>
 
@@ -704,7 +811,10 @@ export default function BookingDetailsPage({ params }: PageProps) {
 												Deposit
 											</span>
 											{booking.depositPaid ? (
-												<CheckCircle2 className="h-4 w-4 text-emerald-600" />
+												<div className="flex items-center gap-1">
+													<span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">CASH</span>
+													<CheckCircle2 className="h-4 w-4 text-emerald-600" />
+												</div>
 											) : (
 												<div className="h-4 w-4 rounded-full border-2 border-muted" />
 											)}
@@ -719,6 +829,17 @@ export default function BookingDetailsPage({ params }: PageProps) {
 												{(booking.depositAmount || 0).toLocaleString()}
 											</span>
 										</div>
+										{!booking.depositPaid && !isCustomer && (
+											<Button
+												size="sm"
+												variant="outline"
+												className="mt-2 w-full text-[10px] h-7 font-bold border-emerald-100 text-emerald-600 hover:bg-emerald-50"
+												onClick={() => handleUpdatePayment('depositPaid', true)}
+												disabled={isUpdatingVendor}
+											>
+												Mark Paid (Cash)
+											</Button>
+										)}
 										{booking.depositPaid && (
 											<div className="absolute top-0 right-0 w-16 h-16 bg-emerald-50 rounded-bl-full -mr-8 -mt-8 z-0 opacity-50" />
 										)}
@@ -737,16 +858,38 @@ export default function BookingDetailsPage({ params }: PageProps) {
 												Balance
 											</span>
 											{booking.fullPaymentPaid ? (
-												<CheckCircle2 className="h-4 w-4 text-emerald-600" />
+												<div className="flex items-center gap-1">
+													<span className="text-[8px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">CASH</span>
+													<CheckCircle2 className="h-4 w-4 text-emerald-600" />
+												</div>
 											) : (
 												<div className="h-4 w-4 rounded-full border-2 border-muted" />
 											)}
 										</div>
-										<span
-											className={`text-lg font-bold ${booking.fullPaymentPaid ? 'text-emerald-700' : 'text-gray-900'}`}
-										>
-											{booking.fullPaymentPaid ? 'Paid' : 'Unpaid'}
-										</span>
+										<div className="flex items-end gap-1">
+											<span
+												className={`text-lg font-bold ${booking.fullPaymentPaid ? 'text-emerald-700' : 'text-gray-900'}`}
+											>
+												{booking.fullPaymentPaid ? 'Paid' : 'Unpaid'}
+											</span>
+											<span className="text-xs text-muted-foreground mb-1">
+												{(
+													totalAmount -
+													(booking.depositPaid ? booking.depositAmount || 0 : 0)
+												).toLocaleString()}
+											</span>
+										</div>
+										{!booking.fullPaymentPaid && !isCustomer && (
+											<Button
+												size="sm"
+												variant="outline"
+												className="mt-2 w-full text-[10px] h-7 font-bold border-emerald-100 text-emerald-600 hover:bg-emerald-50"
+												onClick={() => handleUpdatePayment('fullPaymentPaid', true)}
+												disabled={isUpdatingVendor}
+											>
+												Mark Paid (Cash)
+											</Button>
+										)}
 										{booking.fullPaymentPaid && (
 											<div className="absolute top-0 right-0 w-16 h-16 bg-emerald-50 rounded-bl-full -mr-8 -mt-8 z-0 opacity-50" />
 										)}
@@ -881,6 +1024,16 @@ export default function BookingDetailsPage({ params }: PageProps) {
 					</div>
 				</div>
 			</div>
+
+			{/* Invoice Preview Modal */}
+			{booking && (
+				<InvoicePreviewDialog
+					isOpen={isInvoiceOpen}
+					onClose={() => setIsInvoiceOpen(false)}
+					booking={booking}
+					isCustomer={!!isCustomer}
+				/>
+			)}
 		</div>
 	);
 }

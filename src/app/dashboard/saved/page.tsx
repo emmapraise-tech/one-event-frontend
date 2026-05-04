@@ -37,6 +37,7 @@ export default function SavedVenuesPage() {
 				'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80',
 			type: 'Hall',
 			popular: true,
+			slug: 'lekki-event-center',
 		},
 		{
 			id: '2',
@@ -51,6 +52,7 @@ export default function SavedVenuesPage() {
 				'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80',
 			type: 'Hotel',
 			popular: false,
+			slug: 'victoria-imperial-suites',
 		},
 		{
 			id: '3',
@@ -65,6 +67,7 @@ export default function SavedVenuesPage() {
 				'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&q=80',
 			type: 'Garden',
 			popular: true,
+			slug: 'ikeja-garden-pavilion',
 		},
 	];
 
@@ -211,7 +214,7 @@ export default function SavedVenuesPage() {
 										>
 											Remove
 										</Button>
-										<Link href={`/listings/${venue.id}`} className="block">
+										<Link href={`/listings/${venue.slug}`} className="block">
 											<Button className="w-full bg-neutral-900 hover:bg-black text-white rounded-xl font-bold text-xs h-10 group">
 												Book Now{' '}
 												<ArrowRight className="ml-2 h-3 w-3 group-hover:translate-x-1 transition-transform" />

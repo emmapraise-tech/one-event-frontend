@@ -40,6 +40,8 @@ export default function CalendarPage() {
 					minute: '2-digit',
 				}),
 		location: b.listing?.city || 'Unknown',
+		hallName: b.hall?.name,
+		hallId: b.hallId,
 		type: (b.listing?.type?.toLowerCase() as any) || 'other',
 		status:
 			b.status === BookingStatus.CONFIRMED

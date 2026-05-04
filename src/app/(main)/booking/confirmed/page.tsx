@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import Image from "next/legacy/image";
+import { format } from "date-fns";
 import Link from "next/link";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -29,13 +30,15 @@ function BookingConfirmedContent() {
   const router = useRouter();
   const { user } = useAuth();
   const [bookingData, setBookingData] = useState<any>(null);
-  const [refCode, setRefCode] = useState("");
-  const [isVerifying, setIsVerifying] = useState(true);
+  
+  // Get reference from URL - check multiple possible param names
+  const reference = searchParams.get("reference") || searchParams.get("trxref");
+  
+  const [refCode, setRefCode] = useState(reference || "ONE-REF-PAYMENT");
+  const [isVerifying, setIsVerifying] = useState(!!reference);
   const [verificationError, setVerificationError] = useState<string | null>(
     null,
   );
-
-  const reference = searchParams.get("reference");
 
   useEffect(() => {
     const data = localStorage.getItem("bookingDetails");
@@ -119,9 +122,15 @@ function BookingConfirmedContent() {
   }
 
   // Calculations (re-derived or saved - re-deriving is safer if simple)
-  const subtotal = bookingData.total;
-  const vat = subtotal * 0.075;
-  const grandTotal = subtotal + vat;
+  const venueFee = bookingData.venueFee || 0;
+  const addOnsTotal = bookingData.addOnsTotal || 0;
+  const subtotal = venueFee + addOnsTotal;
+  const serviceCharge = bookingData.serviceCharge || subtotal * 0.05;
+  const vat = bookingData.vat || (subtotal + serviceCharge) * 0.075;
+  const grandTotal = bookingData.totalAmount || subtotal + vat + serviceCharge;
+  const amountPaid = bookingData.paymentPreference === 'deposit' 
+    ? (bookingData.depositAmount || grandTotal * 0.7) 
+    : grandTotal;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(refCode);
@@ -169,7 +178,7 @@ function BookingConfirmedContent() {
           </span>
           <div className="flex items-center gap-3">
             <span className="text-2xl font-bold text-neutral-900 tracking-tight">
-              {refCode}
+              {refCode || reference || "ONE-BOOKING-REF"}
             </span>
             <Button
               variant="ghost"
@@ -210,6 +219,12 @@ function BookingConfirmedContent() {
                     <MapPin className="h-4 w-4" />
                     {bookingData.venueAddress}
                   </div>
+                  {bookingData.hallName && (
+                    <div className="mt-3 inline-flex items-center gap-1.5 bg-blue-50 text-brand-blue px-3 py-1 rounded-full text-xs font-bold border border-blue-100">
+                      <Home className="h-3 w-3" />
+                      {bookingData.hallName}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-1 bg-brand-gold/10 px-2 py-1 rounded text-xs font-bold text-brand-gold-darker">
                   <Sparkles className="h-3 w-3 fill-current" />
@@ -229,18 +244,23 @@ function BookingConfirmedContent() {
                     <span className="text-sm font-semibold text-neutral-900">
                       {bookingData.dateRange?.to ? (
                         <>
-                          {new Date(
-                            bookingData.dateRange.from,
-                          ).toLocaleDateString()}{" "}
+                          {format(
+                            new Date(bookingData.dateRange.from),
+                            "MMMM dd, yyyy",
+                          )}{" "}
                           -{" "}
-                          {new Date(
-                            bookingData.dateRange.to,
-                          ).toLocaleDateString()}
+                          {format(
+                            new Date(bookingData.dateRange.to),
+                            "MMMM dd, yyyy",
+                          )}
                         </>
                       ) : (
-                        new Date(
-                          bookingData.dateRange?.from || bookingData.date,
-                        ).toLocaleDateString()
+                        format(
+                          new Date(
+                            bookingData.dateRange?.from || bookingData.date,
+                          ),
+                          "MMMM dd, yyyy",
+                        )
                       )}
                     </span>
                   </div>
@@ -310,10 +330,13 @@ function BookingConfirmedContent() {
                   <div className="flex justify-between text-neutral-600">
                     <span>Add-ons & Services</span>
                     <span className="font-medium text-neutral-900">
-                      ₦
-                      {(
-                        bookingData.addOnsTotal + bookingData.cleaningFee
-                      ).toLocaleString()}
+                      ₦{(bookingData.addOnsTotal || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-neutral-600">
+                    <span>Service Charge (5%)</span>
+                    <span className="font-medium text-neutral-900">
+                      ₦{serviceCharge.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between text-neutral-600">
@@ -327,9 +350,13 @@ function BookingConfirmedContent() {
                 <Separator className="bg-neutral-200 mb-6" />
 
                 <div className="flex justify-between items-end mb-6">
-                  <span className="font-bold text-neutral-900">Total Paid</span>
+                  <span className="font-bold text-neutral-900">
+                    {bookingData.paymentPreference === 'deposit'
+                      ? 'Deposit Paid'
+                      : 'Total Paid'}
+                  </span>
                   <span className="text-2xl font-bold text-brand-blue">
-                    ₦{grandTotal.toLocaleString()}
+                    ₦{amountPaid.toLocaleString()}
                   </span>
                 </div>
 

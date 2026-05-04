@@ -29,6 +29,17 @@ export interface AddOn {
 	name: string;
 	price: number;
 }
+
+export interface Hall {
+	id: string;
+	name: string;
+	capacity: number;
+	standingCapacity?: number;
+	hasIndoor: boolean;
+	hasOutdoor: boolean;
+	price: number;
+	floorArea?: number;
+}
 export interface VenueDetail {
 	id: string;
 	zipCode?: string;
@@ -129,8 +140,8 @@ export interface Listing {
 	standing_capacity?: number; // Another potential fallback
 	formFields?: FormField[];
 	media?: ListingMedia[];
+	halls?: Hall[];
 }
-
 
 export interface CreateListingData {
 	vendorId: string;
@@ -181,6 +192,7 @@ export interface ListingFormData {
 
 	addOns: { name: string; price: number }[];
 	formFields: FormField[];
+	halls?: { name: string; capacity: number; standingCapacity?: number; hasIndoor: boolean; hasOutdoor: boolean; price: number }[];
 
 	// Media
 	imageUrls: string[]; // For preview

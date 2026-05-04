@@ -58,11 +58,13 @@ export const bookingService = {
 
 	async findByListingId(
 		listingId: string,
+		hallId?: string,
 		page = 1,
 		limit = 10,
 	): Promise<PaginatedData<Booking>> {
+		const hallParam = hallId ? `&hallId=${hallId}` : '';
 		const response = await api.get<ApiResponse<PaginatedData<Booking>>>(
-			`/bookings/listing/${listingId}?page=${page}&limit=${limit}`,
+			`/bookings/listing/${listingId}?page=${page}&limit=${limit}${hallParam}`,
 		);
 		return response.data.data;
 	},

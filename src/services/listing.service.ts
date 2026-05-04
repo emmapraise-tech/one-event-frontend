@@ -82,6 +82,11 @@ export const listingService = {
 			formData.append('formFields', JSON.stringify(data.formFields));
 		}
 
+		// Halls
+		if (data.halls && data.halls.length > 0) {
+			formData.append('halls', JSON.stringify(data.halls));
+		}
+
 		// Files
 		if (data.imageFiles) {
 			data.imageFiles.forEach((file) => {
@@ -287,6 +292,11 @@ export const listingService = {
 		// Form Fields
 		if (data.formFields) {
 			formData.append('formFields', JSON.stringify(data.formFields));
+		}
+
+		// Halls
+		if (data.halls) {
+			formData.append('halls', JSON.stringify(data.halls));
 		}
 
 		// Files

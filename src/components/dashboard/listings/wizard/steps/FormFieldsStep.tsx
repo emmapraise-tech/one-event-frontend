@@ -61,7 +61,8 @@ export function FormFieldsStep({
 					Additional Information
 				</h2>
 				<p className="text-gray-500 mt-2 font-medium">
-					Add specific questions or requests for information from customers booking this listing.
+					Add specific questions or requests for information from customers
+					booking this listing.
 				</p>
 			</div>
 
@@ -83,7 +84,9 @@ export function FormFieldsStep({
 								<Input
 									placeholder="e.g. What is your theme color?"
 									value={field.label}
-									onChange={(e) => updateField(field.id, { label: e.target.value })}
+									onChange={(e) =>
+										updateField(field.id, { label: e.target.value })
+									}
 									className="bg-white border-white focus:border-brand-blue"
 								/>
 							</div>
@@ -94,7 +97,9 @@ export function FormFieldsStep({
 								</Label>
 								<Select
 									value={field.type}
-									onValueChange={(val: any) => updateField(field.id, { type: val })}
+									onValueChange={(val: any) =>
+										updateField(field.id, { type: val })
+									}
 								>
 									<SelectTrigger className="bg-white border-white">
 										<SelectValue />
@@ -209,9 +214,10 @@ export function FormFieldsStep({
 				</Button>
 				<Button
 					onClick={onNext}
-					className="bg-gray-900 hover:bg-gray-800 text-white h-12 px-8 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-gray-200"
+					// className="bg-gray-900 hover:bg-gray-800 text-white h-12 px-8 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-gray-200"
+					// className=" hover:bg-blue-700 w-full sm:w-auto bg-brand-blue text-white shadow-sm"
 				>
-					Continue to Media
+					Continue
 				</Button>
 			</div>
 		</div>

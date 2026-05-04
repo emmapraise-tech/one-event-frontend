@@ -9,6 +9,7 @@ import {
 	CreditCard,
 	FileText,
 	Edit,
+	Building2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -94,6 +95,22 @@ export function BookingDetailsSidebar({
 									</p>
 									<p className="font-medium text-gray-900">
 										{booking.location}
+									</p>
+								</div>
+							</div>
+						)}
+
+						{booking.hallName && (
+							<div className="flex items-start gap-3">
+								<div className="rounded-full bg-brand-blue-soft p-2 text-brand-blue">
+									<Building2 className="h-4 w-4" />
+								</div>
+								<div>
+									<p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+										Specific Hall
+									</p>
+									<p className="font-medium text-gray-900">
+										{booking.hallName}
 									</p>
 								</div>
 							</div>

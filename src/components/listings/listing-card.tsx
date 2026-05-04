@@ -99,7 +99,9 @@ export function ListingCard({ listing }: ListingCardProps) {
 						</span>
 						<div className="flex items-baseline gap-1">
 							<span className="text-xl font-black text-gray-900">
-								{listing.currency} {listing.basePrice?.toLocaleString()}
+								{listing.currency} {((listing.halls && listing.halls.length > 0) 
+									? (Math.min(...listing.halls.map(h => h.price).filter(p => p > 0)) || (listing.basePrice || 0))
+									: (listing.basePrice || 0)).toLocaleString()}
 							</span>
 							<span className="text-xs font-medium text-gray-500">/day</span>
 						</div>

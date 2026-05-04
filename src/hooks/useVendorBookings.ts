@@ -20,6 +20,16 @@ export function useVendorBookings(page = 1, limit = 10) {
 		mutationFn: bookingService.cancel,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['vendor-bookings'] });
+			queryClient.invalidateQueries({ queryKey: ['booking'] });
+		},
+	});
+
+	const updateBookingMutation = useMutation({
+		mutationFn: ({ id, data }: { id: string; data: any }) =>
+			bookingService.update(id, data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['vendor-bookings'] });
+			queryClient.invalidateQueries({ queryKey: ['booking'] });
 		},
 	});
 
@@ -30,5 +40,7 @@ export function useVendorBookings(page = 1, limit = 10) {
 		error,
 		cancelBooking: cancelBookingMutation.mutate,
 		isCancelling: cancelBookingMutation.isPending,
+		updateBooking: updateBookingMutation.mutate,
+		isUpdating: updateBookingMutation.isPending,
 	};
 }

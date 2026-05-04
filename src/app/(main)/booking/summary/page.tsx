@@ -123,9 +123,12 @@ function BookingSummaryContent() {
 	}
 
 	// Calculations
-	const subtotal = bookingData.total;
-	const vat = subtotal * 0.075;
-	const grandTotal = subtotal + vat;
+	const venueFee = bookingData.venueFee || 0;
+	const addOnsTotal = bookingData.addOnsTotal || 0;
+	const subtotal = venueFee + addOnsTotal;
+	const serviceCharge = bookingData.serviceCharge || subtotal * 0.05;
+	const vat = bookingData.vat || (subtotal + serviceCharge) * 0.075;
+	const grandTotal = bookingData.totalAmount || subtotal + vat + serviceCharge;
 
 	const handlePayment = async () => {
 		if (!termsAccepted) {
@@ -138,6 +141,7 @@ function BookingSummaryContent() {
 			// 1. Create the booking in the backend
 			const booking = await bookingService.create({
 				listingId: bookingData.listingId,
+				hallId: bookingData.hallId,
 				startDate: bookingData.dateRange.from,
 				endDate: bookingData.dateRange.to || bookingData.dateRange.from,
 				numberOfGuests: parseInt(bookingData.guests) || 100,
@@ -147,8 +151,9 @@ function BookingSummaryContent() {
 				details: {
 					selectedAddOns: bookingData.selectedAddOns,
 					venueFee: bookingData.venueFee,
-					serviceCharge: bookingData.serviceCharge,
 					vat,
+					serviceCharge,
+					subTotal: subtotal,
 				},
 			});
 
@@ -208,6 +213,9 @@ function BookingSummaryContent() {
 		}
 	};
 
+	// Navigation
+	const listingUrl = `/listings/${listingData?.slug || bookingData?.slug || bookingData?.listingId}`;
+
 	return (
 		<div className="min-h-screen bg-gray-50">
 			{/* Breadcrumbs */}
@@ -217,7 +225,7 @@ function BookingSummaryContent() {
 						variant="ghost"
 						size="icon"
 						className="mr-2 h-8 w-8 hover:bg-neutral-100 rounded-full shrink-0"
-						onClick={() => router.push(`/listings/${bookingData.listingId}`)}
+						onClick={() => router.push(listingUrl)}
 					>
 						<ChevronRight className="h-4 w-4 rotate-180 text-neutral-900" />
 					</Button>
@@ -229,7 +237,7 @@ function BookingSummaryContent() {
 					</Link>
 					<ChevronRight className="h-4 w-4 text-neutral-400 shrink-0" />
 					<Link
-						href={`/listings/${bookingData.listingId}`}
+						href={listingUrl}
 						className="hover:text-neutral-900 transition-colors shrink-0"
 					>
 						Venue Details
@@ -299,6 +307,11 @@ function BookingSummaryContent() {
 										<div>
 											<h2 className="text-xl font-bold text-neutral-900">
 												{bookingData.venueName || 'Venue Name'}
+												{bookingData.hallName && (
+													<span className="text-brand-blue block text-base font-semibold mt-1">
+														({bookingData.hallName})
+													</span>
+												)}
 											</h2>
 											<p className="text-sm text-neutral-500">
 												{bookingData.venueAddress || 'Location'}
@@ -308,9 +321,7 @@ function BookingSummaryContent() {
 											variant="ghost"
 											size="sm"
 											className="text-brand-blue hover:text-brand-blue/80 h-auto p-0 font-medium"
-											onClick={() =>
-												router.push(`/listings/${bookingData.listingId}`)
-											}
+											onClick={() => router.push(listingUrl)}
 										>
 											Edit <Edit className="w-3 h-3 ml-1" />
 										</Button>
@@ -409,9 +420,7 @@ function BookingSummaryContent() {
 										<Button
 											variant="link"
 											className="text-brand-blue text-xs mt-2"
-											onClick={() =>
-												router.push(`/listings/${bookingData.listingId}`)
-											}
+											onClick={() => router.push(listingUrl)}
 										>
 											Browse Services
 										</Button>
@@ -474,9 +483,7 @@ function BookingSummaryContent() {
 											variant="ghost"
 											size="sm"
 											className="text-brand-blue hover:text-brand-blue/80 h-auto p-0 font-medium"
-											onClick={() =>
-												router.push(`/listings/${bookingData.listingId}`)
-											}
+											onClick={() => router.push(listingUrl)}
 										>
 											Edit <Edit className="w-3 h-3 ml-1" />
 										</Button>
@@ -561,22 +568,11 @@ function BookingSummaryContent() {
 											</span>
 										</div>
 										<div className="flex justify-between items-center text-neutral-600">
-											<span>Service Charge (10%)</span>
+											<span>Service Charge (5%)</span>
 											<span className="font-bold text-neutral-900">
-												₦{bookingData.serviceCharge.toLocaleString()}
+												₦{serviceCharge.toLocaleString()}
 											</span>
 										</div>
-										{bookingData.selectedAddOns?.map((addon: any) => (
-											<div
-												key={addon.id}
-												className="flex justify-between items-center text-neutral-600"
-											>
-												<span>{addon.name}</span>
-												<span className="font-bold text-neutral-900">
-													₦{addon.price.toLocaleString()}
-												</span>
-											</div>
-										))}
 										<div className="flex justify-between items-center text-neutral-600">
 											<span>VAT (7.5%)</span>
 											<span className="font-bold text-neutral-900">
