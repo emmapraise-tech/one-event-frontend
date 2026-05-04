@@ -20,7 +20,7 @@ import {
 	Sparkles,
 	Tags,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ImageGrid } from '@/components/listing/image-grid';
 import { BookingSidebar } from '@/components/listing/booking-sidebar';
 import { ListingDetailSkeleton } from '@/components/ui/skeletons';
@@ -35,6 +35,14 @@ export default function ListingDetailPage() {
 	const { data: listing, isLoading } = useListingBySlug(slug);
 	const [showFullDescription, setShowFullDescription] = useState(false);
 	const [showAllAmenities, setShowAllAmenities] = useState(false);
+
+	const startPrice = useMemo(() => {
+		if (listing?.halls && listing.halls.length > 0) {
+			const prices = listing.halls.map((h: any) => h.price).filter((p: number) => p > 0);
+			if (prices.length > 0) return Math.min(...prices);
+		}
+		return listing?.basePrice || 0;
+	}, [listing]);
 
 	if (isLoading) {
 		return <ListingDetailSkeleton />;
@@ -527,7 +535,7 @@ export default function ListingDetailPage() {
 					<div className="min-w-0">
 						<div className="sticky top-24">
 							<BookingSidebar
-								basePrice={listing.basePrice || 0}
+								basePrice={startPrice}
 								currency={listing.currency || 'NGN'}
 								venueName={listing.name}
 								venueAddress={listing.addressLine}
@@ -552,7 +560,7 @@ export default function ListingDetailPage() {
 						Starting at
 					</p>
 					<div className="text-lg font-black text-neutral-900">
-						{listing.currency} {listing.basePrice?.toLocaleString()}{' '}
+						{listing.currency} {startPrice.toLocaleString()}{' '}
 						<span className="text-sm font-normal text-neutral-500">/day</span>
 					</div>
 				</div>

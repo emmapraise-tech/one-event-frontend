@@ -1,4 +1,4 @@
-import { Listing } from './listing';
+import { Listing, Hall } from './listing';
 import { User } from './auth';
 import { Payment } from './payment';
 
@@ -27,6 +27,7 @@ export interface Booking {
 	fullPaymentPaid: boolean;
 	status: BookingStatus;
 	listing?: Listing;
+	hall?: Hall;
 	customer?: User;
 	payments?: Payment[];
 	details?: any;
@@ -59,6 +60,7 @@ export interface CheckAvailabilityData {
 	listingId: string;
 	startDate: string;
 	endDate: string;
+	hallId?: string;
 }
 
 export interface AvailabilityResponse {

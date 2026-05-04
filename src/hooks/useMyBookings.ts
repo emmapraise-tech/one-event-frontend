@@ -62,7 +62,7 @@ export function useListingBookings(listingId: string, page = 1, limit = 10) {
 		error,
 	} = useQuery({
 		queryKey: ['bookings', 'listing', listingId, page, limit],
-		queryFn: () => bookingService.findByListingId(listingId, page, limit),
+		queryFn: () => bookingService.findByListingId(listingId, undefined, page, limit),
 		enabled: !!listingId,
 	});
 

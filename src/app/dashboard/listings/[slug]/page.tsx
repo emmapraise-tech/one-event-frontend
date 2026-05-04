@@ -27,6 +27,8 @@ import {
 	TrendingUp,
 	DollarSign,
 	ChevronRight,
+	Building2,
+	SquareStack,
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -66,6 +68,10 @@ export default function ListingDetailPage() {
 	const { createBooking, isCreating } = useMyBookings();
 	const [showBookingDialog, setShowBookingDialog] = useState(false);
 	const [showAllAmenities, setShowAllAmenities] = useState(false);
+
+	const startPrice = (listing?.halls && listing.halls.length > 0)
+		? Math.min(...listing.halls.map(h => h.price).filter(p => p > 0)) || (listing?.basePrice || 0)
+		: (listing?.basePrice || 0);
 
 	const isOwner = vendor && listing && listing.vendorId === vendor.id;
 
@@ -213,7 +219,7 @@ export default function ListingDetailPage() {
 											Daily rate
 										</p>
 										<div className="text-2xl font-black text-gray-900 leading-none">
-											{listing.currency} {listing.basePrice?.toLocaleString()}
+											{listing.currency} {startPrice.toLocaleString()}
 										</div>
 									</div>
 								</div>
@@ -295,6 +301,56 @@ export default function ListingDetailPage() {
 										}}
 									/>
 								</div>
+
+								{/* Halls Section */}
+								{listing.type === 'VENUE' && listing.halls && listing.halls.length > 0 && (
+									<div className="pt-8 border-t border-gray-100">
+										<h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+											<Building2 className="h-5 w-5 text-brand-blue" />
+											Venue Halls
+										</h3>
+										<div className="grid gap-4">
+											{listing.halls.map((hall, idx) => (
+												<div 
+													key={hall.id || idx}
+													className="p-5 rounded-2xl bg-gray-50 border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-brand-blue/30 transition-colors"
+												>
+													<div className="space-y-1">
+														<div className="font-bold text-gray-900 flex items-center gap-2">
+															{hall.name}
+															<div className="flex gap-1">
+																{hall.hasIndoor && (
+																	<Badge variant="outline" className="bg-blue-50 text-[10px] h-4 px-1.5 border-blue-100">Indoor</Badge>
+																)}
+																{hall.hasOutdoor && (
+																	<Badge variant="outline" className="bg-emerald-50 text-[10px] h-4 px-1.5 border-emerald-100 text-emerald-600">Outdoor</Badge>
+																)}
+															</div>
+														</div>
+														<div className="flex items-center gap-4 text-xs text-gray-500 font-medium">
+															<span className="flex items-center gap-1">
+																<Users className="h-3 w-3" />
+																{hall.capacity} Guests
+															</span>
+															{hall.floorArea && (
+																<span className="flex items-center gap-1">
+																	<SquareStack className="h-3 w-3" />
+																	{hall.floorArea} sq ft
+																</span>
+															)}
+														</div>
+													</div>
+													<div className="text-right">
+														<div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Price per day</div>
+														<div className="text-lg font-black text-brand-blue">
+															{listing.currency} {hall.price.toLocaleString()}
+														</div>
+													</div>
+												</div>
+											))}
+										</div>
+									</div>
+								)}
 
 								{/* Amenities Section */}
 								<div className="pt-6 border-t border-gray-100">
@@ -394,6 +450,32 @@ export default function ListingDetailPage() {
 									}
 									return null;
 								})()}
+
+								{/* Booking Requirements Section */}
+								{listing.formFields && listing.formFields.length > 0 && (
+									<div className="pt-8 border-t border-gray-100">
+										<h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+											<LayoutDashboard className="h-5 w-5 text-brand-blue" />
+											Booking Requirements
+										</h3>
+										<div className="grid gap-3 sm:grid-cols-2">
+											{listing.formFields.map((field) => (
+												<div 
+													key={field.id}
+													className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between"
+												>
+													<div>
+														<p className="text-sm font-bold text-gray-900">{field.label}</p>
+														<p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{field.type}</p>
+													</div>
+													{field.required && (
+														<Badge variant="outline" className="text-[10px] border-red-100 text-red-500 bg-red-50">Required</Badge>
+													)}
+												</div>
+											))}
+										</div>
+									</div>
+								)}
 							</div>
 						</div>
 					</div>
