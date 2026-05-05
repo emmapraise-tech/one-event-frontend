@@ -37,11 +37,14 @@ export default function ListingDetailPage() {
 	const [showAllAmenities, setShowAllAmenities] = useState(false);
 
 	const startPrice = useMemo(() => {
-		if (listing?.halls && listing.halls.length > 0) {
-			const prices = listing.halls.map((h: any) => h.price).filter((p: number) => p > 0);
-			if (prices.length > 0) return Math.min(...prices);
+		const rawHalls = listing?.halls || [];
+		const hallPrices = rawHalls.map((h: any) => Number(h.price)).filter((p) => p > 0);
+		
+		if (hallPrices.length > 0) {
+			return Math.min(...hallPrices);
 		}
-		return listing?.basePrice || 0;
+		
+		return Number(listing?.basePrice) || 0;
 	}, [listing]);
 
 	if (isLoading) {

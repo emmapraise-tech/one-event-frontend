@@ -54,11 +54,23 @@ const mockSettlements = [
 	},
 ];
 
+import { paymentService } from '@/services/payment.service';
+
 export default function AdminSettlementsPage() {
-	const { isLoading } = useQuery({
+	const { data: paginatedData, isLoading } = useQuery({
 		queryKey: ['admin', 'settlements'],
-		queryFn: async () => mockSettlements, // Mock fetch
+		queryFn: () => paymentService.adminFindAll(),
 	});
+
+	const settlements = paginatedData?.data || [];
+	const totalSettled = settlements
+		.filter((s) => s.status === 'SUCCESS')
+		.reduce((sum, s) => sum + Number(s.amount), 0);
+	const pendingSettlements = settlements.filter((s) => s.status === 'PENDING');
+	const pendingAmount = pendingSettlements.reduce(
+		(sum, s) => sum + Number(s.amount),
+		0,
+	);
 
 	if (isLoading) {
 		return (
@@ -100,21 +112,22 @@ export default function AdminSettlementsPage() {
 						Awaiting Settlement
 					</p>
 					<h3 className="text-2xl font-black text-neutral-900 leading-none mb-2">
-						₦4,250,000
+						₦{pendingAmount.toLocaleString()}
 					</h3>
 					<div className="flex items-center text-xs font-bold text-amber-600">
-						<Clock className="h-3 w-3 mr-1" /> 8 Vendors pending
+						<Clock className="h-3 w-3 mr-1" /> {pendingSettlements.length} Vendors
+						pending
 					</div>
 				</Card>
 				<Card className="border-none shadow-soft rounded-[32px] bg-white p-6">
 					<p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">
-						Total Settled (MTD)
+						Total Settled (Aggregate)
 					</p>
 					<h3 className="text-2xl font-black text-neutral-900 leading-none mb-2">
-						₦28,400,000
+						₦{totalSettled.toLocaleString()}
 					</h3>
 					<div className="flex items-center text-xs font-bold text-emerald-600">
-						<TrendingUp className="h-3 w-3 mr-1" /> +15.2% vs last month
+						<TrendingUp className="h-3 w-3 mr-1" /> Real-time tracking
 					</div>
 				</Card>
 				<Card className="border-none shadow-soft rounded-[32px] bg-brand-blue p-6 text-white">
@@ -168,44 +181,52 @@ export default function AdminSettlementsPage() {
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-neutral-50">
-							{mockSettlements.map((settlement) => (
+							{settlements.map((settlement: any) => (
 								<tr
 									key={settlement.id}
 									className="hover:bg-neutral-50/30 transition-colors"
 								>
 									<td className="px-8 py-5">
 										<p className="font-bold text-neutral-900">
-											{settlement.id}
+											{settlement.reference?.slice(-12).toUpperCase() ||
+												settlement.id.slice(-8).toUpperCase()}
 										</p>
 										<p className="text-[10px] text-neutral-400 uppercase font-black">
-											{settlement.date}
+											{new Date(settlement.createdAt).toLocaleDateString()}
 										</p>
 									</td>
 									<td className="px-8 py-5">
 										<div className="flex items-center gap-3">
 											<div className="h-8 w-8 rounded-lg bg-brand-blue-soft flex items-center justify-center text-brand-blue font-bold shrink-0">
-												{settlement.vendor[0]}
+												{settlement.vendorName?.[0] || 'V'}
 											</div>
-											<span className="font-bold text-neutral-900">
-												{settlement.vendor}
-											</span>
+											<div>
+												<span className="font-bold text-neutral-900 block">
+													{settlement.vendorName || 'Direct Payment'}
+												</span>
+												<span className="text-[10px] text-neutral-400 font-medium">
+													{settlement.listingName}
+												</span>
+											</div>
 										</div>
 									</td>
 									<td className="px-8 py-5 font-black text-neutral-900">
-										₦{settlement.amount.toLocaleString()}
+										₦{Number(settlement.amount).toLocaleString()}
 									</td>
 									<td className="px-8 py-5">
 										<Badge
 											className={cn(
 												'border-none px-3 py-1 font-bold text-[10px] uppercase rounded-full',
-												settlement.status === 'COMPLETED'
+												settlement.status === 'SUCCESS'
 													? 'bg-emerald-50 text-emerald-600'
 													: settlement.status === 'PENDING'
 														? 'bg-amber-50 text-amber-600'
 														: 'bg-red-50 text-red-600',
 											)}
 										>
-											{settlement.status}
+											{settlement.status === 'SUCCESS'
+												? 'COMPLETED'
+												: settlement.status}
 										</Badge>
 									</td>
 									<td className="px-8 py-5 text-right">

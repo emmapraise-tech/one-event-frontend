@@ -20,9 +20,12 @@ export enum ListingCategory {
 }
 
 export enum ListingStatus {
-	ACTIVE = 'ACTIVE',
-	INACTIVE = 'INACTIVE',
 	PENDING = 'PENDING',
+	ACTIVE = 'ACTIVE',
+	PAUSED = 'PAUSED',
+	REJECTED = 'REJECTED',
+	SUSPENDED = 'SUSPENDED',
+	ARCHIVED = 'ARCHIVED',
 }
 export interface AddOn {
 	id: string;

@@ -319,7 +319,7 @@ export function PricingStep({
 									className="h-10 border-gray-200"
 								/>
 							</div>
-							<div className="w-24 relative">
+							<div className="w-38 relative">
 								<Input
 									type="text"
 									placeholder="Price"

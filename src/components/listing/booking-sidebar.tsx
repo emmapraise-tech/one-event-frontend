@@ -144,7 +144,9 @@ export function BookingSidebar({
 	const serviceCharge = subTotal * 0.05; // 5% Service Charge
 	const vat = (subTotal + serviceCharge) * 0.075; // 7.5% VAT on (Subtotal + Service Charge)
 	const total = subTotal + vat + serviceCharge;
-	const deposit = total * 0.7;
+
+	// Calculate deposit: 70% of subtotal + 100% of fees (SC + VAT)
+	const depositAmount = subTotal * 0.7 + serviceCharge + vat;
 
 	// Auto-select hall if only one exists
 	useEffect(() => {
@@ -157,7 +159,11 @@ export function BookingSidebar({
 		const checkAvailability = async () => {
 			if (!dateRange?.from || (halls.length > 0 && !selectedHallId)) {
 				setIsAvailable(null);
-				setAvailabilityMessage(halls.length > 0 && dateRange?.from ? 'Select a hall to check availability' : '');
+				setAvailabilityMessage(
+					halls.length > 0 && dateRange?.from
+						? 'Select a hall to check availability'
+						: '',
+				);
 				setIsCheckingAvailability(false);
 				return;
 			}
@@ -239,6 +245,8 @@ export function BookingSidebar({
 			selectedAddOns: selectedAddOnsData,
 			totalAmount: total,
 			total,
+			depositAmount,
+			paymentPreference,
 			guests: guests === 'others' ? customGuests : guests,
 			dateRange: {
 				from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
@@ -739,23 +747,23 @@ export function BookingSidebar({
 								<div className="grid gap-0.5 max-w-[200px] sm:max-w-none">
 									<Label
 										htmlFor="pay-full"
-										className="text-sm font-medium text-neutral-900 cursor-pointer"
+										className="text-sm font-bold text-neutral-900 cursor-pointer"
 									>
-										Pay In Full
+										Full payment of the hall
 									</Label>
 									<p className="text-xs text-neutral-500">
-										Get instant confirmation receipt.
+										Pay the full price for the hall booking.
 									</p>
 								</div>
 							</div>
 							<span
-								className={`text-sm font-medium ${
+								className={`text-sm font-bold ${
 									paymentPreference === 'full'
 										? 'text-brand-blue'
 										: 'text-neutral-900'
 								}`}
 							>
-								₦ {total.toLocaleString()}
+								₦ {subTotal.toLocaleString()}
 							</span>
 						</div>
 
@@ -778,10 +786,10 @@ export function BookingSidebar({
 										htmlFor="pay-deposit"
 										className="text-sm font-bold text-neutral-900 cursor-pointer"
 									>
-										Pay Deposit (70%)
+										Deposit of the hall
 									</Label>
 									<p className="text-xs text-neutral-500">
-										Secure your date now, pay the rest later.
+										Pay a 70% deposit for the hall booking.
 									</p>
 								</div>
 							</div>
@@ -792,25 +800,34 @@ export function BookingSidebar({
 										: 'text-neutral-900'
 								}`}
 							>
-								₦ {deposit.toLocaleString()}
+								₦ {(subTotal * 0.7).toLocaleString()}
 							</span>
 						</div>
 					</RadioGroup>
 				</div>
 
-				<div className="bg-neutral-50 p-4 rounded-lg space-y-2 border border-neutral-100">
+				<div className="bg-neutral-50 p-4 rounded-lg space-y-2 border border-neutral-100 animate-in fade-in duration-300">
 					<div className="flex justify-between text-sm">
 						<span className="text-neutral-500">
-							Venue Fee ({numberOfDays} {numberOfDays > 1 ? 'days' : 'day'})
+							Venue Fee {paymentPreference === 'deposit' ? '(70% Deposit)' : ''} (
+							{numberOfDays} {numberOfDays > 1 ? 'days' : 'day'})
 						</span>
 						<span className="font-medium text-neutral-900">
-							₦ {venueFee.toLocaleString()}
+							₦{' '}
+							{paymentPreference === 'deposit'
+								? (venueFee * 0.7).toLocaleString()
+								: venueFee.toLocaleString()}
 						</span>
 					</div>
 					<div className="flex justify-between text-sm">
-						<span className="text-neutral-500">Add-ons</span>
+						<span className="text-neutral-500">
+							Add-ons {paymentPreference === 'deposit' ? '(70% Deposit)' : ''}
+						</span>
 						<span className="font-medium text-neutral-900">
-							₦ {addOnsTotal.toLocaleString()}
+							₦{' '}
+							{paymentPreference === 'deposit'
+								? (addOnsTotal * 0.7).toLocaleString()
+								: addOnsTotal.toLocaleString()}
 						</span>
 					</div>
 					<div className="flex justify-between text-sm">
@@ -827,9 +844,12 @@ export function BookingSidebar({
 					</div>
 					<Separator className="my-2 bg-neutral-200" />
 					<div className="flex justify-between text-base font-bold text-neutral-900">
-						<span>Total</span>
+						<span>{paymentPreference === 'deposit' ? 'Payable Now' : 'Total'}</span>
 						<span className="font-bold text-brand-blue">
-							₦ {total.toLocaleString()}
+							₦{' '}
+							{paymentPreference === 'deposit'
+								? depositAmount.toLocaleString()
+								: total.toLocaleString()}
 						</span>
 					</div>
 				</div>
