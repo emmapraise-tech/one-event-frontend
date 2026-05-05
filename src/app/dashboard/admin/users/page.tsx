@@ -31,7 +31,7 @@ import { cn } from '@/lib/utils';
 
 export default function AdminUsersPage() {
 	const {
-		data: users,
+		data: paginatedData,
 		isLoading,
 		error,
 	} = useQuery({
@@ -47,7 +47,7 @@ export default function AdminUsersPage() {
 		);
 	}
 
-	const safeUsers = Array.isArray(users) ? users : [];
+	const safeUsers = paginatedData?.data || [];
 
 	return (
 		<div className="space-y-8 animate-in fade-in duration-500">

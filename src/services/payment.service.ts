@@ -14,4 +14,9 @@ export const paymentService = {
 		);
 		return response.data.data;
 	},
+
+	async adminFindAll(): Promise<{ data: Payment[], meta: any }> {
+		const response = await api.get<ApiResponse<{ data: Payment[], meta: any }>>('/payment');
+		return response.data.data;
+	},
 };

@@ -24,90 +24,19 @@ import { PendingRequests } from '@/components/dashboard/recent-activity';
 import Link from 'next/link';
 import { CardSkeleton, PageHeaderSkeleton } from '@/components/ui/skeletons';
 
+import { adminService } from '@/services/admin.service';
+import { useQuery } from '@tanstack/react-query';
+
 export default function DashboardPage() {
-	const { user, isLoading } = useAuth();
+	const { user, isLoading: authLoading } = useAuth();
 
-	// Mock Data for Vendor
-	const vendorStats = [
-		{
-			title: 'TOTAL EARNINGS',
-			value: '₦12,450',
-			trend: '12%',
-			trendUp: true,
-			icon: Wallet,
-			bgColor: 'bg-brand-blue-soft',
-			iconColor: 'text-brand-blue',
-		},
-		{
-			title: 'TOTAL BOOKINGS',
-			value: '42',
-			trend: '5%',
-			trendUp: true,
-			icon: Calendar,
-			bgColor: 'bg-purple-50',
-			iconColor: 'text-purple-600',
-		},
-		{
-			title: 'LISTING VIEWS',
-			value: '1,205',
-			trend: '8%',
-			trendUp: true,
-			icon: Eye,
-			bgColor: 'bg-amber-50',
-			iconColor: 'text-amber-600',
-		},
-		{
-			title: 'AVG RATING',
-			value: '4.8',
-			trend: '0.2%',
-			trendUp: true,
-			icon: Star,
-			bgColor: 'bg-emerald-50',
-			iconColor: 'text-emerald-600',
-		},
-	];
+	const { data: adminData, isLoading: adminLoading } = useQuery({
+		queryKey: ['admin', 'dashboard'],
+		queryFn: adminService.getDashboardData,
+		enabled: user?.type === 'ADMIN',
+	});
 
-	// Mock Data for Customer
-	const customerStats = [
-		{
-			title: 'TOTAL SPENT',
-			value: '₦4,250',
-			trend: '10%',
-			trendUp: false,
-			icon: Wallet,
-			bgColor: 'bg-brand-blue-soft',
-			iconColor: 'text-brand-blue',
-		},
-		{
-			title: 'MY BOOKINGS',
-			value: '8',
-			trend: '2 new',
-			trendUp: true,
-			icon: Calendar,
-			bgColor: 'bg-purple-50',
-			iconColor: 'text-purple-600',
-		},
-		{
-			title: 'SAVED VENUES',
-			value: '12',
-			trend: '3 new',
-			trendUp: true,
-			icon: Star,
-			bgColor: 'bg-amber-50',
-			iconColor: 'text-amber-600',
-		},
-		{
-			title: 'UPCOMING EVENTS',
-			value: '2',
-			trend: 'This week',
-			trendUp: true,
-			icon: Building2,
-			bgColor: 'bg-emerald-50',
-			iconColor: 'text-emerald-600',
-		},
-	];
-
-	if (isLoading) {
+	if (authLoading || (user?.type === 'ADMIN' && adminLoading)) {
 		return (
 			<div className="space-y-6 md:space-y-8 pb-12">
 				<PageHeaderSkeleton />
@@ -133,11 +62,91 @@ export default function DashboardPage() {
 	const isVendor = user?.type === 'VENDOR';
 	const userName = user?.firstName || 'Guest';
 
-	if (isAdmin) {
+	const vendorStats = [
+		{
+			title: 'TOTAL REVENUE',
+			value: '₦0.00',
+			trend: '0%',
+			trendUp: true,
+			icon: Wallet,
+			bgColor: 'bg-emerald-50',
+			iconColor: 'text-emerald-600',
+		},
+		{
+			title: 'ACTIVE LISTINGS',
+			value: '0',
+			trend: 'None yet',
+			trendUp: false,
+			icon: Building2,
+			bgColor: 'bg-brand-blue-soft',
+			iconColor: 'text-brand-blue',
+		},
+		{
+			title: 'TOTAL BOOKINGS',
+			value: '0',
+			trend: 'Waiting for orders',
+			trendUp: false,
+			icon: Calendar,
+			bgColor: 'bg-blue-50',
+			iconColor: 'text-blue-600',
+		},
+		{
+			title: 'PROFILE VIEWS',
+			value: '0',
+			trend: '0%',
+			trendUp: true,
+			icon: Eye,
+			bgColor: 'bg-purple-50',
+			iconColor: 'text-purple-600',
+		},
+	];
+
+	const customerStats = [
+		{
+			title: 'ACTIVE BOOKINGS',
+			value: '0',
+			trend: 'Next: None',
+			trendUp: true,
+			icon: Calendar,
+			bgColor: 'bg-emerald-50',
+			iconColor: 'text-emerald-600',
+		},
+		{
+			title: 'SAVED VENUES',
+			value: '0',
+			trend: 'Browse more',
+			trendUp: true,
+			icon: Star,
+			bgColor: 'bg-amber-50',
+			iconColor: 'text-amber-600',
+		},
+		{
+			title: 'TOTAL SPENT',
+			value: '₦0.00',
+			trend: 'Life-to-date',
+			trendUp: true,
+			icon: Wallet,
+			bgColor: 'bg-brand-blue-soft',
+			iconColor: 'text-brand-blue',
+		},
+		{
+			title: 'NOTIFICATIONS',
+			value: '0',
+			trend: 'All caught up',
+			trendUp: true,
+			icon: Activity,
+			bgColor: 'bg-blue-50',
+			iconColor: 'text-blue-600',
+		},
+	];
+
+	if (isAdmin && adminData) {
+		const { totals, topVendors, recentBookings } = adminData;
+
 		const adminStats = [
 			{
 				title: 'PLATFORM REVENUE',
-				value: '₦24.8M',
+				value: `₦${(totals.revenue / 1000000).toFixed(1)}M`,
 				trend: '15%',
 				trendUp: true,
 				icon: Wallet,
@@ -146,52 +155,30 @@ export default function DashboardPage() {
 			},
 			{
 				title: 'PENDING LISTINGS',
-				value: '12',
-				trend: '4 urgent',
-				trendUp: true,
+				value: totals.pendingListings.toString(),
+				trend: `${totals.pendingListings} urgent`,
+				trendUp: totals.pendingListings > 0,
 				icon: Building2,
 				bgColor: 'bg-amber-50',
 				iconColor: 'text-amber-600',
 			},
 			{
 				title: 'TOTAL USERS',
-				value: '2,840',
-				trend: '124 new',
+				value: totals.users.toLocaleString(),
+				trend: 'Live updates',
 				trendUp: true,
-				icon: Star,
+				icon: Users,
 				bgColor: 'bg-emerald-50',
 				iconColor: 'text-emerald-600',
 			},
 			{
 				title: 'SYSTEM BOOKINGS',
-				value: '184',
-				trend: '8% increase',
+				value: totals.bookings.toLocaleString(),
+				trend: 'Total secured',
 				trendUp: true,
 				icon: Calendar,
 				bgColor: 'bg-blue-50',
 				iconColor: 'text-blue-600',
-			},
-		];
-
-		const topVendors = [
-			{
-				name: 'Grand Ballroom Lagos',
-				sales: '₦8.4M',
-				share: '₦840k',
-				growth: '+12%',
-			},
-			{
-				name: 'Victory Gardens',
-				sales: '₦5.2M',
-				share: '₦520k',
-				growth: '+8%',
-			},
-			{ name: 'Sky Pavilion', sales: '₦3.8M', share: '₦380k', growth: '+15%' },
-			{
-				name: 'Ocean View Suites',
-				sales: '₦2.9M',
-				share: '₦290k',
-				growth: '-2%',
 			},
 		];
 
@@ -227,7 +214,7 @@ export default function DashboardPage() {
 						</Link>
 						<Link href="/dashboard/admin/listings">
 							<Button className="bg-brand-blue hover:bg-brand-blue-hover text-white shadow-xl shadow-blue-500/20 h-14 px-10 font-black rounded-2xl transition-all">
-								Review Pending (12)
+								Review Pending ({totals.pendingListings})
 							</Button>
 						</Link>
 					</div>
@@ -284,13 +271,12 @@ export default function DashboardPage() {
 											<th className="px-4 md:px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
 												Merchant
 											</th>
-											<th className="px-4 md:px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-												Gross Sales
+											<th className="px-4 md:px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest text-center">
+												Total Listings
 											</th>
-											<th className="px-4 md:px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-												Platform Cut
+											<th className="px-4 md:px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest text-right">
+												Actions
 											</th>
-											<th className="px-4 md:px-8 py-4 text-right"></th>
 										</tr>
 									</thead>
 									<tbody className="divide-y divide-neutral-50">
@@ -308,26 +294,21 @@ export default function DashboardPage() {
 															<p className="font-bold text-neutral-900 leading-none">
 																{vendor.name}
 															</p>
-															<p className="text-[10px] text-emerald-600 font-bold mt-1 uppercase tracking-tighter">
-																{vendor.growth} Growth
+															<p className="text-[10px] text-brand-blue font-bold mt-1 uppercase tracking-tighter">
+																{vendor.owner}
 															</p>
 														</div>
 													</div>
 												</td>
-												<td className="px-4 md:px-8 py-5 font-black text-neutral-900">
-													{vendor.sales}
+												<td className="px-4 md:px-8 py-5 font-black text-neutral-900 text-center">
+													{vendor.listings}
 												</td>
-												<td className="px-4 md:px-8 py-5 font-black text-brand-blue">
-													{vendor.share}
-												</td>
-												<td className="px-4 md:px-8 py-5 text-right">
-													<Button
-														variant="ghost"
-														size="sm"
-														className="h-8 w-8 p-0 rounded-lg"
-													>
-														<ArrowUpRight className="h-4 w-4 text-neutral-400" />
-													</Button>
+												<td className="px-4 md:px-8 py-5 font-black text-brand-blue text-right">
+													<Link href={`/dashboard/admin/listings?vendorId=${vendor.id}`}>
+														<Button variant="ghost" size="sm" className="h-8 rounded-lg text-xs font-bold">
+															View Listings
+														</Button>
+													</Link>
 												</td>
 											</tr>
 										))}

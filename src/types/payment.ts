@@ -2,6 +2,7 @@ export enum PaymentProvider {
 	PAYSTACK = 'PAYSTACK',
 	STRIPE = 'STRIPE',
 	FLUTTERWAVE = 'FLUTTERWAVE',
+	CASH = 'CASH',
 }
 
 export enum PaymentStatus {
@@ -15,6 +16,7 @@ export enum PaymentType {
 	FULL_PAYMENT = 'FULL_PAYMENT',
 	DEPOSIT = 'DEPOSIT',
 	PARTIAL = 'PARTIAL',
+	BALANCE_PAYMENT = 'BALANCE_PAYMENT',
 }
 
 export interface Payment {

@@ -98,11 +98,18 @@ export function ListingCard({ listing }: ListingCardProps) {
 							Starting from
 						</span>
 						<div className="flex items-baseline gap-1">
-							<span className="text-xl font-black text-gray-900">
-								{listing.currency} {((listing.halls && listing.halls.length > 0) 
-									? (Math.min(...listing.halls.map(h => h.price).filter(p => p > 0)) || (listing.basePrice || 0))
-									: (listing.basePrice || 0)).toLocaleString()}
-							</span>
+							{(() => {
+								const rawHalls = listing.halls || [];
+								const hallPrices = rawHalls.map((h) => Number(h.price)).filter((p) => p > 0);
+								const minHallPrice = hallPrices.length > 0 ? Math.min(...hallPrices) : null;
+								const startPrice = minHallPrice !== null ? minHallPrice : (Number(listing.basePrice) || 0);
+								
+								return (
+									<span className="text-xl font-black text-gray-900">
+										{listing.currency} {startPrice.toLocaleString()}
+									</span>
+								);
+							})()}
 							<span className="text-xs font-medium text-gray-500">/day</span>
 						</div>
 					</div>

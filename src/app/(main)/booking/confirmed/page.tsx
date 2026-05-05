@@ -25,11 +25,15 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 
+import { Receipt } from "@/components/booking/receipt";
+import { useRef } from "react";
+
 function BookingConfirmedContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
   const [bookingData, setBookingData] = useState<any>(null);
+  const receiptRef = useRef<HTMLDivElement>(null);
   
   // Get reference from URL - check multiple possible param names
   const reference = searchParams.get("reference") || searchParams.get("trxref");
@@ -56,7 +60,8 @@ function BookingConfirmedContent() {
         await paymentService.verify(reference);
         setRefCode(reference);
         setIsVerifying(false);
-        localStorage.removeItem("bookingDetails"); // Clear after successful booking
+        // We don't clear localStorage immediately so the receipt can still see it
+        // localStorage.removeItem("bookingDetails"); 
       } catch (error: any) {
         console.error("Verification error:", error);
         setVerificationError(
@@ -128,13 +133,18 @@ function BookingConfirmedContent() {
   const serviceCharge = bookingData.serviceCharge || subtotal * 0.05;
   const vat = bookingData.vat || (subtotal + serviceCharge) * 0.075;
   const grandTotal = bookingData.totalAmount || subtotal + vat + serviceCharge;
-  const amountPaid = bookingData.paymentPreference === 'deposit' 
-    ? (bookingData.depositAmount || grandTotal * 0.7) 
-    : grandTotal;
+  const amountPaid =
+    bookingData.paymentPreference === 'deposit'
+      ? bookingData.depositAmount || subtotal * 0.7 + serviceCharge + vat
+      : grandTotal;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(refCode);
     toast.success("Reference code copied to clipboard");
+  };
+
+  const handleDownloadReceipt = () => {
+    window.print();
   };
 
   const handleUnsupported = (feature: string) => {
@@ -154,14 +164,14 @@ function BookingConfirmedContent() {
             <CheckCircle className="h-12 w-12 text-green-600 relative z-10" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-3 tracking-tight">
-            Booking Confirmed!
+            {reference?.startsWith('CASH-')
+              ? 'Booking Submitted!'
+              : 'Booking Confirmed!'}
           </h1>
           <p className="text-neutral-500 text-lg md:text-xl max-w-xl mx-auto leading-relaxed">
-            Get ready to celebrate! Your reservation at{" "}
-            <span className="font-bold text-neutral-900">
-              {bookingData.venueName}
-            </span>{" "}
-            is officially secured.
+            {reference?.startsWith('CASH-')
+              ? `Your reservation request for ${bookingData.venueName} has been submitted. Please proceed with the cash payment to the vendor to finalize your booking.`
+              : `Get ready to celebrate! Your reservation at ${bookingData.venueName} is officially secured.`}
           </p>
           <p className="text-sm text-neutral-400 mt-4 bg-neutral-50 inline-block px-4 py-1 rounded-full border border-neutral-100">
             Confirmation sent to{" "}
@@ -379,7 +389,7 @@ function BookingConfirmedContent() {
         </Card>
 
         {/* Footer Actions */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden">
           <div className="flex gap-4 w-full sm:w-auto">
             <Button
               variant="outline"
@@ -392,7 +402,7 @@ function BookingConfirmedContent() {
             <Button
               variant="outline"
               className="flex-1 sm:flex-none gap-2 h-12 rounded-xl border-neutral-200 text-neutral-700 hover:bg-neutral-50"
-              onClick={() => handleUnsupported("Download Receipt")}
+              onClick={handleDownloadReceipt}
             >
               <Download className="h-4 w-4" />
               Receipt
@@ -407,7 +417,7 @@ function BookingConfirmedContent() {
           </Button>
         </div>
 
-        <div className="mt-12 text-center text-sm text-neutral-500">
+        <div className="mt-12 text-center text-sm text-neutral-500 print:hidden">
           <p>
             Need to make changes?{" "}
             <Link
@@ -427,6 +437,35 @@ function BookingConfirmedContent() {
           </p>
         </div>
       </div>
+
+      {/* Hidden Receipt for Printing */}
+      <div className="hidden print:block">
+        <Receipt 
+          bookingData={bookingData} 
+          refCode={refCode} 
+          customerName={`${user?.firstName || ''} ${user?.lastName || ''}`}
+        />
+      </div>
+
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .print-receipt-container, .print-receipt-container * {
+            visibility: visible;
+          }
+          #booking-receipt, #booking-receipt * {
+            visibility: visible;
+          }
+          #booking-receipt {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+        }
+      `}</style>
     </div>
   );
 }

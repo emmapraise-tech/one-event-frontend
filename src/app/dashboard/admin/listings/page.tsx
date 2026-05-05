@@ -26,9 +26,14 @@ import Image from 'next/legacy/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { PageHeaderSkeleton, CardSkeleton } from '@/components/ui/skeletons';
+import { useState } from 'react';
+import { ListingDetailDialog } from './ListingDetailDialog';
 
 export default function AdminListingsPage() {
 	const queryClient = useQueryClient();
+	const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+	const [isDetailOpen, setIsDetailOpen] = useState(false);
+
 	const { data: paginatedData, isLoading } = useQuery({
 		queryKey: ['admin', 'listings'],
 		queryFn: () => listingService.adminFindAll(),
@@ -42,11 +47,17 @@ export default function AdminListingsPage() {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['admin', 'listings'] });
 			toast.success('Listing status updated successfully');
+			setIsDetailOpen(false);
 		},
 		onError: () => {
 			toast.error('Failed to update listing status');
 		},
 	});
+
+	const handleOpenDetail = (listing: Listing) => {
+		setSelectedListing(listing);
+		setIsDetailOpen(true);
+	};
 
 	if (isLoading) {
 		return (
@@ -138,7 +149,8 @@ export default function AdminListingsPage() {
 					safeListings.map((listing) => (
 						<Card
 							key={listing.id}
-							className="group overflow-hidden rounded-[40px] border-none shadow-soft bg-white transition-all hover:shadow-xl border border-neutral-50"
+							onClick={() => handleOpenDetail(listing)}
+							className="group overflow-hidden rounded-[40px] border-none shadow-soft bg-white transition-all hover:shadow-xl border border-neutral-50 cursor-pointer active:scale-[0.99] transition-transform"
 						>
 							<CardContent className="p-0">
 								<div className="flex flex-col xl:flex-row">
@@ -173,7 +185,7 @@ export default function AdminListingsPage() {
 											<div className="space-y-2">
 												<div className="flex items-center gap-2">
 													<span className="text-[10px] font-black text-brand-blue bg-brand-blue-soft px-2 py-0.5 rounded-full uppercase tracking-tighter">
-														{listing.type} • {listing.category}
+														{listing.type} • {Array.isArray(listing.category) ? listing.category.join(', ') : listing.category}
 													</span>
 													<span className="text-[10px] font-bold text-neutral-400">
 														ID: {listing.id.slice(-8).toUpperCase()}
@@ -196,11 +208,20 @@ export default function AdminListingsPage() {
 
 											<div className="text-right">
 												<p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1 leading-none">
-													Market Rate
+													Starting Rate
 												</p>
-												<p className="text-3xl font-black text-brand-blue leading-none mb-2">
-													₦{(listing.basePrice || 0).toLocaleString()}
-												</p>
+												{(() => {
+													const rawHalls = listing.halls || [];
+													const hallPrices = rawHalls.map((h) => Number(h.price)).filter((p) => p > 0);
+													const minHallPrice = hallPrices.length > 0 ? Math.min(...hallPrices) : null;
+													const startPrice = minHallPrice !== null ? minHallPrice : (Number(listing.basePrice) || 0);
+													
+													return (
+														<p className="text-3xl font-black text-brand-blue leading-none mb-2">
+															₦{startPrice.toLocaleString()}
+														</p>
+													);
+												})()}
 											</div>
 										</div>
 
@@ -212,6 +233,7 @@ export default function AdminListingsPage() {
 												>
 													<Button
 														variant="outline"
+														onClick={(e) => e.stopPropagation()}
 														className="h-12 px-6 rounded-2xl font-bold border-neutral-100 hover:bg-neutral-50 group/btn"
 													>
 														Public Preview
@@ -224,12 +246,13 @@ export default function AdminListingsPage() {
 												{listing.status === ListingStatus.PENDING && (
 													<>
 														<Button
-															onClick={() =>
+															onClick={(e) => {
+																e.stopPropagation();
 																statusMutation.mutate({
 																	id: listing.id,
 																	status: ListingStatus.ACTIVE,
-																})
-															}
+																});
+															}}
 															disabled={statusMutation.isPending}
 															className="flex-1 sm:flex-none h-14 px-10 rounded-2xl font-black bg-brand-blue hover:bg-brand-blue-hover text-white shadow-xl shadow-blue-500/20 text-md tracking-tight"
 														>
@@ -247,6 +270,19 @@ export default function AdminListingsPage() {
 					))
 				)}
 			</div>
+
+			<ListingDetailDialog
+				listing={selectedListing}
+				isOpen={isDetailOpen}
+				onClose={() => setIsDetailOpen(false)}
+				onApprove={(id) =>
+					statusMutation.mutate({ id, status: ListingStatus.ACTIVE })
+				}
+				onDecline={(id) =>
+					statusMutation.mutate({ id, status: ListingStatus.REJECTED })
+				}
+				isProcessing={statusMutation.isPending}
+			/>
 		</div>
 	);
 }

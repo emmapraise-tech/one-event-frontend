@@ -133,7 +133,7 @@ export function SidebarContent({ collapsed }: { collapsed?: boolean }) {
 								OneEvent
 							</span>
 							<span className="text-[10px] uppercase tracking-wider text-neutral-500 font-semibold">
-								Vendor Portal
+								{user?.type === 'ADMIN' ? 'Admin Portal' : 'Vendor Portal'}
 							</span>
 						</div>
 					)}

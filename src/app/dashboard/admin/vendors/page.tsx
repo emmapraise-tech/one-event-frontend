@@ -109,7 +109,7 @@ export default function AdminVendorsPage() {
 						</p>
 					</Card>
 				) : (
-					vendors.map((vendor) => (
+					vendors.map((vendor: any) => (
 						<Card
 							key={vendor.id}
 							className="group border-none shadow-soft rounded-[40px] overflow-hidden bg-white hover:shadow-xl transition-all duration-300 border border-neutral-50"
@@ -172,7 +172,6 @@ export default function AdminVendorsPage() {
 										</DropdownMenu>
 									</div>
 
-									{/* Vendor Quick Stats */}
 									<div className="grid grid-cols-3 gap-4 mb-8">
 										<div className="p-4 rounded-3xl bg-neutral-50 border border-neutral-100/50">
 											<p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest mb-1">
@@ -180,7 +179,7 @@ export default function AdminVendorsPage() {
 											</p>
 											<p className="text-sm font-black text-neutral-900">
 												₦
-												{(Math.random() * 5000000).toLocaleString(undefined, {
+												{(vendor.totalRevenue || 0).toLocaleString(undefined, {
 													maximumFractionDigits: 0,
 												})}
 											</p>
@@ -190,7 +189,7 @@ export default function AdminVendorsPage() {
 												Listings
 											</p>
 											<p className="text-sm font-black text-neutral-900">
-												{Math.floor(Math.random() * 10) + 1}
+												{vendor.listingsCount || 0}
 											</p>
 										</div>
 										<div className="p-4 rounded-3xl bg-neutral-50 border border-neutral-100/50">
@@ -199,7 +198,7 @@ export default function AdminVendorsPage() {
 											</p>
 											<div className="flex items-center gap-1.5 text-sm font-black text-emerald-600">
 												<Activity className="h-3 w-3" />
-												98%
+												100%
 											</div>
 										</div>
 									</div>

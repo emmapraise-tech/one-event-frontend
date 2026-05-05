@@ -36,6 +36,7 @@ import {
 	Banknote,
 	CreditCard as CreditCardIcon,
 	Copy,
+	Wallet,
 } from 'lucide-react';
 import { useListing } from '@/hooks/useListings';
 import { Suspense } from 'react';
@@ -47,7 +48,9 @@ function BookingSummaryContent() {
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [bookingData, setBookingData] = useState<any>(null);
 	const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
-	const [paymentMethod, setPaymentMethod] = useState<'card' | 'bank'>('card');
+	const [paymentMethod, setPaymentMethod] = useState<'card' | 'bank' | 'cash'>(
+		'card',
+	);
 	const [specialRequest, setSpecialRequest] = useState('');
 	const [isAvailable, setIsAvailable] = useState<boolean | true>(true);
 	const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -128,7 +131,12 @@ function BookingSummaryContent() {
 	const subtotal = venueFee + addOnsTotal;
 	const serviceCharge = bookingData.serviceCharge || subtotal * 0.05;
 	const vat = bookingData.vat || (subtotal + serviceCharge) * 0.075;
-	const grandTotal = bookingData.totalAmount || subtotal + vat + serviceCharge;
+	const fullAmount = subtotal + vat + serviceCharge;
+
+	const isDeposit = bookingData.paymentPreference === 'deposit';
+	const grandTotal = isDeposit
+		? bookingData.depositAmount || subtotal * 0.7 + serviceCharge + vat
+		: fullAmount;
 
 	const handlePayment = async () => {
 		if (!termsAccepted) {
@@ -156,6 +164,24 @@ function BookingSummaryContent() {
 					subTotal: subtotal,
 				},
 			});
+
+			if (paymentMethod === 'cash') {
+				const paymentResponse: any = await paymentService.create({
+					bookingId: booking.id,
+					amount: grandTotal,
+					paymentType:
+						bookingData.paymentPreference === 'deposit'
+							? PaymentType.DEPOSIT
+							: PaymentType.FULL_PAYMENT,
+					provider: PaymentProvider.CASH,
+					callbackUrl: `${window.location.origin}/booking/confirmed`,
+				});
+
+				router.push(
+					`/booking/confirmed?reference=${paymentResponse.reference || booking.id}`,
+				);
+				return;
+			}
 
 			if (paymentMethod === 'bank') {
 				// Initialize payment with Monnify (Assumed Bank Transfer equivalent provider)
@@ -560,13 +586,21 @@ function BookingSummaryContent() {
 									<div className="space-y-3 text-sm">
 										<div className="flex justify-between items-center text-neutral-600">
 											<span>
-												Venue Rental ({bookingData.numberOfDays}{' '}
+												Venue Rental {isDeposit ? '(70% Deposit)' : ''} ({bookingData.numberOfDays}{' '}
 												{bookingData.numberOfDays > 1 ? 'days' : 'day'})
 											</span>
 											<span className="font-bold text-neutral-900">
-												₦{bookingData.venueFee.toLocaleString()}
+												₦{(isDeposit ? bookingData.venueFee * 0.7 : bookingData.venueFee).toLocaleString()}
 											</span>
 										</div>
+										{addOnsTotal > 0 && (
+											<div className="flex justify-between items-center text-neutral-600">
+												<span>Add-on Services {isDeposit ? '(70% Deposit)' : ''}</span>
+												<span className="font-bold text-neutral-900">
+													₦{(isDeposit ? addOnsTotal * 0.7 : addOnsTotal).toLocaleString()}
+												</span>
+											</div>
+										)}
 										<div className="flex justify-between items-center text-neutral-600">
 											<span>Service Charge (5%)</span>
 											<span className="font-bold text-neutral-900">
@@ -585,14 +619,16 @@ function BookingSummaryContent() {
 
 									<div className="flex justify-between items-center mb-6">
 										<span className="font-bold text-neutral-900 text-lg">
-											Total Amount
+											{isDeposit ? 'Payable Now' : 'Total Amount'}
 										</span>
 										<div className="text-right">
 											<div className="font-bold text-brand-blue text-2xl">
 												₦{grandTotal.toLocaleString()}
 											</div>
 											<span className="text-[10px] text-neutral-400">
-												Includes all applicable taxes and fees.
+												{isDeposit
+													? 'Includes 70% of the hall price plus 100% taxes & fees.'
+													: 'Includes all applicable taxes and fees.'}
 											</span>
 										</div>
 									</div>
@@ -602,7 +638,7 @@ function BookingSummaryContent() {
 										<h4 className="font-bold text-sm text-neutral-900">
 											Select Payment Method
 										</h4>
-										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+										<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 											<div
 												onClick={() => setPaymentMethod('card')}
 												className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
@@ -629,8 +665,32 @@ function BookingSummaryContent() {
 													Bank Transfer
 												</span>
 											</div>
+											<div
+												onClick={() => setPaymentMethod('cash')}
+												className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
+													paymentMethod === 'cash'
+														? 'border-brand-blue bg-brand-blue-soft text-brand-blue'
+														: 'border-neutral-200 hover:border-brand-blue/50 text-neutral-500'
+												}`}
+											>
+												<Wallet className="h-6 w-6 mb-2" />
+												<span className="text-sm font-semibold">
+													Cash Payment
+												</span>
+											</div>
 										</div>
 									</div>
+
+									{paymentMethod === 'cash' && (
+										<Alert className="mb-6 bg-blue-50 border-blue-200">
+											<Wallet className="h-4 w-4 text-blue-600" />
+											<AlertDescription className="text-blue-700 text-xs font-medium">
+												Cash payment should be made directly at the venue. Your
+												booking will be pending until the vendor confirms the
+												payment.
+											</AlertDescription>
+										</Alert>
+									)}
 
 									{/* Virtual Account Info Block */}
 									{paymentMethod === 'bank' && (
