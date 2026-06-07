@@ -29,8 +29,14 @@ export function LocationStep({
 	onBack,
 }: StepProps) {
 	const addressInputRef = useRef<HTMLInputElement>(null);
+	const mapContainerRef = useRef<HTMLDivElement>(null);
+	const mapRef = useRef<any>(null);
+	const markerRef = useRef<any>(null);
 	const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 	const [isLoadingScript, setIsLoadingScript] = useState(false);
+	const [isGeocoding, setIsGeocoding] = useState(false);
+
+	const defaultCenter = { lat: 6.5244, lng: 3.3792 }; // Lagos, Nigeria
 
 	// Load Google Maps Script
 	useEffect(() => {
@@ -38,7 +44,7 @@ export function LocationStep({
 
 		if (!apiKey) {
 			console.warn(
-				'PricingStep: Google Maps API Key is missing. Autocomplete will not work.',
+				'LocationStep: Google Maps API Key is missing. Autocomplete and Maps will not load.',
 			);
 			return;
 		}
@@ -69,39 +75,42 @@ export function LocationStep({
 		document.head.appendChild(script);
 
 		return () => {
-			// Cleanup if needed, though usually we keep map script
+			// Cleanup if needed
 		};
 	}, []);
 
-	// Initialize Autocomplete
-	useEffect(() => {
-		if (isScriptLoaded && addressInputRef.current) {
-			const autocomplete = new window.google.maps.places.Autocomplete(
-				addressInputRef.current,
-				{
-					types: ['address'],
-					componentRestrictions: { country: 'ng' }, // Prioritize/Limit to Nigeria as per context? Or leave open. 'ng' based on Lagos default.
-					fields: ['address_components', 'geometry', 'formatted_address'],
-				},
-			);
+	// Helper for reverse geocoding
+	const handleLocationSelect = (lat: number, lng: number, shouldGeocode: boolean) => {
+		updateFormData({ latitude: lat, longitude: lng });
 
-			autocomplete.addListener('place_changed', () => {
-				const place = autocomplete.getPlace();
-				if (!place.geometry) return;
+		if (!shouldGeocode) return;
 
-				const addressComponents = place.address_components;
+		setIsGeocoding(true);
+		const geocoder = new window.google.maps.Geocoder();
+		geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
+			setIsGeocoding(false);
+			if (status === 'OK' && results && results[0]) {
+				const result = results[0];
+				const addressComponents = result.address_components;
 				let streetAddress = '';
 				let city = '';
 				let state = '';
 				let zip = '';
 				let country = '';
 
-				if (place.formatted_address) {
-					streetAddress = place.formatted_address.split(',')[0]; // Simpleheuristic, or parse route + street_number
-				}
+				streetAddress = result.formatted_address.split(',')[0]; // fallback
+
+				let streetNum = '';
+				let routeName = '';
 
 				addressComponents.forEach((component: any) => {
 					const types = component.types;
+					if (types.includes('street_number')) {
+						streetNum = component.long_name;
+					}
+					if (types.includes('route')) {
+						routeName = component.long_name;
+					}
 					if (
 						types.includes('locality') ||
 						types.includes('sublocality_level_1') ||
@@ -120,14 +129,178 @@ export function LocationStep({
 					}
 				});
 
+				if (streetNum && routeName) {
+					streetAddress = `${streetNum} ${routeName}`;
+				} else if (routeName) {
+					streetAddress = routeName;
+				}
+
 				updateFormData({
-					addressLine: place.formatted_address || streetAddress,
-					city,
-					state,
-					country,
-					zipCode: zip,
-					latitude: place.geometry.location.lat(),
-					longitude: place.geometry.location.lng(),
+					addressLine: result.formatted_address,
+					city: city || '',
+					state: state || '',
+					country: country || 'Nigeria',
+					zipCode: zip || '',
+					latitude: lat,
+					longitude: lng,
+				});
+			} else {
+				console.error('Geocoder failed due to: ' + status);
+			}
+		});
+	};
+
+	// Initialize Map and Draggable Marker
+	useEffect(() => {
+		if (!isScriptLoaded || !mapContainerRef.current) return;
+
+		const center = {
+			lat: formData.latitude ? Number(formData.latitude) : defaultCenter.lat,
+			lng: formData.longitude ? Number(formData.longitude) : defaultCenter.lng,
+		};
+
+		// Initialize Map
+		const map = new window.google.maps.Map(mapContainerRef.current, {
+			center: center,
+			zoom: formData.latitude && formData.longitude ? 16 : 12,
+			mapTypeControl: false,
+			streetViewControl: false,
+			fullscreenControl: false,
+		});
+		mapRef.current = map;
+
+		// Initialize Marker
+		const marker = new window.google.maps.Marker({
+			position: center,
+			map: map,
+			draggable: true,
+			title: 'Venue Location',
+			animation: window.google.maps.Animation.DROP,
+		});
+		markerRef.current = marker;
+
+		// Listener for marker dragend
+		marker.addListener('dragend', () => {
+			const pos = marker.getPosition();
+			if (pos) {
+				handleLocationSelect(pos.lat(), pos.lng(), true);
+			}
+		});
+
+		// Listener for map click
+		map.addListener('click', (e: any) => {
+			if (e.latLng) {
+				const lat = e.latLng.lat();
+				const lng = e.latLng.lng();
+				marker.setPosition({ lat, lng });
+				handleLocationSelect(lat, lng, true);
+			}
+		});
+
+		return () => {
+			if (window.google?.maps?.event) {
+				if (marker) window.google.maps.event.clearInstanceListeners(marker);
+				if (map) window.google.maps.event.clearInstanceListeners(map);
+			}
+		};
+	}, [isScriptLoaded]);
+
+	// Keep map and marker synced with formData coordinates (e.g. from Autocomplete or manual inputs)
+	useEffect(() => {
+		if (isScriptLoaded && mapRef.current && markerRef.current && formData.latitude && formData.longitude) {
+			const currentMarkerPos = markerRef.current.getPosition();
+			const formLat = Number(formData.latitude);
+			const formLng = Number(formData.longitude);
+
+			if (
+				!currentMarkerPos ||
+				Math.abs(currentMarkerPos.lat() - formLat) > 0.00001 ||
+				Math.abs(currentMarkerPos.lng() - formLng) > 0.00001
+			) {
+				const newPos = { lat: formLat, lng: formLng };
+				markerRef.current.setPosition(newPos);
+				mapRef.current.panTo(newPos);
+				mapRef.current.setZoom(16);
+			}
+		}
+	}, [formData.latitude, formData.longitude, isScriptLoaded]);
+
+	// Initialize Autocomplete
+	useEffect(() => {
+		if (isScriptLoaded && addressInputRef.current) {
+			const autocomplete = new window.google.maps.places.Autocomplete(
+				addressInputRef.current,
+				{
+					componentRestrictions: { country: 'ng' },
+					fields: ['name', 'address_components', 'geometry', 'formatted_address'],
+				},
+			);
+
+			autocomplete.addListener('place_changed', () => {
+				const place = autocomplete.getPlace();
+				if (!place.geometry || !place.geometry.location) return;
+
+				const lat = place.geometry.location.lat();
+				const lng = place.geometry.location.lng();
+
+				const addressComponents = place.address_components;
+				let streetAddress = '';
+				let city = '';
+				let state = '';
+				let zip = '';
+				let country = '';
+
+				let streetNum = '';
+				let routeName = '';
+
+				addressComponents.forEach((component: any) => {
+					const types = component.types;
+					if (types.includes('street_number')) {
+						streetNum = component.long_name;
+					}
+					if (types.includes('route')) {
+						routeName = component.long_name;
+					}
+					if (
+						types.includes('locality') ||
+						types.includes('sublocality_level_1') ||
+						types.includes('administrative_area_level_2')
+					) {
+						city = city || component.long_name;
+					}
+					if (types.includes('administrative_area_level_1')) {
+						state = component.long_name;
+					}
+					if (types.includes('postal_code')) {
+						zip = component.long_name;
+					}
+					if (types.includes('country')) {
+						country = component.long_name;
+					}
+				});
+
+				const name = place.name;
+				const formattedAddress = place.formatted_address || '';
+				let addressLineVal = '';
+
+				if (name && formattedAddress) {
+					if (formattedAddress.toLowerCase().includes(name.toLowerCase())) {
+						addressLineVal = formattedAddress;
+					} else {
+						addressLineVal = `${name}, ${formattedAddress}`;
+					}
+				} else {
+					addressLineVal = formattedAddress || name || '';
+				}
+
+				updateFormData({
+					addressLine: addressLineVal,
+					city: city || '',
+					state: state || '',
+					country: country || 'Nigeria',
+					zipCode: zip || '',
+					latitude: lat,
+					longitude: lng,
 				});
 			});
 		}
@@ -138,25 +311,7 @@ export function LocationStep({
 		onNext();
 	};
 
-	// Construct map query based on form data or default to Lagos
-	const addressQuery = [
-		formData.addressLine,
-		formData.city || 'Lagos',
-		formData.state || 'Lagos',
-		formData.country || 'Nigeria',
-	]
-		.filter(Boolean)
-		.join(', ');
-
-	const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-	// Use OFFICIAL Embed API if key is present (Fixes "Can't load correctly" error)
-	// Fallback to legacy "search" iframe if no key (May be rate limited)
-	const mapSrc = apiKey
-		? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(addressQuery || 'Lagos, Nigeria')}`
-		: addressQuery
-			? `https://maps.google.com/maps?q=${encodeURIComponent(addressQuery)}&t=&z=15&ie=UTF8&iwloc=&output=embed`
-			: 'https://maps.google.com/maps?q=Lagos,%20Nigeria&t=&z=13&ie=UTF8&iwloc=&output=embed';
+	const hasApiKey = !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
@@ -181,7 +336,7 @@ export function LocationStep({
 							Street Address
 						</Label>
 						<div className="relative">
-							<MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+							<MapPin className="absolute left-4 top-3.5 h-5 w-5 text-gray-400 font-semibold" />
 							<Input
 								id="address"
 								ref={addressInputRef}
@@ -196,42 +351,46 @@ export function LocationStep({
 									updateFormData({ addressLine: e.target.value })
 								}
 							/>
-							{isLoadingScript && (
+							{(isLoadingScript || isGeocoding) && (
 								<div className="absolute right-4 top-3.5">
-									<Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+									<Loader2 className="h-5 w-5 animate-spin text-blue-500" />
 								</div>
 							)}
 						</div>
-						{!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
+						{!hasApiKey && (
 							<p className="text-xs text-amber-600">
 								* Google Maps API Key missing in environment settings.
-								Autocomplete disabled.
+								Autocomplete and maps disabled.
 							</p>
 						)}
 					</div>
 				)}
 
-				{/* Map Placeholder */}
+				{/* Interactive Google Map */}
 				{formData.type === ListingType.VENUE && (
 					<div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-gray-100 shadow-sm bg-gray-50 group">
-						<div className="absolute inset-0 flex items-center justify-center bg-gray-100/50">
-							<iframe
-								src={mapSrc}
-								width="100%"
-								height="100%"
-								style={{ border: 0, opacity: 0.9 }}
-								allowFullScreen
-								loading="lazy"
-								referrerPolicy="no-referrer-when-downgrade"
-								className="transition-all duration-500"
-							></iframe>
-						</div>
-						{/* Interactive overlay only if address is missing, otherwise let user interact with map (albeit limited in embed) */}
-						{!formData.addressLine && (
-							<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-								<div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-gray-200 text-sm font-medium text-gray-600">
-									Enter an address to update map
-								</div>
+						{isScriptLoaded ? (
+							<div ref={mapContainerRef} className="w-full h-full" style={{ minHeight: '320px' }} />
+						) : (
+							<div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100/50">
+								<Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-2" />
+								<p className="text-sm text-gray-500 font-medium">Loading Google Map...</p>
+							</div>
+						)}
+
+						{/* Geocoding Loading overlay */}
+						{isGeocoding && (
+							<div className="absolute inset-0 bg-white/70 backdrop-blur-xs flex flex-col items-center justify-center transition-all duration-300 z-10">
+								<Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-2" />
+								<span className="text-sm font-semibold text-gray-700">Pinpointing location details...</span>
+							</div>
+						)}
+
+						{/* Quick Tips Badge */}
+						{isScriptLoaded && (
+							<div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-md border border-gray-200 text-xs font-semibold text-gray-600 pointer-events-none z-10 flex items-center gap-1.5">
+								<MapPin className="h-3.5 w-3.5 text-blue-600" />
+								Drag the pin or click the map to select
 							</div>
 						)}
 					</div>
@@ -294,7 +453,6 @@ export function LocationStep({
 				</Button>
 				<Button
 					type="submit"
-					// className="bg-brand-gold hover:bg-brand-gold-hover text-white w-full sm:w-auto font-bold shadow-sm"
 				>
 					Continue
 				</Button>

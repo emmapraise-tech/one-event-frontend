@@ -45,7 +45,7 @@ export function VenueCard({ listing }: VenueCardProps) {
             <div className="flex items-center justify-between small text-neutral-600">
               <span>Starting from</span>
               <span className="font-semibold" style={{ color: 'var(--primary-blue-500)' }}>
-                {listing.currency || '₦'} {startPrice.toLocaleString()}
+                {listing.currency === 'USD' ? '$' : '₦'}{startPrice.toLocaleString()}
               </span>
             </div>
           </div>

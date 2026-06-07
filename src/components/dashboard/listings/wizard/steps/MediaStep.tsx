@@ -22,16 +22,28 @@ export function MediaStep({
 	onBack,
 }: StepProps) {
 	const [videoInput, setVideoInput] = useState('');
+	const [error, setError] = useState<string | null>(null);
+
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files.length > 0) {
 			const newFiles = Array.from(e.target.files);
-			// Create preview URLs
-			const newPreviewUrls = newFiles.map((file) => URL.createObjectURL(file));
+			const oversizedFiles = newFiles.filter((file) => file.size > 1024 * 1024);
+			
+			if (oversizedFiles.length > 0) {
+				setError('Some images exceed the 1MB size limit and were not added.');
+			} else {
+				setError(null);
+			}
 
-			updateFormData({
-				imageFiles: [...(formData.imageFiles || []), ...newFiles],
-				imageUrls: [...(formData.imageUrls || []), ...newPreviewUrls],
-			});
+			const validFiles = newFiles.filter((file) => file.size <= 1024 * 1024);
+			if (validFiles.length > 0) {
+				const newPreviewUrls = validFiles.map((file) => URL.createObjectURL(file));
+
+				updateFormData({
+					imageFiles: [...(formData.imageFiles || []), ...validFiles],
+					imageUrls: [...(formData.imageUrls || []), ...newPreviewUrls],
+				});
+			}
 		}
 	};
 
@@ -77,6 +89,12 @@ export function MediaStep({
 				<h2 className="text-lg font-semibold">Media Gallery</h2>
 			</div>
 
+			{error && (
+				<div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm font-bold border border-red-100 animate-in fade-in duration-300">
+					{error}
+				</div>
+			)}
+
 			<div className="space-y-8">
 				{/* Upload Area */}
 				<div className="relative">
@@ -96,7 +114,7 @@ export function MediaStep({
 							Click to upload or drag & drop
 						</h3>
 						<p className="text-gray-500 mb-6 max-w-sm mx-auto">
-							SVG, PNG, JPG or GIF (max. 800x400px recommended). Max 5MB per
+							SVG, PNG, JPG or GIF (max. 800x400px recommended). Max 1MB per
 							file.
 						</p>
 						<Button
@@ -110,7 +128,7 @@ export function MediaStep({
 				</div>
 
 				{/* Image Grid */}
-				{formData.imageUrls && formData.imageUrls.length > 0 ? (
+				{formData.imageUrls && formData.imageUrls.length > 0 && (
 					<div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
 						{formData.imageUrls.map((img, i) => (
 							<div
@@ -145,23 +163,6 @@ export function MediaStep({
 								</span>
 							</div>
 						</label>
-					</div>
-				) : (
-					<div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-						{/* Hardcoded placeholders for visual fidelity to design even without uploads */}
-						<div className="aspect-square rounded-xl bg-gray-900 flex items-center justify-center overflow-hidden shadow-md">
-							{/* Gradient/Image placeholder */}
-							<div className="h-full w-full bg-linear-to-b from-amber-700 to-black opacity-80" />
-						</div>
-						<div className="aspect-square rounded-xl bg-green-900 flex items-center justify-center overflow-hidden shadow-md">
-							<div className="h-full w-full bg-linear-to-b from-green-700 to-black opacity-80" />
-						</div>
-						<div className="aspect-square rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center">
-							<ImageIcon className="h-6 w-6 text-gray-300" />
-						</div>
-						<div className="aspect-square rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center">
-							<ImageIcon className="h-6 w-6 text-gray-300" />
-						</div>
 					</div>
 				)}
 

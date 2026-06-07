@@ -103,10 +103,11 @@ export function ListingCard({ listing }: ListingCardProps) {
 								const hallPrices = rawHalls.map((h) => Number(h.price)).filter((p) => p > 0);
 								const minHallPrice = hallPrices.length > 0 ? Math.min(...hallPrices) : null;
 								const startPrice = minHallPrice !== null ? minHallPrice : (Number(listing.basePrice) || 0);
+								const currencySymbol = listing.currency === 'USD' ? '$' : '₦';
 								
 								return (
 									<span className="text-xl font-black text-gray-900">
-										{listing.currency} {startPrice.toLocaleString()}
+										{currencySymbol}{startPrice.toLocaleString()}
 									</span>
 								);
 							})()}

@@ -13,10 +13,10 @@ export const vendorOnboardingSchema = z.object({
 	businessDescription: z
 		.string()
 		.min(10, 'Description must be at least 10 characters'),
-	verificationMethod: z.enum(['cac', 'tax']).default('cac'),
+	verificationMethod: z.enum(['cac', 'tax']),
 	cacNumber: z.string().optional(),
 	taxNumber: z.string().optional(),
-	acceptedPaymentMethod: z.enum(['online', 'offline', 'both']).default('both'),
+	acceptedPaymentMethod: z.enum(['online', 'offline', 'both']),
 	bankCode: z.string().optional(),
 	bankName: z.string().optional(),
 	bankAccountNumber: z.string().optional(),
