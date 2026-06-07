@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, MapPin, Star, Users, Wifi, Car } from 'lucide-react';
+import { Heart, MapPin, Star, Users, Wifi, Car, Shield, Wind, Zap, Trees } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Listing } from '@/types/listing';
 
@@ -12,16 +12,63 @@ interface VenueListingCardProps {
 
 export function VenueListingCard({ listing }: VenueListingCardProps) {
 	const router = useRouter();
-	// Mock features/amenities derived from type
-	const features = [
-		{ label: '50-100', icon: Users },
-		{ label: 'Wifi', icon: Wifi },
-		{ label: 'Valet', icon: Car },
-	];
+	
+	const detail = listing.venueDetail || listing.details;
+	const dynamicFeatures: { label: string; icon: any }[] = [];
 
-	if (listing.type === 'VENUE') {
-		// Add logic to customize amenities based on real listing data if available
+	if (listing.type === 'VENUE' && detail) {
+		// 1. Capacity (Users icon)
+		const capacity = detail.capacity || detail.seatedCapacity;
+		if (capacity) {
+			dynamicFeatures.push({ label: `${capacity} Guests`, icon: Users });
+		}
+
+		// 2. Amenities (Wifi / AC / Power)
+		const rawAmenities = detail.amenities || [];
+		const amenitiesList = Array.isArray(rawAmenities)
+			? rawAmenities
+			: Object.entries(rawAmenities).filter(([_, v]) => v).map(([k]) => k);
+
+		if (amenitiesList.includes('WIFI')) {
+			dynamicFeatures.push({ label: 'Wifi Available', icon: Wifi });
+		} else if (amenitiesList.includes('AC')) {
+			dynamicFeatures.push({ label: 'Air Conditioned', icon: Wind });
+		} else if (amenitiesList.includes('POWER_247')) {
+			dynamicFeatures.push({ label: '24/7 Power', icon: Zap });
+		}
+
+		// 3. Setting / Parking / Security
+		if (detail.parkingCap && detail.parkingCap > 0) {
+			dynamicFeatures.push({ label: `${detail.parkingCap} Parking Spots`, icon: Car });
+		} else if (amenitiesList.includes('PARKING')) {
+			dynamicFeatures.push({ label: 'Parking Area', icon: Car });
+		} else if (amenitiesList.includes('SECURITY')) {
+			dynamicFeatures.push({ label: 'Secured Zone', icon: Shield });
+		} else if (detail.hasOutdoor) {
+			dynamicFeatures.push({ label: 'Outdoor Garden', icon: Trees });
+		}
 	}
+
+	// Fallback/fill to ensure we display exactly 3 features
+	if (dynamicFeatures.length < 3) {
+		const existingLabels = dynamicFeatures.map(f => f.label);
+		
+		if (!existingLabels.some(l => l.includes('Guest')) && (detail?.capacity || detail?.seatedCapacity)) {
+			dynamicFeatures.unshift({ label: `${detail?.capacity || detail?.seatedCapacity} Guests`, icon: Users });
+		} else if (dynamicFeatures.length === 0) {
+			dynamicFeatures.push({ label: '50-100 Guests', icon: Users });
+		}
+		
+		if (dynamicFeatures.length < 3 && !existingLabels.includes('Wifi Available')) {
+			dynamicFeatures.push({ label: 'Wifi Available', icon: Wifi });
+		}
+		
+		if (dynamicFeatures.length < 3 && !existingLabels.some(l => l.includes('Parking'))) {
+			dynamicFeatures.push({ label: 'Secure Parking', icon: Car });
+		}
+	}
+	
+	const features = dynamicFeatures.slice(0, 3);
 
 	const rawHalls = listing.halls || [];
 	const hallPrices = rawHalls.map((h) => Number(h.price)).filter((p) => p > 0);
@@ -39,6 +86,10 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 				: startPrice < 1000000
 					? `₦${(startPrice / 1000).toFixed(0)}k`
 					: `₦${(startPrice / 1000000).toFixed(1)}m`;
+
+	const locationDisplay = listing.city 
+		? `${listing.addressLine ? `${listing.addressLine}, ` : ''}${listing.city}${listing.state ? `, ${listing.state}` : ''}`
+		: listing.addressLine || 'Lekki Phase 1';
 
 	const handleCardClick = () => {
 		router.push(`/listings/${listing.slug}`);
@@ -110,7 +161,7 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 				<div className="flex items-center gap-1.5 text-sm text-neutral-500 mb-4">
 					<MapPin className="h-3.5 w-3.5 shrink-0" />
 					<span className="truncate">
-						{listing.addressLine || 'Lekki Phase 1'}, {listing.city}
+						{locationDisplay}
 					</span>
 				</div>
 
