@@ -72,3 +72,10 @@ export function useListingBySlug(slug: string) {
 		enabled: !!slug,
 	});
 }
+
+export function useCities() {
+	return useQuery({
+		queryKey: ['cities'],
+		queryFn: () => listingService.getCities(),
+	});
+}

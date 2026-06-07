@@ -23,6 +23,7 @@ export function useVendors(page = 1, limit = 10) {
 		mutationFn: vendorService.create,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['vendors'] });
+			queryClient.invalidateQueries({ queryKey: ['user'] });
 		},
 	});
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,22 +21,106 @@ import {
 } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { UserType } from '@/types/auth';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { vendorService } from '@/services/vendor.service';
+import { userService } from '@/services/user.service';
 
 export function ProfileSettings() {
+	const queryClient = useQueryClient();
 	const { user } = useAuth();
 	const isVendor = user?.type === 'VENDOR' || user?.type === 'ADMIN';
 
-	// Mock state for form fields
-	const [formData, setFormData] = useState({
-		fullName: user ? `${user.firstName} ${user.lastName}` : 'Emeka Okafor',
-		businessName: 'Lekki Grand Gardens',
-		email: user?.email || 'emeka@oneevent.ng',
-		phone: '801 234 5678',
-		state: 'Lagos State',
-		lga: 'Eti-Osa',
-		bankName: 'Guaranty Trust Bank (GTB)',
-		accountNumber: '0023918273',
+	const { data: vendor, isLoading: isVendorLoading } = useQuery({
+		queryKey: ['vendorProfile'],
+		queryFn: () => vendorService.getMyProfile(),
+		enabled: !!user && isVendor,
 	});
+
+	const [formData, setFormData] = useState({
+		fullName: '',
+		businessName: '',
+		email: '',
+		phone: '',
+		state: '',
+		lga: 'Eti-Osa',
+		bankName: '',
+		accountNumber: '',
+	});
+
+	useEffect(() => {
+		if (user) {
+			setFormData((prev) => ({
+				...prev,
+				fullName: prev.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+				email: user.email || '',
+				phone: prev.phone || user.phone || '',
+				state: prev.state || user.state || 'Lagos State',
+			}));
+		}
+	}, [user]);
+
+	useEffect(() => {
+		if (vendor) {
+			setFormData((prev) => ({
+				...prev,
+				businessName: prev.businessName || vendor.businessName || '',
+				bankName: prev.bankName || vendor.bankName || 'Guaranty Trust Bank (GTB)',
+				accountNumber: prev.accountNumber || vendor.bankAccountNumber || '',
+			}));
+		}
+	}, [vendor]);
+
+	const [isSavingProfile, setIsSavingProfile] = useState(false);
+	const [saveProfileSuccess, setSaveProfileSuccess] = useState(false);
+
+	const handleSaveProfile = async () => {
+		if (!user) return;
+		setIsSavingProfile(true);
+		setSaveProfileSuccess(false);
+		try {
+			const [firstName, ...lastArr] = formData.fullName.split(' ');
+			const lastName = lastArr.join(' ');
+			
+			await userService.update(user.id, {
+				firstName: firstName || '',
+				lastName: lastName || '',
+				phone: formData.phone,
+				state: formData.state,
+			});
+			
+			queryClient.invalidateQueries({ queryKey: ['user'] });
+			setSaveProfileSuccess(true);
+			setTimeout(() => setSaveProfileSuccess(false), 3000);
+		} catch (error) {
+			console.error('Failed to save profile', error);
+		} finally {
+			setIsSavingProfile(false);
+		}
+	};
+
+	const [isSavingSettlement, setIsSavingSettlement] = useState(false);
+	const [saveSettlementSuccess, setSaveSettlementSuccess] = useState(false);
+
+	const handleSaveSettlement = async () => {
+		if (!vendor) return;
+		setIsSavingSettlement(true);
+		setSaveSettlementSuccess(false);
+		try {
+			await vendorService.update(vendor.id, {
+				businessName: formData.businessName,
+				bankName: formData.bankName,
+				bankAccountNumber: formData.accountNumber,
+			});
+			
+			queryClient.invalidateQueries({ queryKey: ['vendorProfile'] });
+			setSaveSettlementSuccess(true);
+			setTimeout(() => setSaveSettlementSuccess(false), 3000);
+		} catch (error) {
+			console.error('Failed to save settlement account', error);
+		} finally {
+			setIsSavingSettlement(false);
+		}
+	};
 
 	return (
 		<div className="space-y-6 max-w-4xl">
@@ -207,6 +291,20 @@ export function ProfileSettings() {
 						</Select>
 					</div>
 				</div>
+				<div className="pt-6 flex justify-end items-center gap-4 border-t border-neutral-100 mt-6">
+					{saveProfileSuccess && (
+						<span className="text-sm font-bold text-emerald-600 animate-in fade-in slide-in-from-right-2 duration-300">
+							Profile updated successfully!
+						</span>
+					)}
+					<Button
+						onClick={handleSaveProfile}
+						disabled={isSavingProfile}
+						className="bg-brand-blue hover:bg-brand-blue-hover text-white px-8 rounded-xl font-bold h-11 transition-all"
+					>
+						{isSavingProfile ? 'Saving...' : 'Save Profile'}
+					</Button>
+				</div>
 			</div>
 
 			{/* Settlement Account - Only for Vendors */}
@@ -306,6 +404,20 @@ export function ProfileSettings() {
 								className="bg-gray-50/50 border-gray-200 font-mono text-brand-blue font-bold tracking-wider"
 							/>
 						</div>
+					</div>
+					<div className="pt-6 flex justify-end items-center gap-4 border-t border-neutral-100 mt-8">
+						{saveSettlementSuccess && (
+							<span className="text-sm font-bold text-emerald-600 animate-in fade-in slide-in-from-right-2 duration-300">
+								Account updated successfully!
+							</span>
+						)}
+						<Button
+							onClick={handleSaveSettlement}
+							disabled={isSavingSettlement}
+							className="bg-brand-blue hover:bg-brand-blue-hover text-white px-8 rounded-xl font-bold h-11 transition-all"
+						>
+							{isSavingSettlement ? 'Saving...' : 'Save Account'}
+						</Button>
 					</div>
 				</div>
 			)}

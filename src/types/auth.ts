@@ -14,6 +14,10 @@ export interface User {
 	type: UserType;
 	isActive: boolean;
 	isVerified: boolean;
+	address?: string;
+	city?: string;
+	state?: string;
+	country?: string;
 	createdAt: string;
 	updatedAt: string;
 }

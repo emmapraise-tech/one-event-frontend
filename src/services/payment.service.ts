@@ -19,4 +19,16 @@ export const paymentService = {
 		const response = await api.get<ApiResponse<{ data: Payment[], meta: any }>>('/payment');
 		return response.data.data;
 	},
+
+	async getBanks(): Promise<Array<{ name: string; code: string }>> {
+		const response = await api.get<ApiResponse<Array<{ name: string; code: string }>>>('/payment/banks');
+		return response.data.data;
+	},
+
+	async resolveAccount(accountNumber: string, bankCode: string): Promise<{ account_number: string; account_name: string }> {
+		const response = await api.get<ApiResponse<{ account_number: string; account_name: string }>>(
+			`/payment/resolve-account?accountNumber=${accountNumber}&bankCode=${bankCode}`
+		);
+		return response.data.data;
+	},
 };

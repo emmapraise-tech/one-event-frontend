@@ -49,4 +49,14 @@ export const vendorService = {
 		);
 		return response.data.data;
 	},
+
+	async getMyProfile(): Promise<Vendor> {
+		const response = await api.get<ApiResponse<Vendor>>('/vendors/me');
+		return response.data.data;
+	},
+
+	async getEarnings(): Promise<any> {
+		const response = await api.get<ApiResponse<any>>('/vendors/earnings');
+		return response.data.data;
+	},
 };
