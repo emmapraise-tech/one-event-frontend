@@ -42,6 +42,18 @@ function RegisterForm() {
 		register(data);
 	};
 
+	const passwordValue = form.watch('password') || '';
+
+	const requirements = [
+		{ id: 'length', label: 'At least 8 characters', met: passwordValue.length >= 8 },
+		{ id: 'uppercase', label: 'At least one uppercase letter', met: /[A-Z]/.test(passwordValue) },
+		{ id: 'lowercase', label: 'At least one lowercase letter', met: /[a-z]/.test(passwordValue) },
+		{ id: 'number', label: 'At least one number', met: /[0-9]/.test(passwordValue) },
+		{ id: 'special', label: 'At least one special character', met: /[^A-Za-z0-9]/.test(passwordValue) },
+	];
+
+	const metCount = requirements.filter((req) => req.met).length;
+
 	return (
 		<div className="space-y-6">
 			{/* Progress & Tabs */}
@@ -184,6 +196,64 @@ function RegisterForm() {
 								)}
 							</button>
 						</div>
+						{passwordValue.length > 0 && (
+							<div className="mt-3 space-y-3 p-3 bg-neutral-50 rounded-xl border border-neutral-100 transition-all duration-300">
+								{/* Strength Bar */}
+								<div className="space-y-1">
+									<div className="flex justify-between items-center text-xs">
+										<span className="text-neutral-500 font-medium text-[11px]">Password strength</span>
+										<span className={`text-[11px] font-semibold transition-colors duration-300 ${
+											metCount <= 2 ? 'text-rose-500' : metCount <= 4 ? 'text-amber-500' : 'text-emerald-500'
+										}`}>
+											{metCount === 0 ? '' : metCount <= 2 ? 'Weak' : metCount <= 4 ? 'Medium' : 'Strong'}
+										</span>
+									</div>
+									<div className="h-1 w-full bg-neutral-200 rounded-full overflow-hidden flex gap-1">
+										{[1, 2, 3, 4, 5].map((index) => {
+											let bgColor = 'bg-neutral-200';
+											if (index <= metCount) {
+												if (metCount <= 2) bgColor = 'bg-rose-500';
+												else if (metCount <= 4) bgColor = 'bg-amber-500';
+												else bgColor = 'bg-emerald-500';
+											}
+											return (
+												<div
+													key={index}
+													className={`h-full flex-1 rounded-full transition-all duration-300 ${bgColor}`}
+												/>
+											);
+										})}
+									</div>
+								</div>
+
+								{/* Checklist */}
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+									{requirements.map((req) => (
+										<div
+											key={req.id}
+											className="flex items-center gap-2 text-neutral-600 transition-all duration-200"
+										>
+											<div className={`h-4 w-4 rounded-full flex items-center justify-center border transition-all duration-300 ${
+												req.met 
+													? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' 
+													: 'border-neutral-300 text-neutral-400'
+											}`}>
+												{req.met ? (
+													<svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
+														<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+													</svg>
+												) : (
+													<div className="h-1 w-1 bg-neutral-400 rounded-full" />
+												)}
+											</div>
+											<span className={`text-[11px] transition-colors duration-300 ${req.met ? 'text-neutral-900 font-medium' : 'text-neutral-500'}`}>
+												{req.label}
+											</span>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
 						{form.formState.errors.password && (
 							<p className="text-xs text-destructive">
 								{form.formState.errors.password.message}

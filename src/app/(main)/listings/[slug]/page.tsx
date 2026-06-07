@@ -28,6 +28,7 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AMENITY_MAP } from '@/constants/amenities';
 import { ListingMediaType, ListingMedia } from '@/types/listing';
+import { toast } from 'sonner';
 
 export default function ListingDetailPage() {
 	const params = useParams();
@@ -35,6 +36,40 @@ export default function ListingDetailPage() {
 	const { data: listing, isLoading } = useListingBySlug(slug);
 	const [showFullDescription, setShowFullDescription] = useState(false);
 	const [showAllAmenities, setShowAllAmenities] = useState(false);
+
+	const handleShare = async () => {
+		if (!listing) return;
+
+		const shareData = {
+			title: listing.name,
+			text: `Check out ${listing.name} on OneEvent!`,
+			url: window.location.href,
+		};
+
+		if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+			try {
+				await navigator.share(shareData);
+				toast.success('Shared successfully!');
+			} catch (err: any) {
+				if (err.name !== 'AbortError') {
+					console.error('Error sharing:', err);
+					copyToClipboard();
+				}
+			}
+		} else {
+			copyToClipboard();
+		}
+	};
+
+	const copyToClipboard = () => {
+		try {
+			navigator.clipboard.writeText(window.location.href);
+			toast.success('Link copied to clipboard!');
+		} catch (err) {
+			console.error('Could not copy text: ', err);
+			toast.error('Failed to copy link. Please copy the URL from your browser address bar.');
+		}
+	};
 
 	const startPrice = useMemo(() => {
 		const rawHalls = listing?.halls || [];
@@ -91,6 +126,7 @@ export default function ListingDetailPage() {
 						</h1>
 						<div className="flex gap-3 shrink-0">
 							<Button
+								onClick={handleShare}
 								variant="outline"
 								size="sm"
 								className="gap-2 border-neutral-200 text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 hover:border-neutral-300 rounded-lg h-10 px-4"
