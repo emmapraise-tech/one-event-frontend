@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useListings } from '@/hooks/useListings';
+import { useListings, useCities } from '@/hooks/useListings';
 import { VenueListingCard } from '@/components/listings/venue-listing-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
@@ -73,17 +73,39 @@ export default function ListingsLandingPage() {
 		const categories = searchParams.get('categories');
 		if (categories) initialFilters.categories = categories.split(',');
 
+		const startDate = searchParams.get('startDate');
+		if (startDate) initialFilters.startDate = startDate;
+
+		const endDate = searchParams.get('endDate');
+		if (endDate) initialFilters.endDate = endDate;
+
+		const amenities = searchParams.get('amenities');
+		if (amenities) initialFilters.amenities = amenities.split(',');
+
 		return initialFilters;
 	});
 
 	// UI specific state that doesn't trigger immediate search
 	const [searchQuery, setSearchQuery] = useState(filters.q || '');
 	const [locationInput, setLocationInput] = useState(filters.location || '');
-	const [date, setDate] = useState<Date>();
+	const [date, setDate] = useState<Date | undefined>(() => {
+		const startStr = searchParams.get('startDate');
+		return startStr ? new Date(startStr) : undefined;
+	});
 	const [priceRange, setPriceRange] = useState<number[]>([
 		filters.minPrice || 0,
 		filters.maxPrice || 10000000,
 	]);
+
+	const { data: cities = [] } = useCities();
+	const [isLocationPopoverOpen, setIsLocationPopoverOpen] = useState(false);
+	const [isSidebarLocationPopoverOpen, setIsSidebarLocationPopoverOpen] = useState(false);
+
+	const filteredCities = useMemo(() => {
+		return (Array.isArray(cities) ? cities : []).filter((city) =>
+			city.toLowerCase().includes(locationInput.toLowerCase())
+		);
+	}, [cities, locationInput]);
 
 	const { listings, meta, isLoading, error } = useListings(filters);
 
@@ -171,6 +193,40 @@ export default function ListingsLandingPage() {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	};
 
+	const handleDateChange = (selectedDate: Date | undefined) => {
+		setDate(selectedDate);
+		setFilters((prev) => ({
+			...prev,
+			startDate: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined,
+			endDate: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined,
+			page: 1,
+		}));
+	};
+
+	const handleLocationSelect = (city: string) => {
+		setLocationInput(city);
+		setFilters((prev) => ({
+			...prev,
+			location: city || undefined,
+			page: 1,
+		}));
+	};
+
+	const handleAmenityToggle = (amenity: string) => {
+		setFilters((prev) => {
+			const currentAmenities = prev.amenities || [];
+			const newAmenities = currentAmenities.includes(amenity)
+				? currentAmenities.filter((a) => a !== amenity)
+				: [...currentAmenities, amenity];
+
+			return {
+				...prev,
+				amenities: newAmenities.length ? newAmenities : undefined,
+				page: 1,
+			};
+		});
+	};
+
 	const handleResetFilters = () => {
 		setSearchQuery('');
 		setLocationInput('');
@@ -180,6 +236,16 @@ export default function ListingsLandingPage() {
 			page: 1,
 			limit: 12,
 			status: ListingStatus.ACTIVE,
+			q: undefined,
+			location: undefined,
+			startDate: undefined,
+			endDate: undefined,
+			amenities: undefined,
+			minPrice: undefined,
+			maxPrice: undefined,
+			minCapacity: undefined,
+			maxCapacity: undefined,
+			categories: undefined,
 		});
 	};
 
@@ -212,14 +278,69 @@ export default function ListingsLandingPage() {
 										<label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-0.5">
 											Location
 										</label>
-										<input
-											type="text"
-											placeholder="Lagos, Abuja, PH..."
-											className="w-full outline-none text-neutral-900 font-medium placeholder:text-neutral-300 text-sm bg-transparent"
-											value={locationInput}
-											onChange={(e) => setLocationInput(e.target.value)}
-											onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-										/>
+										<Popover
+											open={isLocationPopoverOpen}
+											onOpenChange={setIsLocationPopoverOpen}
+										>
+											<PopoverTrigger asChild>
+												<input
+													type="text"
+													placeholder="Lagos, Abuja, PH..."
+													value={locationInput}
+													onChange={(e) => {
+														setLocationInput(e.target.value);
+														setFilters((prev) => ({
+															...prev,
+															location: e.target.value || undefined,
+															page: 1,
+														}));
+														setIsLocationPopoverOpen(true);
+													}}
+													onFocus={() => setIsLocationPopoverOpen(true)}
+													className="w-full outline-none text-neutral-900 font-medium placeholder:text-neutral-300 text-sm bg-transparent"
+												/>
+											</PopoverTrigger>
+											<PopoverContent 
+												className="w-[260px] p-2 bg-white border border-gray-200 shadow-xl rounded-xl z-50" 
+												align="start"
+												onOpenAutoFocus={(e) => e.preventDefault()}
+											>
+												<div className="max-h-[200px] overflow-y-auto space-y-1">
+													{locationInput && (
+														<button
+															type="button"
+															onClick={() => {
+																handleLocationSelect('');
+																setIsLocationPopoverOpen(false);
+															}}
+															className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm text-red-500 font-semibold transition-colors"
+														>
+															Clear location
+														</button>
+													)}
+													{filteredCities.length > 0 ? (
+														filteredCities.map((city) => (
+															<button
+																key={city}
+																type="button"
+																onClick={() => {
+																	handleLocationSelect(city);
+																	setIsLocationPopoverOpen(false);
+																}}
+																className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm text-gray-900 transition-colors flex items-center gap-2 font-medium"
+															>
+																<MapPin className="h-4 w-4 text-blue-500 shrink-0" />
+																{city}
+															</button>
+														))
+													) : (
+														<div className="text-sm text-gray-500 p-2 text-center">
+															No cities found
+														</div>
+													)}
+												</div>
+											</PopoverContent>
+										</Popover>
 									</div>
 								</div>
 
@@ -247,7 +368,7 @@ export default function ListingsLandingPage() {
 												<Calendar
 													mode="single"
 													selected={date}
-													onSelect={setDate}
+													onSelect={handleDateChange}
 													initialFocus
 													disabled={(date) =>
 														date < new Date(new Date().setHours(0, 0, 0, 0))
@@ -343,12 +464,11 @@ export default function ListingsLandingPage() {
 				<div className="grid lg:grid-cols-4 gap-8">
 					{/* Filters Sidebar - Desktop */}
 					<div className="hidden lg:block lg:col-span-1 space-y-8 sticky top-28 self-start h-fit overflow-y-auto max-h-[calc(100vh-8rem)] pr-2">
-						<div className="flex items-center justify-between pointer-events-none opacity-50">
-							{/* Placeholder for "Reset all" functionality */}
+						<div className="flex items-center justify-between">
 							<h3 className="font-bold text-neutral-900">Filters</h3>
 							<button
 								onClick={handleResetFilters}
-								className="text-xs font-semibold text-primary-blue hover:underline pointer-events-auto"
+								className="text-xs font-semibold text-primary-blue hover:underline"
 							>
 								Reset all
 							</button>
@@ -376,16 +496,71 @@ export default function ListingsLandingPage() {
 							<label className="text-sm font-semibold text-neutral-900">
 								Location
 							</label>
-							<div className="relative">
-								<MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-								<Input
-									placeholder="e.g. Ikeja, Lekki, Yaba"
-									className="pl-9 bg-white border-neutral-200 text-sm"
-									value={locationInput}
-									onChange={(e) => setLocationInput(e.target.value)}
-									onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-								/>
-							</div>
+							<Popover
+								open={isSidebarLocationPopoverOpen}
+								onOpenChange={setIsSidebarLocationPopoverOpen}
+							>
+								<PopoverTrigger asChild>
+									<div className="relative cursor-pointer">
+										<MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+										<Input
+											placeholder="e.g. Ikeja, Lekki, Yaba"
+											className="pl-9 bg-white border-neutral-200 text-sm font-medium cursor-pointer"
+											value={locationInput}
+											onChange={(e) => {
+												setLocationInput(e.target.value);
+												setFilters((prev) => ({
+													...prev,
+													location: e.target.value || undefined,
+													page: 1,
+												}));
+												setIsSidebarLocationPopoverOpen(true);
+											}}
+											onFocus={() => setIsSidebarLocationPopoverOpen(true)}
+										/>
+									</div>
+								</PopoverTrigger>
+								<PopoverContent 
+									className="w-[260px] p-2 bg-white border border-gray-200 shadow-xl rounded-xl z-50" 
+									align="start"
+									onOpenAutoFocus={(e) => e.preventDefault()}
+								>
+									<div className="max-h-[200px] overflow-y-auto space-y-1">
+										{locationInput && (
+											<button
+												type="button"
+												onClick={() => {
+													handleLocationSelect('');
+													setIsSidebarLocationPopoverOpen(false);
+												}}
+												className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm text-red-500 font-semibold transition-colors"
+											>
+												Clear location
+											</button>
+										)}
+										{filteredCities.length > 0 ? (
+											filteredCities.map((city) => (
+												<button
+													key={city}
+													type="button"
+													onClick={() => {
+														handleLocationSelect(city);
+														setIsSidebarLocationPopoverOpen(false);
+													}}
+													className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm text-gray-900 transition-colors flex items-center gap-2 font-medium"
+												>
+													<MapPin className="h-4 w-4 text-blue-500 shrink-0" />
+													{city}
+												</button>
+											))
+										) : (
+											<div className="text-sm text-gray-500 p-2 text-center">
+												No cities found
+											</div>
+										)}
+									</div>
+								</PopoverContent>
+							</Popover>
 						</div>
 
 						{/* Date Filter */}
@@ -393,14 +568,30 @@ export default function ListingsLandingPage() {
 							<label className="text-sm font-semibold text-neutral-900">
 								Date
 							</label>
-							<div className="relative">
-								<CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
-								<Input
-									placeholder="mm/dd/yyyy"
-									className="bg-white border-neutral-200 text-sm"
-									readOnly
-								/>
-							</div>
+							<Popover>
+								<PopoverTrigger asChild>
+									<div className="relative cursor-pointer">
+										<CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+										<Input
+											placeholder="mm/dd/yyyy"
+											className="bg-white border-neutral-200 text-sm cursor-pointer pr-10"
+											value={date ? format(date, 'MM/dd/yyyy') : ''}
+											readOnly
+										/>
+									</div>
+								</PopoverTrigger>
+								<PopoverContent className="w-auto p-0" align="start">
+									<Calendar
+										mode="single"
+										selected={date}
+										onSelect={handleDateChange}
+										initialFocus
+										disabled={(date) =>
+											date < new Date(new Date().setHours(0, 0, 0, 0))
+										}
+									/>
+								</PopoverContent>
+							</Popover>
 						</div>
 
 						{/* Capacity Filter */}
@@ -494,14 +685,23 @@ export default function ListingsLandingPage() {
 									'Catering',
 									'Sound System',
 									'Security',
-								].map((tag) => (
-									<span
-										key={tag}
-										className="px-3 py-1 rounded-full border border-neutral-200 bg-white text-xs font-medium text-neutral-600 cursor-pointer hover:border-primary-blue hover:text-primary-blue transition-colors"
-									>
-										{tag}
-									</span>
-								))}
+								].map((tag) => {
+									const isActive = (filters.amenities || []).includes(tag);
+									return (
+										<span
+											key={tag}
+											onClick={() => handleAmenityToggle(tag)}
+											className={cn(
+												"px-3 py-1 rounded-full border text-xs font-medium cursor-pointer transition-colors",
+												isActive
+													? "border-primary-blue text-primary-blue bg-blue-50/50"
+													: "border-neutral-200 bg-white text-neutral-600 hover:border-primary-blue hover:text-primary-blue"
+											)}
+										>
+											{tag}
+										</span>
+									);
+								})}
 							</div>
 						</div>
 					</div>

@@ -31,13 +31,35 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover';
-import { useListings } from '@/hooks/useListings';
+import { useListings, useCities } from '@/hooks/useListings';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+	const router = useRouter();
 	const [date, setDate] = useState<Date>();
 	const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
 	const { listings, isLoading } = useListings();
+	const { data: cities = [] } = useCities();
+
+	const [selectedCity, setSelectedCity] = useState<string>('');
+	const [locationSearch, setLocationSearch] = useState<string>('');
+	const [isLocationPopoverOpen, setIsLocationPopoverOpen] = useState(false);
+	const [guests, setGuests] = useState<string>('');
+
+	const filteredCities = (Array.isArray(cities) ? cities : []).filter((city) =>
+		city.toLowerCase().includes(locationSearch.toLowerCase())
+	);
+
+	const handleSearchClick = () => {
+		const queryParams = new URLSearchParams();
+		const finalLoc = selectedCity || locationSearch;
+		if (finalLoc) queryParams.append('location', finalLoc);
+		if (date) queryParams.append('startDate', format(date, 'yyyy-MM-dd'));
+		if (guests) queryParams.append('minCapacity', guests);
+
+		router.push(`/listings?${queryParams.toString()}`);
+	};
 
 	// Use real listings if available, otherwise fallback to empty array (or keep mock for dev if preferred, but user asked to use endpoint)
 	// Filter for ACTIVE status andVENUE type
@@ -85,11 +107,54 @@ export default function Home() {
 									<label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">
 										Location
 									</label>
-									<input
-										type="text"
-										placeholder="Where are you going?"
-										className="w-full text-gray-900 font-semibold outline-none placeholder:text-gray-400 text-sm bg-transparent"
-									/>
+									<Popover
+										open={isLocationPopoverOpen}
+										onOpenChange={setIsLocationPopoverOpen}
+									>
+										<PopoverTrigger asChild>
+											<input
+												type="text"
+												placeholder="Where are you going?"
+												value={locationSearch}
+												onChange={(e) => {
+													setLocationSearch(e.target.value);
+													setSelectedCity('');
+													setIsLocationPopoverOpen(true);
+												}}
+												onFocus={() => setIsLocationPopoverOpen(true)}
+												className="w-full text-gray-900 font-semibold outline-none placeholder:text-gray-400 text-sm bg-transparent"
+											/>
+										</PopoverTrigger>
+										<PopoverContent 
+											className="w-[300px] p-2 bg-white border border-gray-200 shadow-xl rounded-xl z-50" 
+											align="start"
+											onOpenAutoFocus={(e) => e.preventDefault()}
+										>
+											<div className="max-h-[200px] overflow-y-auto space-y-1">
+												{filteredCities.length > 0 ? (
+													filteredCities.map((city) => (
+														<button
+															key={city}
+															type="button"
+															onClick={() => {
+																setSelectedCity(city);
+																setLocationSearch(city);
+																setIsLocationPopoverOpen(false);
+															}}
+															className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-lg text-sm text-gray-900 transition-colors flex items-center gap-2 font-medium"
+														>
+															<MapPin className="h-4 w-4 text-blue-500 shrink-0" />
+															{city}
+														</button>
+													))
+												) : (
+													<div className="text-sm text-gray-500 p-2 text-center">
+														No cities found
+													</div>
+												)}
+											</div>
+										</PopoverContent>
+									</Popover>
 								</div>
 							</div>
 
@@ -144,13 +209,18 @@ export default function Home() {
 									<input
 										type="number"
 										placeholder="Add guests"
+										value={guests}
+										onChange={(e) => setGuests(e.target.value)}
 										className="w-full text-gray-900 font-semibold outline-none placeholder:text-gray-400 text-sm bg-transparent"
 									/>
 								</div>
 							</div>
 
 							<div className="p-3 flex items-stretch">
-								<Button className="h-full min-h-[64px] w-full md:w-48 bg-brand-gold hover:bg-brand-gold-hover text-white font-bold px-8 rounded-xl shadow-lg hover:shadow-amber-500/30 transition-all text-lg transform active:scale-95">
+								<Button 
+									onClick={handleSearchClick}
+									className="h-full min-h-[64px] w-full md:w-48 bg-brand-gold hover:bg-brand-gold-hover text-white font-bold px-8 rounded-xl shadow-lg hover:shadow-amber-500/30 transition-all text-lg transform active:scale-95"
+								>
 									<Search className="h-6 w-6 md:mr-2" />
 									<span className="md:inline hidden">Search</span>
 									<span className="md:hidden inline">Search Venues</span>

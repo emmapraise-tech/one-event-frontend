@@ -215,4 +215,7 @@ export interface ListingFilters {
 	status?: ListingStatus;
 	page?: number;
 	limit?: number;
+	startDate?: string;
+	endDate?: string;
+	amenities?: string[];
 }

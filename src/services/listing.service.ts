@@ -130,6 +130,11 @@ export const listingService = {
 		if (filters.categories && filters.categories.length > 0) {
 			queryParams.append('categories', filters.categories.join(','));
 		}
+		if (filters.startDate) queryParams.append('startDate', filters.startDate);
+		if (filters.endDate) queryParams.append('endDate', filters.endDate);
+		if (filters.amenities && filters.amenities.length > 0) {
+			queryParams.append('amenities', filters.amenities.join(','));
+		}
 
 		const queryString = queryParams.toString();
 		const url = `/listings${queryString ? `?${queryString}` : ''}`;
@@ -209,10 +214,20 @@ export const listingService = {
 		if (filters.categories && filters.categories.length > 0) {
 			queryParams.append('categories', filters.categories.join(','));
 		}
+		if (filters.startDate) queryParams.append('startDate', filters.startDate);
+		if (filters.endDate) queryParams.append('endDate', filters.endDate);
+		if (filters.amenities && filters.amenities.length > 0) {
+			queryParams.append('amenities', filters.amenities.join(','));
+		}
 
 		const response = await api.get<ApiResponse<PaginatedData<Listing>>>(
 			`/listings/search?${queryParams.toString()}`,
 		);
+		return response.data.data;
+	},
+
+	async getCities(): Promise<string[]> {
+		const response = await api.get<ApiResponse<string[]>>('/listings/cities');
 		return response.data.data;
 	},
 
