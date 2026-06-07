@@ -12,5 +12,10 @@ export const userService = {
     const response = await api.get<ApiResponse<User>>(`/users/${id}`);
     return response.data.data;
   },
+
+  async update(id: string, data: Partial<User>): Promise<User> {
+    const response = await api.put<ApiResponse<User>>(`/users/${id}`, data);
+    return response.data.data;
+  },
 };
 

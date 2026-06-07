@@ -27,6 +27,8 @@ import {
 } from '@/components/dashboard/earnings/TransactionHistory';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { vendorService } from '@/services/vendor.service';
 
 // Mock Data
 const mockStats = {
@@ -101,6 +103,18 @@ const vendorEarningsMock = [
 export default function EarningsPage() {
 	const { user } = useAuth();
 	const isAdmin = user?.type === 'ADMIN';
+
+	const { data: earnings, isLoading: isEarningsLoading } = useQuery({
+		queryKey: ['vendorEarnings'],
+		queryFn: () => vendorService.getEarnings(),
+		enabled: !!user && !isAdmin,
+	});
+
+	const { data: vendor, isLoading: isVendorLoading } = useQuery({
+		queryKey: ['vendorProfile'],
+		queryFn: () => vendorService.getMyProfile(),
+		enabled: !!user && !isAdmin,
+	});
 
 	if (isAdmin) {
 		return (
@@ -311,9 +325,20 @@ export default function EarningsPage() {
 		);
 	}
 
+	if (isEarningsLoading || isVendorLoading) {
+		return (
+			<div className="min-h-screen bg-gray-50/50 pb-20 flex items-center justify-center animate-in fade-in duration-500">
+				<div className="text-center space-y-4">
+					<div className="h-12 w-12 border-4 border-brand-blue border-t-transparent rounded-full animate-spin mx-auto" />
+					<p className="text-sm font-bold text-neutral-500">Loading your earnings dashboard...</p>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div className="min-h-screen bg-gray-50/50 pb-20">
-			{/* Vendor View (Unchanged) */}
+			{/* Vendor View */}
 			<div className="sticky top-0 z-30 bg-white/80 border-b border-border/60 px-4 sm:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
 				<div>
 					<h1 className="text-xl font-bold tracking-tight text-gray-900">
@@ -331,10 +356,15 @@ export default function EarningsPage() {
 			</div>
 
 			<div className="w-full p-4 sm:p-8 space-y-8">
-				<EarningsStats {...mockStats} />
+				<EarningsStats
+					totalRevenue={earnings?.stats?.totalRevenue || 0}
+					pendingPayouts={earnings?.stats?.pendingPayouts || 0}
+					availableForPayout={earnings?.stats?.availableForPayout || 0}
+					revenueGrowth={earnings?.stats?.revenueGrowth || 0}
+				/>
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 					<div className="lg:col-span-2">
-						<EarningsChart data={mockChartData} />
+						<EarningsChart data={earnings?.chartData || []} />
 					</div>
 					<div className="rounded-xl border border-border/60 bg-white shadow-sm p-6">
 						<h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -342,15 +372,33 @@ export default function EarningsPage() {
 						</h3>
 						<div className="p-4 rounded-lg border border-border/50 bg-gray-50 flex flex-col gap-3">
 							<div className="flex items-center justify-between">
+								<span className="text-xs text-muted-foreground">Bank Name</span>
+								<span className="text-sm font-bold text-neutral-800">
+									{vendor?.bankName || 'Not Set'}
+								</span>
+							</div>
+							<div className="flex items-center justify-between">
+								<span className="text-xs text-muted-foreground">Account Number</span>
+								<span className="text-sm font-bold text-neutral-800 font-mono">
+									{vendor?.bankAccountNumber || 'Not Set'}
+								</span>
+							</div>
+							<div className="flex items-center justify-between">
+								<span className="text-xs text-muted-foreground">Account Name</span>
+								<span className="text-sm font-bold text-neutral-800">
+									{vendor?.bankAccountName || vendor?.businessName || 'Not Set'}
+								</span>
+							</div>
+							<div className="flex items-center justify-between border-t border-gray-100 pt-3 mt-1">
 								<span className="text-xs text-muted-foreground">Status</span>
 								<span className="text-sm font-bold text-emerald-600">
-									Active
+									{vendor?.bankAccountNumber ? 'Active' : 'Setup Required'}
 								</span>
 							</div>
 						</div>
 					</div>
 				</div>
-				<TransactionHistory transactions={mockTransactions} />
+				<TransactionHistory transactions={earnings?.transactions || []} />
 			</div>
 		</div>
 	);

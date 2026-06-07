@@ -38,36 +38,6 @@ export function DashboardHeader() {
 					/>
 				</div>
 			</div>
-
-			<div className="flex items-center gap-6">
-				<div className="flex items-center gap-4">
-					{user?.type === 'CUSTOMER' && (
-						<Link href="/onboard-vendor">
-							<Button className="bg-brand-blue hover:bg-brand-blue-hover text-white px-4 h-9 text-sm font-bold rounded-lg shadow-sm">
-								List your venue
-							</Button>
-						</Link>
-					)}
-
-					<div className="flex items-center gap-1">
-						<Button
-							variant="ghost"
-							size="icon"
-							className="text-neutral-500 hover:text-primary-blue relative"
-						>
-							<Bell className="h-5 w-5" />
-							<span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 border-2 border-white"></span>
-						</Button>
-						<Button
-							variant="ghost"
-							size="icon"
-							className="text-neutral-500 hover:text-primary-blue"
-						>
-							<HelpCircle className="h-5 w-5" />
-						</Button>
-					</div>
-				</div>
-			</div>
 		</header>
 	);
 }
