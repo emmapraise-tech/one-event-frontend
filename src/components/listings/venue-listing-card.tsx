@@ -1,10 +1,12 @@
 'use client';
 
+import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, MapPin, Star, Users, Wifi, Car, Shield, Wind, Zap, Trees } from 'lucide-react';
+import { Heart, MapPin, Star, Users, Wifi, Car, Shield, Wind, Zap, Trees, Clock, Sparkles, Globe } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Listing } from '@/types/listing';
+import { AMENITY_MAP } from '@/constants/amenities';
 
 interface VenueListingCardProps {
 	listing: Listing;
@@ -23,48 +25,55 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 			dynamicFeatures.push({ label: `${capacity} Guests`, icon: Users });
 		}
 
-		// 2. Amenities (Wifi / AC / Power)
+		// 2. Map actual amenities from backend
 		const rawAmenities = detail.amenities || [];
 		const amenitiesList = Array.isArray(rawAmenities)
 			? rawAmenities
 			: Object.entries(rawAmenities).filter(([_, v]) => v).map(([k]) => k);
 
-		if (amenitiesList.includes('WIFI')) {
-			dynamicFeatures.push({ label: 'Wifi Available', icon: Wifi });
-		} else if (amenitiesList.includes('AC')) {
-			dynamicFeatures.push({ label: 'Air Conditioned', icon: Wind });
-		} else if (amenitiesList.includes('POWER_247')) {
-			dynamicFeatures.push({ label: '24/7 Power', icon: Zap });
+		for (const rawAmenity of amenitiesList) {
+			if (dynamicFeatures.length >= 3) break;
+			const normalizedSlug = rawAmenity.toUpperCase().replace(/-/g, '_');
+			const config = AMENITY_MAP[normalizedSlug as keyof typeof AMENITY_MAP];
+			if (config) {
+				dynamicFeatures.push({ label: config.label, icon: config.icon });
+			}
+		}
+	} else if (listing.type !== 'VENUE' && listing.serviceDetail) {
+		const sDetail = listing.serviceDetail;
+		
+		// 1. Service Type / Specialty
+		if (sDetail.specialties) {
+			const mainSpecialty = sDetail.specialties.split(',')[0].trim();
+			if (mainSpecialty) {
+				dynamicFeatures.push({ label: mainSpecialty, icon: Sparkles });
+			}
+		} else if (sDetail.serviceType) {
+			dynamicFeatures.push({ 
+				label: sDetail.serviceType.charAt(0) + sDetail.serviceType.slice(1).toLowerCase(), 
+				icon: Sparkles 
+			});
 		}
 
-		// 3. Setting / Parking / Security
-		if (detail.parkingCap && detail.parkingCap > 0) {
-			dynamicFeatures.push({ label: `${detail.parkingCap} Parking Spots`, icon: Car });
-		} else if (amenitiesList.includes('PARKING')) {
-			dynamicFeatures.push({ label: 'Parking Area', icon: Car });
-		} else if (amenitiesList.includes('SECURITY')) {
-			dynamicFeatures.push({ label: 'Secured Zone', icon: Shield });
-		} else if (detail.hasOutdoor) {
-			dynamicFeatures.push({ label: 'Outdoor Garden', icon: Trees });
+		// 2. Minimum booking hours
+		if (sDetail.minBookingHrs) {
+			dynamicFeatures.push({ label: `Min. ${sDetail.minBookingHrs} hrs`, icon: Clock });
+		}
+
+		// 3. Coverage Area
+		if (sDetail.coverageArea) {
+			dynamicFeatures.push({ label: sDetail.coverageArea, icon: MapPin });
+		} else if (sDetail.coverageAreaKm) {
+			dynamicFeatures.push({ label: `${sDetail.coverageAreaKm}km coverage`, icon: Globe });
 		}
 	}
 
-	// Fallback/fill to ensure we display exactly 3 features
-	if (dynamicFeatures.length < 3) {
-		const existingLabels = dynamicFeatures.map(f => f.label);
-		
-		if (!existingLabels.some(l => l.includes('Guest')) && (detail?.capacity || detail?.seatedCapacity)) {
-			dynamicFeatures.unshift({ label: `${detail?.capacity || detail?.seatedCapacity} Guests`, icon: Users });
-		} else if (dynamicFeatures.length === 0) {
-			dynamicFeatures.push({ label: '50-100 Guests', icon: Users });
-		}
-		
-		if (dynamicFeatures.length < 3 && !existingLabels.includes('Wifi Available')) {
-			dynamicFeatures.push({ label: 'Wifi Available', icon: Wifi });
-		}
-		
-		if (dynamicFeatures.length < 3 && !existingLabels.some(l => l.includes('Parking'))) {
-			dynamicFeatures.push({ label: 'Secure Parking', icon: Car });
+	// Fallback/fill to ensure we display something if features are empty
+	if (dynamicFeatures.length === 0) {
+		if (listing.type === 'VENUE') {
+			dynamicFeatures.push({ label: 'Venue Space', icon: MapPin });
+		} else {
+			dynamicFeatures.push({ label: 'Event Service', icon: Sparkles });
 		}
 	}
 	
@@ -104,29 +113,20 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 			<div className="relative aspect-4/3 bg-neutral-100 overflow-hidden">
 				{/* Badges */}
 				<div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-					{listing.status === 'ACTIVE' && (
-						<Badge className="bg-white/90 text-neutral-900 font-bold backdrop-blur-sm border-0 shadow-sm hover:bg-white text-xs px-2.5 py-1 uppercase tracking-wider">
-							SUPER HOST
-						</Badge>
-					)}
-					{/* Example 'New' badge logic could go here */}
-					{/* <Badge className="bg-accent-gold text-neutral-900 border-0 font-bold text-xs w-fit">NEW</Badge> */}
 				</div>
 
 				{/* Favorite Button */}
 				<button
 					onClick={(e) => {
 						e.stopPropagation();
-						// Handle favorite logic here
 					}}
 					className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-white/50 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors group/heart"
 				>
 					<Heart className="h-4 w-4 text-neutral-900 group-hover/heart:fill-red-500 group-hover/heart:text-red-500 transition-colors" />
 				</button>
 
-				{/* Image Placeholder - In real app use Next/Image */}
+				{/* Image Placeholder */}
 				<div className="w-full h-full bg-neutral-200 flex items-center justify-center text-neutral-400">
-					{/* Using lucide icon as placeholder if no image */}
 					{listing.images && listing.images.length > 0 ? (
 						<img
 							src={listing.images[0].url}
@@ -144,16 +144,22 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 
 			<CardContent className="flex flex-col flex-1 p-5">
 				{/* Title & Rating */}
-				<div className="flex justify-between items-start mb-2">
+				<div className="flex justify-between items-start mb-2 gap-2">
 					<h3 className="font-bold text-lg text-neutral-900 line-clamp-1 group-hover:text-primary-blue transition-colors">
 						{listing.name}
 					</h3>
-					<div className="flex items-center gap-1 text-sm font-semibold text-neutral-900">
-						<Star className="h-3.5 w-3.5 fill-accent-gold text-accent-gold" />
-						<span>{listing.rating || '4.9'}</span>
-						<span className="text-neutral-400 font-normal">
-							({listing.reviewCount || 120})
-						</span>
+					<div className="flex items-center gap-1 text-sm font-semibold text-neutral-900 shrink-0">
+						<Star className="h-3.5 w-3.5 fill-accent-gold text-accent-gold shrink-0" />
+						{listing.rating && listing.rating > 0 ? (
+							<>
+								<span>{listing.rating.toFixed(1)}</span>
+								<span className="text-neutral-400 font-normal">
+									({listing.reviewCount || 0})
+								</span>
+							</>
+						) : (
+							<span className="text-neutral-500 font-normal text-xs">New</span>
+						)}
 					</div>
 				</div>
 
@@ -172,7 +178,10 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 							key={i}
 							className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-50 rounded-lg text-xs font-medium text-neutral-600"
 						>
-							<feature.icon className="h-3.5 w-3.5" />
+							{React.isValidElement(feature.icon) 
+								? React.cloneElement(feature.icon as React.ReactElement<any>, { className: 'h-3.5 w-3.5 shrink-0' })
+								: <feature.icon className="h-3.5 w-3.5 shrink-0" />
+							}
 							{feature.label}
 						</div>
 					))}
@@ -200,3 +209,4 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 		</Card>
 	);
 }
+

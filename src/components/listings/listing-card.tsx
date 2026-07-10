@@ -9,12 +9,25 @@ import {
 import { ListingImage } from '@/components/ui/listing-image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Star, Edit } from 'lucide-react';
+import { MapPin, Star, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useVendors } from '@/hooks/useVendors';
 import { UserType } from '@/types/auth';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { listingService } from '@/services/listing.service';
+import { toast } from 'sonner';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface ListingCardProps {
 	listing: Listing;
@@ -23,9 +36,29 @@ interface ListingCardProps {
 export function ListingCard({ listing }: ListingCardProps) {
 	const { user } = useAuth();
 	const { vendor } = useVendors();
+	const queryClient = useQueryClient();
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
+
 	const isVendor =
 		user?.type === UserType.VENDOR || user?.type === UserType.ADMIN;
 	const isOwner = isVendor && vendor && listing.vendorId === vendor.id;
+
+	const handleDelete = async () => {
+		try {
+			setIsDeleting(true);
+			await listingService.remove(listing.id);
+			toast.success('Listing deleted successfully');
+			setIsDeleteDialogOpen(false);
+			queryClient.invalidateQueries({ queryKey: ['my-listings'] });
+			queryClient.invalidateQueries({ queryKey: ['listings'] });
+			queryClient.invalidateQueries({ queryKey: ['admin-listings'] });
+		} catch (error: any) {
+			toast.error(error?.response?.data?.message || 'Failed to delete listing');
+		} finally {
+			setIsDeleting(false);
+		}
+	};
 
 	return (
 		<Card className="group overflow-hidden h-full flex flex-col border-gray-100 hover:border-brand-blue/20 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] bg-white rounded-2xl">
@@ -125,16 +158,54 @@ export function ListingCard({ listing }: ListingCardProps) {
 					<Link href={`/dashboard/listings/${listing.slug}`}>Manage</Link>
 				</Button>
 				{isOwner && (
-					<Button
-						asChild
-						variant="outline"
-						size="icon"
-						className="h-11 w-11 rounded-xl border-gray-200 hover:border-brand-blue/50 hover:bg-brand-blue-soft hover:text-brand-blue transition-all active:scale-95"
-					>
-						<Link href={`/dashboard/listings/${listing.slug}/edit`}>
-							<Edit className="h-5 w-5" />
-						</Link>
-					</Button>
+					<>
+						<Button
+							asChild
+							variant="outline"
+							size="icon"
+							className="h-11 w-11 rounded-xl border-gray-200 hover:border-brand-blue/50 hover:bg-brand-blue-soft hover:text-brand-blue transition-all active:scale-95"
+						>
+							<Link href={`/dashboard/listings/${listing.slug}/edit`}>
+								<Edit className="h-5 w-5" />
+							</Link>
+						</Button>
+						<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+							<DialogTrigger asChild>
+								<Button
+									variant="outline"
+									size="icon"
+									className="h-11 w-11 rounded-xl border-gray-200 hover:border-red-500/50 hover:bg-red-50 hover:text-red-500 transition-all active:scale-95 text-red-500"
+								>
+									<Trash2 className="h-5 w-5" />
+								</Button>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>Delete Listing</DialogTitle>
+									<DialogDescription>
+										Are you sure you want to delete this listing? This action cannot be undone.
+									</DialogDescription>
+								</DialogHeader>
+								<DialogFooter className="mt-4">
+									<Button
+										variant="outline"
+										onClick={() => setIsDeleteDialogOpen(false)}
+										disabled={isDeleting}
+									>
+										Cancel
+									</Button>
+									<Button
+										variant="destructive"
+										onClick={handleDelete}
+										disabled={isDeleting}
+										className="bg-red-500 hover:bg-red-600 text-white"
+									>
+										{isDeleting ? 'Deleting...' : 'Delete'}
+									</Button>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+					</>
 				)}
 			</CardFooter>
 		</Card>

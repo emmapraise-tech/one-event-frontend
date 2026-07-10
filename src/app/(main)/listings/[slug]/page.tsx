@@ -2,7 +2,9 @@
 
 import { useParams } from 'next/navigation';
 import { useListingBySlug } from '@/hooks/useListings';
+import { useReviews } from '@/hooks/useReviews';
 import { useAuth } from '@/hooks/useAuth';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -34,6 +36,7 @@ export default function ListingDetailPage() {
 	const params = useParams();
 	const slug = params.slug as string;
 	const { data: listing, isLoading } = useListingBySlug(slug);
+	const { data: reviews = [] } = useReviews(listing?.id ? { listingId: listing.id } : undefined);
 	const [showFullDescription, setShowFullDescription] = useState(false);
 	const [showAllAmenities, setShowAllAmenities] = useState(false);
 
@@ -155,17 +158,6 @@ export default function ListingDetailPage() {
 								({listing.reviewCount} reviews)
 							</span>
 						</div>
-						<span className="hidden sm:inline text-neutral-300">•</span>
-						{listing.status === 'ACTIVE' && (
-							<div className="flex items-center gap-1">
-								<Badge
-									variant="secondary"
-									className="bg-accent-soft-gold text-brand-gold hover:bg-accent-soft-gold/80 font-normal py-0.5"
-								>
-									Superhost
-								</Badge>
-							</div>
-						)}
 						{(listing.categories || listing.category)?.map((cat) => (
 							<div key={cat} className="flex items-center gap-1">
 								<span className="hidden sm:inline text-neutral-300">•</span>
@@ -479,21 +471,33 @@ export default function ListingDetailPage() {
 							<div className="flex items-center gap-2 mb-4">
 								<Star className="h-6 w-6 fill-accent-gold text-accent-gold" />
 								<h2 className="text-xl font-semibold text-neutral-text-primary">
-									{listing.rating} · {listing.reviewCount} Reviews
+									{listing.rating || '0.0'} · {listing.reviewCount || 0} {listing.reviewCount === 1 ? 'Review' : 'Reviews'}
 								</h2>
 							</div>
 
 							<div className="grid sm:grid-cols-2 gap-8">
-								<ReviewItem
-									name="Ngozi A."
-									date="October 2023"
-									text="Absolutely stunning venue. The lighting was perfect for our wedding reception."
-								/>
-								<ReviewItem
-									name="Emeka O."
-									date="September 2023"
-									text="Great location right in Lekki. Secure parking was a big plus for our guests."
-								/>
+								{reviews && reviews.length > 0 ? (
+									reviews.map((review: any) => {
+										const reviewerName = review.customer
+											? `${review.customer.firstName || 'User'} ${review.customer.lastName ? review.customer.lastName[0] + '.' : ''}`
+											: 'Anonymous';
+										const reviewDate = review.createdAt
+											? format(new Date(review.createdAt), 'MMMM yyyy')
+											: 'Recent';
+										return (
+											<ReviewItem
+												key={review.id}
+												name={reviewerName}
+												date={reviewDate}
+												text={review.comment || 'No comment provided.'}
+											/>
+										);
+									})
+								) : (
+									<p className="text-neutral-text-muted text-sm col-span-2 italic">
+										No reviews yet for this listing.
+									</p>
+								)}
 							</div>
 						</div>
 
@@ -571,7 +575,7 @@ export default function ListingDetailPage() {
 					</div>
 
 					{/* Right Sidebar */}
-					<div className="min-w-0">
+					<div id="booking-section" className="min-w-0">
 						<div className="sticky top-24">
 							<BookingSidebar
 								basePrice={startPrice}
@@ -605,10 +609,10 @@ export default function ListingDetailPage() {
 				</div>
 				<Button
 					onClick={() => {
-						window.scrollTo({
-							top: document.body.scrollHeight,
-							behavior: 'smooth',
-						});
+						const element = document.getElementById('booking-section');
+						if (element) {
+							element.scrollIntoView({ behavior: 'smooth' });
+						}
 					}}
 					className="bg-brand-gold hover:bg-brand-gold-hover text-neutral-900 font-bold px-8 h-12 shadow-md rounded-xl"
 				>

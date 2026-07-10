@@ -16,6 +16,7 @@ import {
 	Clock,
 	CheckCircle2,
 	AlertCircle,
+	Star,
 } from 'lucide-react';
 import { BookingStatus } from '@/types/booking';
 import { format } from 'date-fns';
@@ -70,7 +71,7 @@ export default function BookingsPage() {
 			case BookingStatus.PENDING:
 				return 'bg-amber-100 text-amber-700 border-amber-200';
 			case BookingStatus.COMPLETED:
-				return 'bg-blue-100 text-blue-700 border-blue-200';
+				return 'bg-indigo-50 text-indigo-700 border-indigo-200';
 			default:
 				return 'bg-neutral-100 text-neutral-700 border-neutral-200';
 		}
@@ -84,6 +85,8 @@ export default function BookingsPage() {
 				return <AlertCircle className="h-3 w-3 mr-1" />;
 			case BookingStatus.PENDING:
 				return <Clock className="h-3 w-3 mr-1" />;
+			case BookingStatus.COMPLETED:
+				return <CheckCircle2 className="h-3 w-3 mr-1" />;
 			default:
 				return null;
 		}
@@ -184,7 +187,7 @@ export default function BookingsPage() {
 									{/* Image/Status Section */}
 									<div className="md:w-64 h-48 md:h-auto bg-neutral-100 relative overflow-hidden shrink-0">
 										<div className="absolute inset-0 bg-neutral-200 group-hover:scale-110 transition-transform duration-700" />
-										<div className="absolute top-4 left-4 z-10">
+										<div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
 											<Badge
 												className={cn(
 													'px-3 py-1.5 rounded-full border shadow-sm flex items-center font-bold text-[10px] uppercase tracking-wider',
@@ -194,6 +197,14 @@ export default function BookingsPage() {
 												{getStatusIcon(booking.status)}
 												{booking.status.replace(/_/g, ' ')}
 											</Badge>
+											{booking.review && (
+												<Badge
+													className="px-3 py-1.5 rounded-full border border-amber-200 shadow-sm flex items-center font-bold text-[10px] bg-amber-50 text-amber-700 uppercase tracking-wider"
+												>
+													<Star className="h-3 w-3 mr-1 fill-amber-500 text-amber-500" />
+													Reviewed
+												</Badge>
+											)}
 										</div>
 									</div>
 
@@ -281,6 +292,20 @@ export default function BookingsPage() {
 												>
 													View Receipt
 												</Button>
+												{booking.status === BookingStatus.COMPLETED && !booking.review && (
+													<>
+														<span className="h-4 w-px bg-neutral-200 hidden sm:block" />
+														<Link href={`/dashboard/bookings/${booking.id}?writeReview=true`}>
+															<Button
+																variant="ghost"
+																className="text-amber-600 hover:text-amber-700 font-bold px-0 h-auto flex items-center gap-1.5"
+															>
+																<Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+																Write Review
+															</Button>
+														</Link>
+													</>
+												)}
 												<span className="h-4 w-px bg-neutral-200 hidden sm:block" />
 												<Button
 													variant="ghost"

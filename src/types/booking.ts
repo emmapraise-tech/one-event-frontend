@@ -1,6 +1,7 @@
 import { Listing, Hall } from './listing';
 import { User } from './auth';
 import { Payment } from './payment';
+import { Review } from './review';
 
 export enum BookingStatus {
 	PENDING = 'PENDING',
@@ -32,6 +33,7 @@ export interface Booking {
 	payments?: Payment[];
 	details?: any;
 	formData?: Record<string, any>;
+	review?: Review;
 	createdAt: string;
 	updatedAt: string;
 }
