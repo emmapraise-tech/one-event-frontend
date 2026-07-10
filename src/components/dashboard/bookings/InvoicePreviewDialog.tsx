@@ -94,7 +94,7 @@ export function InvoicePreviewDialog({
 						</div>
 						<div className="text-right">
 							<div className="text-2xl font-black text-brand-blue">OneEvent</div>
-							<p className="text-sm text-gray-500 mt-1">oneevent.com</p>
+							<p className="text-sm text-gray-500 mt-1">getoneevent.com</p>
 						</div>
 					</div>
 

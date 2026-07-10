@@ -41,11 +41,15 @@ import {
 	Navigation,
 	ArrowUpRight,
 	Check,
+	Star,
+	Trash2,
+	Edit,
+	Plus,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { use, useState } from 'react';
+import { use, useState, useEffect } from 'react';
 import {
 	Dialog,
 	DialogContent,
@@ -62,6 +66,9 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { InvoicePreviewDialog } from '@/components/dashboard/bookings/InvoicePreviewDialog';
+import { cn } from '@/lib/utils';
+import { Textarea } from '@/components/ui/textarea';
+import { useCreateReview, useUpdateReview, useDeleteReview } from '@/hooks/useReviews';
 
 interface PageProps {
 	params: Promise<{ id: string }>;
@@ -70,6 +77,7 @@ interface PageProps {
 export default function BookingDetailsPage({ params }: PageProps) {
 	const { id } = use(params);
 	const router = useRouter();
+	const searchParams = useSearchParams();
 	const { user } = useAuth();
 	const isCustomer = user?.type === UserType.CUSTOMER;
 
@@ -92,6 +100,65 @@ export default function BookingDetailsPage({ params }: PageProps) {
 	const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 	const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
 	const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
+
+	const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+	const [reviewRating, setReviewRating] = useState(5);
+	const [reviewComment, setReviewComment] = useState('');
+	const [hoveredRating, setHoveredRating] = useState<number | null>(null);
+	const [isEditingReview, setIsEditingReview] = useState(false);
+
+	const { mutate: createReview, isPending: isCreatingReview } = useCreateReview();
+	const { mutate: updateReview, isPending: isUpdatingReview } = useUpdateReview(id);
+	const { mutate: deleteReview, isPending: isDeletingReview } = useDeleteReview(id);
+
+	useEffect(() => {
+		const writeReviewParam = searchParams.get('writeReview');
+		if (
+			writeReviewParam === 'true' &&
+			booking &&
+			booking.status === BookingStatus.COMPLETED &&
+			isCustomer &&
+			!booking.review
+		) {
+			setIsEditingReview(false);
+			setReviewRating(5);
+			setReviewComment('');
+			setIsReviewDialogOpen(true);
+
+			// Clean up url param
+			const newUrl = window.location.pathname;
+			window.history.replaceState({}, '', newUrl);
+		}
+	}, [searchParams, booking, isCustomer]);
+
+	const handleSubmitReview = (e: React.FormEvent) => {
+		e.preventDefault();
+		if (isEditingReview && booking?.review) {
+			updateReview(
+				{ id: booking.review.id, data: { rating: reviewRating, comment: reviewComment } },
+				{
+					onSuccess: () => {
+						setIsReviewDialogOpen(false);
+					},
+				}
+			);
+		} else {
+			createReview(
+				{ bookingId: id, rating: reviewRating, comment: reviewComment },
+				{
+					onSuccess: () => {
+						setIsReviewDialogOpen(false);
+					},
+				}
+			);
+		}
+	};
+
+	const handleDeleteReview = () => {
+		if (booking?.review && confirm('Are you sure you want to delete this review?')) {
+			deleteReview(booking.review.id);
+		}
+	};
 
 	const handleCancel = () => {
 		cancelBooking(id, {
@@ -364,6 +431,113 @@ export default function BookingDetailsPage({ params }: PageProps) {
 			<div className="max-w-7xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
 				{/* Left Column - Main Details */}
 				<div className="lg:col-span-2 space-y-6">
+					{/* Review Card */}
+					{booking.status === BookingStatus.COMPLETED && isCustomer && (
+						<Card className="border-border/60 shadow-sm overflow-hidden bg-gradient-to-r from-amber-50/50 to-orange-50/50 border-amber-100 animate-in fade-in slide-in-from-top-4 duration-500">
+							<CardHeader className="bg-white/60 border-b border-amber-100/60 pb-4">
+								<div className="flex items-center justify-between">
+									<div className="flex items-center gap-2">
+										<div className="p-2 bg-white rounded-md border border-amber-200 shadow-sm">
+											<Star className="h-4 w-4 text-brand-gold fill-brand-gold" />
+										</div>
+										<div>
+											<CardTitle className="text-base font-semibold text-amber-950">
+												Your Review
+											</CardTitle>
+											<CardDescription className="text-xs text-amber-800/80">
+												{booking.review ? "Thank you for sharing your feedback!" : "How was your experience?"}
+											</CardDescription>
+										</div>
+									</div>
+									{booking.review && (
+										<div className="flex items-center gap-2">
+											<Button
+												variant="outline"
+												size="sm"
+												className="h-8 border-amber-200 text-amber-800 hover:bg-amber-100/50 font-bold gap-1.5"
+												onClick={() => {
+													setIsEditingReview(true);
+													setReviewRating(booking.review!.rating);
+													setReviewComment(booking.review!.comment || '');
+													setIsReviewDialogOpen(true);
+												}}
+											>
+												<Edit className="h-3.5 w-3.5" />
+												Edit
+											</Button>
+											<Button
+												variant="outline"
+												size="sm"
+												className="h-8 border-rose-200 text-rose-700 hover:bg-rose-50 font-bold gap-1.5"
+												onClick={handleDeleteReview}
+												disabled={isDeletingReview}
+											>
+												{isDeletingReview ? (
+													<Loader2 className="h-3.5 w-3.5 animate-spin" />
+												) : (
+													<Trash2 className="h-3.5 w-3.5" />
+												)}
+												Delete
+											</Button>
+										</div>
+									)}
+								</div>
+							</CardHeader>
+							<CardContent className="p-6">
+								{booking.review ? (
+									<div className="space-y-3">
+										<div className="flex items-center gap-1">
+											{[1, 2, 3, 4, 5].map((star) => (
+												<Star
+													key={star}
+													className={cn(
+														"h-5 w-5",
+														star <= booking.review!.rating
+															? "fill-brand-gold text-brand-gold"
+															: "text-gray-300"
+													)}
+												/>
+											))}
+											<span className="text-sm font-bold text-amber-950 ml-2">
+												{booking.review.rating}.0 / 5.0
+											</span>
+										</div>
+										{booking.review.comment ? (
+											<p className="text-sm text-amber-900/90 italic leading-relaxed bg-white/40 p-4 rounded-xl border border-amber-100/40">
+												"{booking.review.comment}"
+											</p>
+										) : (
+											<p className="text-sm text-amber-800/60 italic">
+												No written feedback left.
+											</p>
+										)}
+										<p className="text-[10px] text-amber-700/60">
+											Reviewed on {format(new Date(booking.review.createdAt), 'MMM dd, yyyy')}
+										</p>
+									</div>
+								) : (
+									<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+										<p className="text-sm text-amber-900 font-medium">
+											Let the host know how they did. Your review helps others make better bookings.
+										</p>
+										<Button
+											className="bg-brand-gold hover:bg-brand-gold-hover text-neutral-900 font-bold shadow-md shadow-brand-gold/10 rounded-xl px-6 shrink-0"
+											onClick={() => {
+												setIsEditingReview(false);
+												setReviewRating(5);
+												setReviewComment('');
+												setIsReviewDialogOpen(true);
+											}}
+										>
+											<Plus className="mr-2 h-4 w-4" />
+											Write a Review
+										</Button>
+									</div>
+								)}
+							</CardContent>
+						</Card>
+					)}
+
 					{/* Venue & Time Card */}
 					<Card className="border-border/60 shadow-sm overflow-hidden">
 						<CardHeader className="bg-gray-50/50 border-b border-border/60 pb-4">
@@ -1024,6 +1198,86 @@ export default function BookingDetailsPage({ params }: PageProps) {
 					</div>
 				</div>
 			</div>
+
+			{/* Review Modal */}
+			{booking && (
+				<Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
+					<DialogContent className="sm:max-w-md rounded-3xl p-0 border-none overflow-hidden shadow-2xl">
+						<form onSubmit={handleSubmitReview}>
+							<div className="p-8 pb-6 bg-amber-50/50 border-b border-amber-100/40">
+								<DialogTitle className="text-2xl font-black text-amber-950">
+									{isEditingReview ? 'Edit Your Review' : 'Write a Review'}
+								</DialogTitle>
+								<DialogDescription className="text-amber-800/80 font-medium mt-1">
+									Share your experience at {booking.listing?.name}
+								</DialogDescription>
+							</div>
+							<div className="p-6 bg-white space-y-6">
+								<div className="space-y-2">
+									<label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+										Rating
+									</label>
+									<div className="flex items-center gap-1.5 py-2">
+										{[1, 2, 3, 4, 5].map((star) => {
+											const isFilled = hoveredRating !== null ? star <= hoveredRating : star <= reviewRating;
+											return (
+												<button
+													key={star}
+													type="button"
+													className="focus:outline-hidden transition-transform active:scale-95"
+													onMouseEnter={() => setHoveredRating(star)}
+													onMouseLeave={() => setHoveredRating(null)}
+													onClick={() => setReviewRating(star)}
+												>
+													<Star
+														className={cn(
+															"h-8 w-8 transition-colors",
+															isFilled
+																? "fill-brand-gold text-brand-gold"
+																: "text-gray-300"
+														)}
+													/>
+												</button>
+											);
+										})}
+									</div>
+								</div>
+								<div className="space-y-2">
+									<label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+										Comment
+									</label>
+									<Textarea
+										placeholder="Tell us about the space, host, amenities, and overall experience..."
+										className="min-h-[120px] rounded-2xl border-gray-200 focus:ring-2 focus:ring-brand-gold/10 focus:border-brand-gold resize-none"
+										value={reviewComment}
+										onChange={(e) => setReviewComment(e.target.value)}
+									/>
+								</div>
+							</div>
+							<div className="p-6 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row gap-3 sm:justify-end">
+								<Button
+									type="button"
+									variant="outline"
+									className="rounded-xl h-12 px-6 border-gray-200 font-bold hover:bg-gray-50 flex-1 sm:flex-none"
+									onClick={() => setIsReviewDialogOpen(false)}
+								>
+									Cancel
+								</Button>
+								<Button
+									type="submit"
+									className="bg-brand-gold hover:bg-brand-gold-hover text-neutral-900 font-bold rounded-xl h-12 px-6 shadow-md shadow-brand-gold/10 flex-1 sm:flex-none"
+									disabled={isCreatingReview || isUpdatingReview}
+								>
+									{(isCreatingReview || isUpdatingReview) && (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									)}
+									{isEditingReview ? 'Save Changes' : 'Submit Review'}
+								</Button>
+							</div>
+						</form>
+					</DialogContent>
+				</Dialog>
+			)}
 
 			{/* Invoice Preview Modal */}
 			{booking && (

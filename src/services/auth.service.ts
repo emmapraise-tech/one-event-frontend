@@ -8,6 +8,11 @@ export const authService = {
     return response.data.data;
   },
 
+  async googleLogin(accessToken: string): Promise<AuthResponse> {
+    const response = await api.post<ApiResponse<AuthResponse>>('/auth/google', { accessToken });
+    return response.data.data;
+  },
+
   async register(data: RegisterData): Promise<AuthResponse> {
     const response = await api.post<ApiResponse<AuthResponse>>('/auth/register', data);
     return response.data.data;

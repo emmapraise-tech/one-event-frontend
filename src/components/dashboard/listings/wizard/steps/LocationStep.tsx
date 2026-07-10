@@ -49,44 +49,48 @@ export function LocationStep({
 			return;
 		}
 
-		if (window.google?.maps?.places) {
+		if (window.google?.maps?.importLibrary) {
 			setIsScriptLoaded(true);
 			return;
 		}
 
 		if (isLoadingScript) return; // Prevent double load
-
 		setIsLoadingScript(true);
-		const script = document.createElement('script');
-		script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
-		script.async = true;
-		script.defer = true;
-		script.onerror = () => {
-			console.error('Google Maps script failed to load');
-			setIsLoadingScript(false);
-		};
 
-		// Define callback
-		window.initMap = () => {
-			setIsScriptLoaded(true);
-			setIsLoadingScript(false);
-		};
+		// Execute Google Maps Inline Bootstrap Loader
+		(function (g: any) {
+			var h: any, a: any, k: any, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b: any = window;
+			b = b[c] || (b[c] = {});
+			var d = b.maps || (b.maps = {}), r = new Set(), e = new URLSearchParams(), u = () => h || (h = new Promise(async (f, n) => {
+				await (a = m.createElement("script"));
+				e.set("libraries", [...Array.from(r)] + "");
+				for (k in g) e.set(k.replace(/[A-Z]/g, (t: string) => "_" + t[0].toLowerCase()), g[k]);
+				e.set("callback", c + ".maps." + q);
+				a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
+				d[q] = f;
+				a.onerror = () => h = n(Error(p + " could not load."));
+				a.nonce = m.querySelector("script[nonce]")?.getAttribute("nonce") || "";
+				m.head.append(a);
+			}));
+			d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f: any, ...n: any[]) => r.add(f) && u().then(() => d[l](f, ...n));
+		})({
+			key: apiKey,
+			v: "weekly"
+		});
 
-		document.head.appendChild(script);
-
-		return () => {
-			// Cleanup if needed
-		};
+		setIsScriptLoaded(true);
+		setIsLoadingScript(false);
 	}, []);
 
 	// Helper for reverse geocoding
-	const handleLocationSelect = (lat: number, lng: number, shouldGeocode: boolean) => {
+	const handleLocationSelect = async (lat: number, lng: number, shouldGeocode: boolean) => {
 		updateFormData({ latitude: lat, longitude: lng });
 
 		if (!shouldGeocode) return;
 
 		setIsGeocoding(true);
-		const geocoder = new window.google.maps.Geocoder();
+		const { Geocoder } = await window.google.maps.importLibrary("geocoding");
+		const geocoder = new Geocoder();
 		geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
 			setIsGeocoding(false);
 			if (status === 'OK' && results && results[0]) {
@@ -154,53 +158,71 @@ export function LocationStep({
 	useEffect(() => {
 		if (!isScriptLoaded || !mapContainerRef.current) return;
 
-		const center = {
-			lat: formData.latitude ? Number(formData.latitude) : defaultCenter.lat,
-			lng: formData.longitude ? Number(formData.longitude) : defaultCenter.lng,
+		let isMounted = true;
+
+		const initMapAndMarker = async () => {
+			try {
+				const { Map } = await window.google.maps.importLibrary("maps");
+				const { AdvancedMarkerElement } = await window.google.maps.importLibrary("marker");
+
+				if (!isMounted) return;
+
+				const center = {
+					lat: formData.latitude ? Number(formData.latitude) : defaultCenter.lat,
+					lng: formData.longitude ? Number(formData.longitude) : defaultCenter.lng,
+				};
+
+				// Initialize Map
+				const map = new Map(mapContainerRef.current, {
+					center: center,
+					zoom: formData.latitude && formData.longitude ? 16 : 12,
+					mapTypeControl: false,
+					streetViewControl: false,
+					fullscreenControl: false,
+					mapId: 'DEMO_MAP_ID', // Required for AdvancedMarkerElement
+				});
+				mapRef.current = map;
+
+				// Initialize Marker
+				const marker = new AdvancedMarkerElement({
+					position: center,
+					map: map,
+					title: 'Venue Location',
+					gmpDraggable: true,
+				});
+				markerRef.current = marker;
+
+				// Listener for marker dragend
+				marker.addListener('dragend', () => {
+					const pos = marker.position;
+					if (pos) {
+						const lat = typeof pos.lat === 'function' ? pos.lat() : pos.lat;
+						const lng = typeof pos.lng === 'function' ? pos.lng() : pos.lng;
+						handleLocationSelect(lat, lng, true);
+					}
+				});
+
+				// Listener for map click
+				map.addListener('click', (e: any) => {
+					if (e.latLng) {
+						const lat = e.latLng.lat();
+						const lng = e.latLng.lng();
+						marker.position = { lat, lng };
+						handleLocationSelect(lat, lng, true);
+					}
+				});
+			} catch (err) {
+				console.error(err);
+			}
 		};
 
-		// Initialize Map
-		const map = new window.google.maps.Map(mapContainerRef.current, {
-			center: center,
-			zoom: formData.latitude && formData.longitude ? 16 : 12,
-			mapTypeControl: false,
-			streetViewControl: false,
-			fullscreenControl: false,
-		});
-		mapRef.current = map;
-
-		// Initialize Marker
-		const marker = new window.google.maps.Marker({
-			position: center,
-			map: map,
-			draggable: true,
-			title: 'Venue Location',
-			animation: window.google.maps.Animation.DROP,
-		});
-		markerRef.current = marker;
-
-		// Listener for marker dragend
-		marker.addListener('dragend', () => {
-			const pos = marker.getPosition();
-			if (pos) {
-				handleLocationSelect(pos.lat(), pos.lng(), true);
-			}
-		});
-
-		// Listener for map click
-		map.addListener('click', (e: any) => {
-			if (e.latLng) {
-				const lat = e.latLng.lat();
-				const lng = e.latLng.lng();
-				marker.setPosition({ lat, lng });
-				handleLocationSelect(lat, lng, true);
-			}
-		});
+		initMapAndMarker();
 
 		return () => {
+			isMounted = false;
 			if (window.google?.maps?.event) {
-				if (marker) window.google.maps.event.clearInstanceListeners(marker);
-				if (map) window.google.maps.event.clearInstanceListeners(map);
+				if (markerRef.current) window.google.maps.event.clearInstanceListeners(markerRef.current);
+				if (mapRef.current) window.google.maps.event.clearInstanceListeners(mapRef.current);
 			}
 		};
 	}, [isScriptLoaded]);
@@ -208,103 +230,160 @@ export function LocationStep({
 	// Keep map and marker synced with formData coordinates (e.g. from Autocomplete or manual inputs)
 	useEffect(() => {
 		if (isScriptLoaded && mapRef.current && markerRef.current && formData.latitude && formData.longitude) {
-			const currentMarkerPos = markerRef.current.getPosition();
+			const currentMarkerPos = markerRef.current.position;
 			const formLat = Number(formData.latitude);
 			const formLng = Number(formData.longitude);
 
-			if (
-				!currentMarkerPos ||
-				Math.abs(currentMarkerPos.lat() - formLat) > 0.00001 ||
-				Math.abs(currentMarkerPos.lng() - formLng) > 0.00001
-			) {
+			if (currentMarkerPos) {
+				const curLat = typeof currentMarkerPos.lat === 'function' ? currentMarkerPos.lat() : currentMarkerPos.lat;
+				const curLng = typeof currentMarkerPos.lng === 'function' ? currentMarkerPos.lng() : currentMarkerPos.lng;
+
+				if (Math.abs(curLat - formLat) > 0.00001 || Math.abs(curLng - formLng) > 0.00001) {
+					const newPos = { lat: formLat, lng: formLng };
+					markerRef.current.position = newPos;
+					mapRef.current.panTo(newPos);
+					mapRef.current.setZoom(16);
+				}
+			} else {
 				const newPos = { lat: formLat, lng: formLng };
-				markerRef.current.setPosition(newPos);
+				markerRef.current.position = newPos;
 				mapRef.current.panTo(newPos);
 				mapRef.current.setZoom(16);
 			}
 		}
 	}, [formData.latitude, formData.longitude, isScriptLoaded]);
 
+	// Keep latest updateFormData in a ref so we don't need to add it to useEffect deps and re-initialize autocomplete
+	const updateFormDataRef = useRef(updateFormData);
+	useEffect(() => {
+		updateFormDataRef.current = updateFormData;
+	}, [updateFormData]);
+
 	// Initialize Autocomplete
 	useEffect(() => {
 		if (isScriptLoaded && addressInputRef.current) {
-			const autocomplete = new window.google.maps.places.Autocomplete(
-				addressInputRef.current,
-				{
+			const parent = addressInputRef.current.parentElement;
+			if (!parent || parent.querySelector('gmp-place-autocomplete')) return;
+
+			let isMounted = true;
+			let autocomplete: any;
+			
+			const initAutocomplete = async () => {
+				const { PlaceAutocompleteElement } = await window.google.maps.importLibrary("places");
+				if (!isMounted) return;
+
+				// Create the PlaceAutocompleteElement
+				autocomplete = new PlaceAutocompleteElement({
 					componentRestrictions: { country: 'ng' },
-					fields: ['name', 'address_components', 'geometry', 'formatted_address'],
-				},
-			);
-
-			autocomplete.addListener('place_changed', () => {
-				const place = autocomplete.getPlace();
-				if (!place.geometry || !place.geometry.location) return;
-
-				const lat = place.geometry.location.lat();
-				const lng = place.geometry.location.lng();
-
-				const addressComponents = place.address_components;
-				let streetAddress = '';
-				let city = '';
-				let state = '';
-				let zip = '';
-				let country = '';
-
-				let streetNum = '';
-				let routeName = '';
-
-				addressComponents.forEach((component: any) => {
-					const types = component.types;
-					if (types.includes('street_number')) {
-						streetNum = component.long_name;
-					}
-					if (types.includes('route')) {
-						routeName = component.long_name;
-					}
-					if (
-						types.includes('locality') ||
-						types.includes('sublocality_level_1') ||
-						types.includes('administrative_area_level_2')
-					) {
-						city = city || component.long_name;
-					}
-					if (types.includes('administrative_area_level_1')) {
-						state = component.long_name;
-					}
-					if (types.includes('postal_code')) {
-						zip = component.long_name;
-					}
-					if (types.includes('country')) {
-						country = component.long_name;
-					}
 				});
+				autocomplete.setAttribute('no-input-icon', '');
+				autocomplete.setAttribute('no-clear-button', '');
+				
+				// Style it to match the input
+				autocomplete.style.width = '100%';
+				
+				// Hide the original input and append this
+				if (addressInputRef.current) addressInputRef.current.style.display = 'none';
+				parent.appendChild(autocomplete);
 
-				const name = place.name;
-				const formattedAddress = place.formatted_address || '';
-				let addressLineVal = '';
+				// Initialize with existing value
+				if (formData.addressLine) {
+					autocomplete.inputValue = formData.addressLine;
+				}
+				
+				const handlePlaceSelect = async (e: any) => {
+					let place = e.place;
+					
+					if (e.placePrediction && typeof e.placePrediction.toPlace === 'function') {
+						place = e.placePrediction.toPlace();
+					} else if (!place && autocomplete.value) {
+						place = autocomplete.value;
+					}
+					
+					if (!place) return;
+					
+					await place.fetchFields({ fields: ['displayName', 'formattedAddress', 'location', 'addressComponents'] });
 
-				if (name && formattedAddress) {
-					if (formattedAddress.toLowerCase().includes(name.toLowerCase())) {
-						addressLineVal = formattedAddress;
-					} else {
+					const lat = typeof place.location?.lat === 'function' ? place.location.lat() : place.location?.lat;
+					const lng = typeof place.location?.lng === 'function' ? place.location.lng() : place.location?.lng;
+
+					if (!lat || !lng) return;
+
+					let name = place.displayName || place.name || '';
+					if (typeof name === 'object' && name.text) {
+						name = name.text;
+					}
+
+					const formattedAddress = place.formattedAddress || place.formatted_address || '';
+					let addressLineVal = formattedAddress || name || '';
+
+					if (name && formattedAddress && !formattedAddress.toLowerCase().includes(name.toLowerCase())) {
 						addressLineVal = `${name}, ${formattedAddress}`;
 					}
-				} else {
-					addressLineVal = formattedAddress || name || '';
-				}
 
-				updateFormData({
-					addressLine: addressLineVal,
-					city: city || '',
-					state: state || '',
-					country: country || 'Nigeria',
-					zipCode: zip || '',
-					latitude: lat,
-					longitude: lng,
-				});
-			});
+					let city = '';
+					let state = '';
+					let zip = '';
+					let country = 'Nigeria';
+
+					const components = place.addressComponents || [];
+					components.forEach((component: any) => {
+						const types = component.types || [];
+						const longName = component.longText || component.long_name || '';
+						
+						if (types.includes('locality') || types.includes('sublocality_level_1') || types.includes('administrative_area_level_2')) {
+							city = city || longName;
+						}
+						if (types.includes('administrative_area_level_1')) {
+							state = longName;
+						}
+						if (types.includes('postal_code')) {
+							zip = longName;
+						}
+						if (types.includes('country')) {
+							country = longName;
+						}
+					});
+
+					updateFormDataRef.current({
+						addressLine: addressLineVal,
+						city: city || '',
+						state: state || '',
+						country: country || 'Nigeria',
+						zipCode: zip || '',
+						latitude: lat,
+						longitude: lng,
+					});
+				};
+
+				autocomplete.addEventListener('gmp-placeselect', handlePlaceSelect);
+				autocomplete.addEventListener('gmp-select', handlePlaceSelect);
+			};
+
+			initAutocomplete();
+
+			return () => {
+				isMounted = false;
+				if (autocomplete && parent && autocomplete.parentNode === parent) {
+					parent.removeChild(autocomplete);
+				}
+				if (addressInputRef.current) {
+					addressInputRef.current.style.display = '';
+				}
+			};
 		}
-	}, [isScriptLoaded, updateFormData]);
+	}, [isScriptLoaded]);
+
+	// Sync addressLine to autocomplete input value when it changes externally (e.g. Map click/drag)
+	useEffect(() => {
+		if (addressInputRef.current) {
+			const parent = addressInputRef.current.parentElement;
+			const autocomplete = parent?.querySelector('gmp-place-autocomplete') as any;
+			if (autocomplete && autocomplete.inputValue !== formData.addressLine) {
+				autocomplete.inputValue = formData.addressLine || '';
+			}
+		}
+	}, [formData.addressLine]);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -315,6 +394,26 @@ export function LocationStep({
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
+			<style>{`
+				gmp-place-autocomplete {
+					width: 100%;
+					display: block;
+					height: 3rem;
+					border: 1px solid #e5e7eb;
+					border-radius: 0.375rem;
+					background-color: transparent;
+					box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+					transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+					padding-left: 3rem;
+					font-family: inherit;
+					color: #111827;
+				}
+				gmp-place-autocomplete:focus-within {
+					border-color: #3b82f6 !important;
+					box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2) !important;
+					outline: none;
+				}
+			`}</style>
 			<div className="flex items-center gap-2 mb-6">
 				<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
 					<MapPin className="h-5 w-5" />

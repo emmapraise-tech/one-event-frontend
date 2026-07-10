@@ -76,6 +76,29 @@ export function useAuth() {
 		},
 	});
 
+	const googleLoginMutation = useMutation({
+		mutationFn: authService.googleLogin,
+		onSuccess: (data) => {
+			localStorage.setItem('token', data.access_token);
+			queryClient.setQueryData(['user'], data.user);
+
+			// Priority 1: Check for callbackUrl in search params
+			const callbackUrl = searchParams.get('callbackUrl');
+
+			if (callbackUrl) {
+				router.push(callbackUrl);
+				return;
+			}
+
+			// Priority 2: Default redirects
+			if (data.user.type === UserType.CUSTOMER) {
+				router.push('/');
+			} else {
+				router.push('/dashboard');
+			}
+		},
+	});
+
 	const logout = () => {
 		authService.logout();
 		queryClient.setQueryData(['user'], null);
@@ -92,6 +115,9 @@ export function useAuth() {
 		register: registerMutation.mutate,
 		isRegistering: registerMutation.isPending,
 		registerError: registerMutation.error,
+		loginWithGoogle: googleLoginMutation.mutate,
+		isLoggingInWithGoogle: googleLoginMutation.isPending,
+		googleLoginError: googleLoginMutation.error,
 		logout,
 	};
 }

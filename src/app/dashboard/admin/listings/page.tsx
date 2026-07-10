@@ -20,7 +20,16 @@ import {
 	Clock,
 	AlertCircle,
 	ExternalLink,
+	Trash2,
 } from 'lucide-react';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import Image from 'next/legacy/image';
 import Link from 'next/link';
@@ -33,6 +42,7 @@ export default function AdminListingsPage() {
 	const queryClient = useQueryClient();
 	const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
 	const [isDetailOpen, setIsDetailOpen] = useState(false);
+	const [deletingListing, setDeletingListing] = useState<Listing | null>(null);
 
 	const { data: paginatedData, isLoading } = useQuery({
 		queryKey: ['admin', 'listings'],
@@ -51,6 +61,19 @@ export default function AdminListingsPage() {
 		},
 		onError: () => {
 			toast.error('Failed to update listing status');
+		},
+	});
+
+	const deleteMutation = useMutation({
+		mutationFn: (id: string) => listingService.remove(id),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['admin', 'listings'] });
+			toast.success('Listing deleted successfully');
+			setDeletingListing(null);
+		},
+		onError: (error: any) => {
+			toast.error(error?.response?.data?.message || 'Failed to delete listing');
+			setDeletingListing(null);
 		},
 	});
 
@@ -240,6 +263,17 @@ export default function AdminListingsPage() {
 														<ExternalLink className="ml-2 h-4 w-4 transition-transform group-hover/btn:-translate-y-0.5 group-hover/btn:translate-x-0.5" />
 													</Button>
 												</Link>
+												<Button
+													variant="outline"
+													onClick={(e) => {
+														e.stopPropagation();
+														setDeletingListing(listing);
+													}}
+													className="h-12 px-6 rounded-2xl font-bold border-red-100 hover:bg-red-50 text-red-500 hover:text-red-600 group/btn"
+												>
+													Delete
+													<Trash2 className="ml-2 h-4 w-4 transition-transform group-hover/btn:scale-110" />
+												</Button>
 											</div>
 
 											<div className="flex gap-4 w-full sm:w-auto">
@@ -283,6 +317,34 @@ export default function AdminListingsPage() {
 				}
 				isProcessing={statusMutation.isPending}
 			/>
+
+			<Dialog open={!!deletingListing} onOpenChange={(open) => !open && setDeletingListing(null)}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Delete Listing</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to hard-delete this listing? This action is permanent and cannot be undone.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="mt-4">
+						<Button
+							variant="outline"
+							onClick={() => setDeletingListing(null)}
+							disabled={deleteMutation.isPending}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							onClick={() => deletingListing && deleteMutation.mutate(deletingListing.id)}
+							disabled={deleteMutation.isPending}
+							className="bg-red-500 hover:bg-red-600 text-white"
+						>
+							{deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
