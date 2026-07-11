@@ -74,6 +74,7 @@ export default function EditListingPage() {
 		
 		imageUrls: listing.images?.map((img: any) => img.url) || [],
 		imageFiles: [],
+		images: listing.images || [],
 	};
 
 	return (

@@ -201,6 +201,7 @@ export interface ListingFormData {
 	imageUrls: string[]; // For preview
 	imageFiles: File[]; // For upload
 	videoUrls?: string[]; // For upload
+	images?: any[];
 }
 
 export interface ListingFilters {

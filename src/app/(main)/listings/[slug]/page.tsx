@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AMENITY_MAP } from '@/constants/amenities';
 import { ListingMediaType, ListingMedia } from '@/types/listing';
 import { toast } from 'sonner';
+import { getImageUrl } from '@/lib/utils';
 
 export default function ListingDetailPage() {
 	const params = useParams();
@@ -582,7 +583,7 @@ export default function ListingDetailPage() {
 								currency={listing.currency || 'NGN'}
 								venueName={listing.name}
 								venueAddress={listing.addressLine}
-								venueImage={listing.images?.[0]?.url}
+								venueImage={getImageUrl(listing.images?.[0]?.url)}
 								addOns={listing.addOns || listing.addons}
 								rating={listing.rating}
 								reviewCount={listing.reviewCount}

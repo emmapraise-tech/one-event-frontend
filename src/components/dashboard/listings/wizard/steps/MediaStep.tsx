@@ -4,7 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image as ImageIcon, Upload, X, Video, Plus } from 'lucide-react';
 import { ListingFormData } from '@/types/listing';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
+import { useListings } from '@/hooks/useListings';
+import { toast } from 'sonner';
 
 interface StepProps {
 	formData: ListingFormData;
@@ -23,6 +25,7 @@ export function MediaStep({
 }: StepProps) {
 	const [videoInput, setVideoInput] = useState('');
 	const [error, setError] = useState<string | null>(null);
+	const { deleteImage } = useListings();
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files.length > 0) {
@@ -47,17 +50,43 @@ export function MediaStep({
 		}
 	};
 
-	const removeImage = (index: number) => {
-		const newFiles = [...(formData.imageFiles || [])];
-		const newUrls = [...(formData.imageUrls || [])];
+	const removeImage = async (index: number) => {
+		const dbImages = formData.images || [];
+		if (index < dbImages.length) {
+			const imageToDelete = dbImages[index];
+			try {
+				toast.loading('Deleting image...', { id: 'delete-image' });
+				await deleteImage(imageToDelete.id);
+				toast.success('Image deleted successfully!', { id: 'delete-image' });
 
-		newFiles.splice(index, 1);
-		newUrls.splice(index, 1);
+				const newDbImages = [...dbImages];
+				newDbImages.splice(index, 1);
 
-		updateFormData({
-			imageFiles: newFiles,
-			imageUrls: newUrls,
-		});
+				const newUrls = [...(formData.imageUrls || [])];
+				newUrls.splice(index, 1);
+
+				updateFormData({
+					images: newDbImages,
+					imageUrls: newUrls,
+				});
+			} catch (err: any) {
+				toast.error('Failed to delete image: ' + (err.message || 'Unknown error'), { id: 'delete-image' });
+			}
+		} else {
+			const dbImageCount = dbImages.length;
+			const fileIndex = index - dbImageCount;
+
+			const newFiles = [...(formData.imageFiles || [])];
+			const newUrls = [...(formData.imageUrls || [])];
+
+			newFiles.splice(fileIndex, 1);
+			newUrls.splice(index, 1);
+
+			updateFormData({
+				imageFiles: newFiles,
+				imageUrls: newUrls,
+			});
+		}
 	};
 
 	const handleAddVideo = () => {
@@ -136,7 +165,7 @@ export function MediaStep({
 								className="group relative aspect-square rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
 							>
 								<img
-									src={img}
+									src={getImageUrl(img)}
 									alt={`Venue ${i + 1}`}
 									className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
 								/>

@@ -45,6 +45,14 @@ export function useListings(filters: ListingFilters = { page: 1, limit: 10 }) {
 		},
 	});
 
+	const deleteImageMutation = useMutation({
+		mutationFn: (imageId: string) => listingService.deleteImage(imageId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['listings'] });
+			queryClient.invalidateQueries({ queryKey: ['my-listings'] });
+		},
+	});
+
 	return {
 		listings: paginatedData?.data || [],
 		meta: paginatedData?.meta,
@@ -54,6 +62,8 @@ export function useListings(filters: ListingFilters = { page: 1, limit: 10 }) {
 		isCreating: createListingMutation.isPending,
 		updateListing: updateListingMutation.mutate,
 		isUpdating: updateListingMutation.isPending,
+		deleteImage: deleteImageMutation.mutateAsync,
+		isDeletingImage: deleteImageMutation.isPending,
 	};
 }
 

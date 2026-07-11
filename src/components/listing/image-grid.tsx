@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { MediaGallery } from './media-gallery';
 import { VirtualTourModal } from './virtual-tour-modal';
+import { getImageUrl, isLocalUrl } from '@/lib/utils';
 
 interface ImageGridProps {
 	images: { url: string; alt?: string }[];
@@ -32,7 +33,10 @@ export function ImageGrid({ images, media, title }: ImageGridProps) {
 	};
 
 	const validImages =
-		images?.filter((img) => img && img.url && isImageUrl(img.url)) || [];
+		images?.filter((img) => img && img.url && isImageUrl(img.url)).map(img => ({
+			...img,
+			url: getImageUrl(img.url)
+		})) || [];
 	const displayImages = [...validImages];
 	while (displayImages.length < 5) {
 		displayImages.push({
@@ -50,11 +54,12 @@ export function ImageGrid({ images, media, title }: ImageGridProps) {
 					onClick={() => setShowGallery(true)}
 				>
 					<Image
-						src={displayImages[0].url}
+						src={getImageUrl(displayImages[0].url)}
 						alt={displayImages[0].alt || title}
 						fill
 						className="object-cover transition-transform duration-500 group-hover:scale-105"
 						priority
+						unoptimized={isLocalUrl(displayImages[0].url)}
 					/>
 					<div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
 
@@ -82,10 +87,11 @@ export function ImageGrid({ images, media, title }: ImageGridProps) {
 							onClick={() => setShowGallery(true)}
 						>
 							<Image
-								src={img.url}
+								src={getImageUrl(img.url)}
 								alt={img.alt || `${title} - ${i + 2}`}
 								fill
 								className="object-cover transition-transform duration-500 group-hover:scale-105"
+								unoptimized={isLocalUrl(img.url)}
 							/>
 							<div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
 						</div>

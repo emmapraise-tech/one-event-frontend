@@ -11,7 +11,7 @@ export function Footer() {
 				<div className="grid gap-12 lg:grid-cols-4 mb-16">
 					{/* Brand Column */}
 					<div className="flex flex-col gap-6">
-						<Logo variant="dark" />
+						<Logo variant="transparent" />
 						<p className="text-neutral-400 leading-relaxed max-w-sm">
 							The trusted platform for booking premium event venues and services
 							across Nigeria. Discover, compare, and book with confidence.

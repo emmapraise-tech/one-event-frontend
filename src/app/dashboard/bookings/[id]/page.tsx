@@ -66,7 +66,7 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { InvoicePreviewDialog } from '@/components/dashboard/bookings/InvoicePreviewDialog';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { useCreateReview, useUpdateReview, useDeleteReview } from '@/hooks/useReviews';
 
@@ -561,7 +561,7 @@ export default function BookingDetailsPage({ params }: PageProps) {
 								<div className="w-full md:w-48 h-32 rounded-lg border border-border/60 overflow-hidden relative group shrink-0">
 									{booking.listing?.images?.[0]?.url ? (
 										<img
-											src={booking.listing.images[0].url}
+											src={getImageUrl(booking.listing.images[0].url)}
 											alt={booking.listing.name}
 											className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
 										/>

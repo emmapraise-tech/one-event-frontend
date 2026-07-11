@@ -432,14 +432,14 @@ export default function Home() {
 								},
 								{
 									quote:
-										'As a venue owner in Ibadan, OneEvent has transformed my business. The dashboard is easy to use.',
+										'As a venue owner in Ibadan, One Event has transformed my business. The dashboard is easy to use.',
 									author: 'Babatunde Alabi',
 									role: 'Venue Owner',
 									initial: 'BA',
 								},
 								{
 									quote:
-										"OneEvent's filters helped us narrow down options quickly. We found our dream garden venue!",
+										"One Event's filters helped us narrow down options quickly. We found our dream garden venue!",
 									author: 'Zainab Ahmed',
 									role: 'Bride-to-be',
 									initial: 'ZA',
