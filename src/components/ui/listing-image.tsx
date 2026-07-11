@@ -1,5 +1,5 @@
 import { Building2, Camera, Utensils, Music, Sparkles, PartyPopper } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn, getImageUrl } from "@/lib/utils"
 
 interface ListingImageProps {
   src?: string | null
@@ -58,7 +58,7 @@ export function ListingImage({
     <div className={cn("relative w-full h-full overflow-hidden", className)}>
       {src ? (
         <img
-          src={src}
+          src={getImageUrl(src)}
           alt={alt}
           className="w-full h-full object-cover"
           onError={(e) => {

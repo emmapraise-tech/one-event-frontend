@@ -33,7 +33,7 @@ import {
 import { toast } from 'sonner';
 import Image from 'next/legacy/image';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl, isLocalUrl } from '@/lib/utils';
 import { PageHeaderSkeleton, CardSkeleton } from '@/components/ui/skeletons';
 import { useState } from 'react';
 import { ListingDetailDialog } from './ListingDetailDialog';
@@ -180,10 +180,11 @@ export default function AdminListingsPage() {
 									{/* Gallery Preview */}
 									<div className="relative w-full xl:w-[400px] h-[300px] shrink-0 overflow-hidden">
 										<Image
-											src={listing.images?.[0]?.url || '/images/venue-1.jpg'}
+											src={getImageUrl(listing.images?.[0]?.url) || '/images/venue-1.jpg'}
 											alt={listing.name}
 											layout="fill"
 											className="object-cover transition-transform duration-1000 group-hover:scale-110"
+											unoptimized={isLocalUrl(listing.images?.[0]?.url)}
 										/>
 										<div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 										<div className="absolute top-6 left-6 z-10 flex gap-2">

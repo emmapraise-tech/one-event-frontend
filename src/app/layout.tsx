@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-	title: 'OneEvent - Event Management Platform',
+	title: 'One Event - Event Management Platform',
 	description:
 		'The ultimate platform for managing and booking event services and providers',
 };

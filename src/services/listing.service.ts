@@ -344,4 +344,8 @@ export const listingService = {
 	async remove(id: string): Promise<void> {
 		await api.delete(`/listings/${id}`);
 	},
+
+	async deleteImage(id: string): Promise<void> {
+		await api.delete(`/listing-media/${id}`);
+	},
 };

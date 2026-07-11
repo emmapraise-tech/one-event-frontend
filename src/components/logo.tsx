@@ -25,13 +25,13 @@ export function Logo({
 		iconBg = 'bg-white';
 		iconColor = 'text-primary-blue';
 		textColor = 'text-white';
-	} else if (variant === 'dark') {
+	} else {
 		// Used on Dark Backgrounds (e.g., Footer)
 		// Icon: White BG, Blue Text
 		// Text: White
-		iconBg = 'bg-white';
-		iconColor = 'text-primary-blue';
-		textColor = 'text-white';
+		iconBg = 'bg-brand-blue';
+		iconColor = 'text-white';
+		textColor = 'text-primary-blue';
 	}
 
 	const content = (

@@ -7,6 +7,7 @@ import { Heart, MapPin, Star, Users, Wifi, Car, Shield, Wind, Zap, Trees, Clock,
 import { useRouter } from 'next/navigation';
 import { Listing } from '@/types/listing';
 import { AMENITY_MAP } from '@/constants/amenities';
+import { getImageUrl } from '@/lib/utils';
 
 interface VenueListingCardProps {
 	listing: Listing;
@@ -129,7 +130,7 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 				<div className="w-full h-full bg-neutral-200 flex items-center justify-center text-neutral-400">
 					{listing.images && listing.images.length > 0 ? (
 						<img
-							src={listing.images[0].url}
+							src={getImageUrl(listing.images[0].url)}
 							alt={listing.name}
 							className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
 						/>

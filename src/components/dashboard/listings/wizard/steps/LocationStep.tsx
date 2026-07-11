@@ -268,6 +268,54 @@ export function LocationStep({
 			let isMounted = true;
 			let autocomplete: any;
 			
+			// Monkey patch attachShadow to style the closed shadow DOM of gmp-place-autocomplete
+			const rawAttachShadow = Element.prototype.attachShadow;
+			Element.prototype.attachShadow = function (init) {
+				const shadow = rawAttachShadow.call(this, init);
+				if (this.localName === 'gmp-place-autocomplete') {
+					const style = document.createElement('style');
+					style.textContent = `
+						input {
+							background-color: #ffffff !important;
+							color: #111827 !important;
+							font-family: inherit !important;
+							font-size: 1rem !important;
+							padding: 0 1rem !important;
+							height: 100% !important;
+							width: 100% !important;
+							box-sizing: border-box !important;
+							border: none !important;
+							outline: none !important;
+						}
+						input::placeholder {
+							color: #6b7280 !important;
+						}
+						.predictions-card {
+							background-color: #ffffff !important;
+							color: #111827 !important;
+							box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+							border: 1px solid #e5e7eb !important;
+							border-radius: 0.375rem !important;
+						}
+						li {
+							background-color: #ffffff !important;
+							color: #111827 !important;
+						}
+						li:hover {
+							background-color: #f3f4f6 !important;
+						}
+						.prediction-text {
+							color: #111827 !important;
+						}
+						.prediction-secondary-text {
+							color: #6b7280 !important;
+						}
+					`;
+					shadow.appendChild(style);
+				}
+				return shadow;
+			};
+			
 			const initAutocomplete = async () => {
 				const { PlaceAutocompleteElement } = await window.google.maps.importLibrary("places");
 				if (!isMounted) return;
@@ -364,6 +412,7 @@ export function LocationStep({
 
 			return () => {
 				isMounted = false;
+				Element.prototype.attachShadow = rawAttachShadow;
 				if (autocomplete && parent && autocomplete.parentNode === parent) {
 					parent.removeChild(autocomplete);
 				}
@@ -401,17 +450,46 @@ export function LocationStep({
 					height: 3rem;
 					border: 1px solid #e5e7eb;
 					border-radius: 0.375rem;
-					background-color: transparent;
+					background-color: #ffffff !important;
 					box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 					transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 					padding-left: 3rem;
 					font-family: inherit;
-					color: #111827;
+					color: #111827 !important;
+					--gmp-mat-color-surface: #ffffff;
+					--gmp-mat-color-primary: #3b82f6;
+					--gmp-mat-color-on-surface: #111827;
+					--gmp-mat-color-on-surface-variant: #4b5563;
 				}
 				gmp-place-autocomplete:focus-within {
 					border-color: #3b82f6 !important;
 					box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2) !important;
 					outline: none;
+				}
+				/* Legacy/fallback Autocomplete styles */
+				.pac-container {
+					background-color: #ffffff !important;
+					border: 1px solid #e5e7eb !important;
+					border-radius: 0.375rem !important;
+					box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+					font-family: inherit !important;
+					z-index: 9999 !important;
+				}
+				.pac-item {
+					padding: 8px 12px !important;
+					color: #111827 !important;
+					border-top: 1px solid #f3f4f6 !important;
+					cursor: pointer;
+				}
+				.pac-item:hover {
+					background-color: #f9fafb !important;
+				}
+				.pac-item-query {
+					color: #111827 !important;
+				}
+				.pac-matched {
+					color: #3b82f6 !important;
+					font-weight: 600;
 				}
 			`}</style>
 			<div className="flex items-center gap-2 mb-6">

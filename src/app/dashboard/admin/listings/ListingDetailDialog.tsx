@@ -28,7 +28,7 @@ import {
 	Sparkles,
 } from 'lucide-react';
 import Image from 'next/legacy/image';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl, isLocalUrl } from '@/lib/utils';
 import Link from 'next/link';
 
 interface ListingDetailDialogProps {
@@ -69,10 +69,11 @@ export function ListingDetailDialog({
 				{/* Hero Image Section */}
 				<div className="relative h-[300px] w-full">
 					<Image
-						src={listing.images?.[0]?.url || '/images/venue-1.jpg'}
+						src={getImageUrl(listing.images?.[0]?.url) || '/images/venue-1.jpg'}
 						alt={listing.name}
 						layout="fill"
 						className="object-cover"
+						unoptimized={isLocalUrl(listing.images?.[0]?.url)}
 					/>
 					<div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 					<div className="absolute bottom-8 left-8 right-8 flex items-end justify-between">
