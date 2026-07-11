@@ -17,7 +17,7 @@ import {
 	XAxis,
 } from 'recharts';
 
-const data = [
+const fallbackData = [
 	{ date: 'May 01', value: 2000 },
 	{ date: 'May 05', value: 3500 },
 	{ date: 'May 08', value: 2800 },
@@ -32,9 +32,13 @@ const data = [
 export function RevenueChart({
 	title = 'Revenue Trends',
 	description = 'Income performance over time',
+	data: chartData,
+	weeklyData,
 }: {
 	title?: string;
 	description?: string;
+	data?: Array<{ date: string; value: number }>;
+	weeklyData?: Array<{ range: string; count: string; revenue: string }>;
 }) {
 	return (
 		<Card className="shadow-sm border-neutral-100 h-full">
@@ -60,7 +64,7 @@ export function RevenueChart({
 				<div className="h-[300px] w-full mt-4 px-6">
 					<ResponsiveContainer width="100%" height="100%">
 						<AreaChart
-							data={data}
+							data={chartData || fallbackData}
 							margin={{ top: 5, right: 0, left: 0, bottom: 0 }}
 						>
 							<defs>
@@ -122,7 +126,7 @@ export function RevenueChart({
 							</tr>
 						</thead>
 						<tbody className="divide-y divide-neutral-50 text-neutral-600">
-							{[
+							{(weeklyData || [
 								{
 									range: 'May 22 - May 29',
 									count: '12 bookings',
@@ -138,7 +142,7 @@ export function RevenueChart({
 									count: '15 bookings',
 									revenue: '₦62,100',
 								},
-							].map((row, i) => (
+							]).map((row, i) => (
 								<tr
 									key={i}
 									className="hover:bg-neutral-50/50 transition-colors"

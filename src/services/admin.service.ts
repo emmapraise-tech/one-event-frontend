@@ -26,6 +26,13 @@ export interface AdminDashboardData {
     status: string;
     date: string;
   }>;
+  revenueChartData?: Array<{ date: string; value: number }>;
+  weeklyData?: Array<{ range: string; count: string; revenue: string }>;
+  systemHealth?: {
+    dbLatency: number;
+    serverLoad: number;
+    pendingPayouts: number;
+  };
 }
 
 export const adminService = {
