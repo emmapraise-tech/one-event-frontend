@@ -62,7 +62,7 @@ export function ListingCard({ listing }: ListingCardProps) {
 
 	return (
 		<Card className="group overflow-hidden h-full flex flex-col border-gray-100 hover:border-brand-blue/20 transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] bg-white rounded-2xl">
-			<div className="aspect-4/3 w-full relative overflow-hidden">
+			<div className="aspect-video sm:aspect-4/3 w-full relative overflow-hidden">
 				<ListingImage
 					src={
 						listing.images && listing.images.length > 0
