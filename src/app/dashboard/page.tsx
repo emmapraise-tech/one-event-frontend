@@ -23,12 +23,29 @@ import { RevenueChart } from '@/components/dashboard/revenue-chart';
 import { PendingRequests } from '@/components/dashboard/recent-activity';
 import Link from 'next/link';
 import { CardSkeleton, PageHeaderSkeleton } from '@/components/ui/skeletons';
+import { cn } from '@/lib/utils';
 
 import { adminService } from '@/services/admin.service';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 export default function DashboardPage() {
 	const { user, isLoading: authLoading } = useAuth();
+	const queryClient = useQueryClient();
+
+	const handleClearCache = async () => {
+		try {
+			toast.loading('Clearing system cache...', { id: 'clear-cache' });
+			await adminService.clearCache();
+			
+			// Invalidate all react-query queries to refresh UI and refetch from backend
+			queryClient.invalidateQueries();
+			
+			toast.success('System cache cleared successfully!', { id: 'clear-cache' });
+		} catch (err: any) {
+			toast.error('Failed to clear cache: ' + (err.message || 'Unknown error'), { id: 'clear-cache' });
+		}
+	};
 
 	const { data: adminData, isLoading: adminLoading } = useQuery({
 		queryKey: ['admin', 'dashboard'],
@@ -146,26 +163,26 @@ export default function DashboardPage() {
 		const adminStats = [
 			{
 				title: 'PLATFORM REVENUE',
-				value: `₦${(totals.revenue / 1000000).toFixed(1)}M`,
-				trend: '15%',
+				value: totals.revenue >= 1000000 ? `₦${(totals.revenue / 1000000).toFixed(2)}M` : `₦${totals.revenue.toLocaleString()}`,
+				trend: 'Ecosystem growth',
 				trendUp: true,
 				icon: Wallet,
 				bgColor: 'bg-brand-blue-soft',
 				iconColor: 'text-brand-blue',
 			},
 			{
-				title: 'PENDING LISTINGS',
-				value: totals.pendingListings.toString(),
-				trend: `${totals.pendingListings} urgent`,
+				title: 'PLATFORM LISTINGS',
+				value: totals.listings.toLocaleString(),
+				trend: `${totals.pendingListings} pending`,
 				trendUp: totals.pendingListings > 0,
 				icon: Building2,
-				bgColor: 'bg-amber-50',
-				iconColor: 'text-amber-600',
+				bgColor: 'bg-indigo-50',
+				iconColor: 'text-indigo-600',
 			},
 			{
 				title: 'TOTAL USERS',
 				value: totals.users.toLocaleString(),
-				trend: 'Live updates',
+				trend: 'Platform accounts',
 				trendUp: true,
 				icon: Users,
 				bgColor: 'bg-emerald-50',
@@ -242,6 +259,8 @@ export default function DashboardPage() {
 						<RevenueChart
 							title="Global Ecosystem Revenue"
 							description="System-wide performance tracking aggregate transaction volume"
+							data={adminData.revenueChartData}
+							weeklyData={adminData.weeklyData}
 						/>
 
 						{/* Top Vendors Section */}
@@ -327,28 +346,37 @@ export default function DashboardPage() {
 								Actions
 							</h3>
 							<div className="grid grid-cols-2 gap-3">
-								<button className="flex flex-col items-center justify-center p-4 rounded-3xl bg-neutral-50 border border-neutral-100 hover:bg-brand-blue-soft hover:border-brand-blue/20 transition-all group">
-									<Users className="h-6 w-6 text-neutral-400 group-hover:text-brand-blue mb-2" />
+								<Link href="/dashboard/admin/vendors" className="w-full">
+									<button className="w-full flex flex-col items-center justify-center p-4 rounded-3xl bg-neutral-50 border border-neutral-100 hover:bg-brand-blue-soft hover:border-brand-blue/20 transition-all group cursor-pointer">
+										<Users className="h-6 w-6 text-neutral-400 group-hover:text-brand-blue mb-2" />
+										<span className="text-[10px] font-bold text-neutral-600 group-hover:text-brand-blue uppercase">
+											Verify Vendors
+										</span>
+									</button>
+								</Link>
+								<Link href="/dashboard/admin/listings" className="w-full">
+									<button className="w-full flex flex-col items-center justify-center p-4 rounded-3xl bg-neutral-50 border border-neutral-100 hover:bg-brand-blue-soft hover:border-brand-blue/20 transition-all group cursor-pointer">
+										<Building2 className="h-6 w-6 text-neutral-400 group-hover:text-brand-blue mb-2" />
+										<span className="text-[10px] font-bold text-neutral-600 group-hover:text-brand-blue uppercase">
+											Audit Venues
+										</span>
+									</button>
+								</Link>
+								<Link href="/dashboard/admin/settlements" className="w-full">
+									<button className="w-full flex flex-col items-center justify-center p-4 rounded-3xl bg-neutral-50 border border-neutral-100 hover:bg-brand-blue-soft hover:border-brand-blue/20 transition-all group cursor-pointer">
+										<Wallet className="h-6 w-6 text-neutral-400 group-hover:text-brand-blue mb-2" />
+										<span className="text-[10px] font-bold text-neutral-600 group-hover:text-brand-blue uppercase">
+											Manage Payouts
+										</span>
+									</button>
+								</Link>
+								<button
+									onClick={handleClearCache}
+									className="flex flex-col items-center justify-center p-4 rounded-3xl bg-neutral-50 border border-neutral-100 hover:bg-brand-blue-soft hover:border-brand-blue/20 transition-all group cursor-pointer"
+								>
+									<Activity className="h-6 w-6 text-neutral-400 group-hover:text-brand-blue mb-2" />
 									<span className="text-[10px] font-bold text-neutral-600 group-hover:text-brand-blue uppercase">
-										Verify Vendors
-									</span>
-								</button>
-								<button className="flex flex-col items-center justify-center p-4 rounded-3xl bg-neutral-50 border border-neutral-100 hover:bg-brand-blue-soft hover:border-brand-blue/20 transition-all group">
-									<Building2 className="h-6 w-6 text-neutral-400 group-hover:text-brand-blue mb-2" />
-									<span className="text-[10px] font-bold text-neutral-600 group-hover:text-brand-blue uppercase">
-										Audit Venues
-									</span>
-								</button>
-								<button className="flex flex-col items-center justify-center p-4 rounded-3xl bg-neutral-50 border border-neutral-100 hover:bg-brand-blue-soft hover:border-brand-blue/20 transition-all group">
-									<Wallet className="h-6 w-6 text-neutral-400 group-hover:text-brand-blue mb-2" />
-									<span className="text-[10px] font-bold text-neutral-600 group-hover:text-brand-blue uppercase">
-										Manage Payouts
-									</span>
-								</button>
-								<button className="flex flex-col items-center justify-center p-4 rounded-3xl bg-neutral-50 border border-neutral-100 hover:bg-brand-blue-soft hover:border-brand-blue/20 transition-all group">
-									<HelpCircle className="h-6 w-6 text-neutral-400 group-hover:text-brand-blue mb-2" />
-									<span className="text-[10px] font-bold text-neutral-600 group-hover:text-brand-blue uppercase">
-										Support Queue
+										Clear Cache
 									</span>
 								</button>
 							</div>
@@ -364,28 +392,47 @@ export default function DashboardPage() {
 								<div className="space-y-2">
 									<div className="flex justify-between text-xs font-black uppercase tracking-widest">
 										<span className="text-neutral-400">Database Latency</span>
-										<span className="text-emerald-600">8ms</span>
+										<span className={cn(
+											(adminData.systemHealth?.dbLatency ?? 0) > 100 ? "text-red-500" : "text-emerald-600"
+										)}>{adminData.systemHealth?.dbLatency ?? 0}ms</span>
 									</div>
 									<div className="h-2 w-full bg-neutral-50 rounded-full overflow-hidden">
-										<div className="h-full w-[92%] bg-emerald-500 rounded-full" />
+										<div 
+											className={cn(
+												"h-full rounded-full transition-all duration-500",
+												(adminData.systemHealth?.dbLatency ?? 0) > 100 ? "bg-red-500" : "bg-emerald-500"
+											)} 
+											style={{ width: `${Math.min(100, Math.max(5, 100 - (adminData.systemHealth?.dbLatency ?? 0)))}%` }} 
+										/>
 									</div>
 								</div>
 								<div className="space-y-2">
 									<div className="flex justify-between text-xs font-black uppercase tracking-widest">
 										<span className="text-neutral-400">Server Load</span>
-										<span className="text-brand-blue">24%</span>
+										<span className={cn(
+											(adminData.systemHealth?.serverLoad ?? 0) > 80 ? "text-red-500" : "text-brand-blue"
+										)}>{adminData.systemHealth?.serverLoad ?? 0}%</span>
 									</div>
 									<div className="h-2 w-full bg-neutral-50 rounded-full overflow-hidden">
-										<div className="h-full w-[24%] bg-brand-blue rounded-full" />
+										<div 
+											className={cn(
+												"h-full rounded-full transition-all duration-500",
+												(adminData.systemHealth?.serverLoad ?? 0) > 80 ? "bg-red-500" : "bg-brand-blue"
+											)} 
+											style={{ width: `${adminData.systemHealth?.serverLoad ?? 0}%` }} 
+										/>
 									</div>
 								</div>
 								<div className="space-y-2">
 									<div className="flex justify-between text-xs font-black uppercase tracking-widest">
 										<span className="text-neutral-400">Payout Queue</span>
-										<span className="text-amber-500">14 Pend.</span>
+										<span className="text-amber-500">{adminData.systemHealth?.pendingPayouts ?? 0} Pend.</span>
 									</div>
 									<div className="h-2 w-full bg-neutral-50 rounded-full overflow-hidden">
-										<div className="h-full w-[40%] bg-amber-500 rounded-full" />
+										<div 
+											className="h-full bg-amber-500 rounded-full transition-all duration-500" 
+											style={{ width: `${Math.min(100, (adminData.systemHealth?.pendingPayouts ?? 0) * 10)}%` }} 
+										/>
 									</div>
 								</div>
 							</div>
