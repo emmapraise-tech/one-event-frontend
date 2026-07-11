@@ -111,7 +111,7 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 			className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all flex flex-col h-full rounded-2xl cursor-pointer"
 		>
 			{/* Image Header */}
-			<div className="relative aspect-4/3 bg-neutral-100 overflow-hidden">
+			<div className="relative aspect-video sm:aspect-4/3 bg-neutral-100 overflow-hidden">
 				{/* Badges */}
 				<div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
 				</div>

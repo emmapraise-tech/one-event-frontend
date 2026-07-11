@@ -314,7 +314,7 @@ export default function Home() {
 								</div>
 							) : featuredVenues.length > 0 ? (
 								featuredVenues.map((venue) => (
-									<div key={venue.id} className="h-[440px]">
+									<div key={venue.id} className="h-full">
 										<VenueListingCard listing={venue} />
 									</div>
 								))
