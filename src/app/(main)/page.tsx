@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-
+import { EmptyState } from '@/components/ui/empty-state';
 import {
 	Search,
 	Calendar as CalendarIcon,
@@ -126,7 +126,7 @@ export default function Home() {
 											/>
 										</PopoverTrigger>
 										<PopoverContent 
-											className="w-[300px] p-2 bg-white border border-gray-200 shadow-xl rounded-xl z-50" 
+											className="w-[calc(100vw-2rem)] md:w-[300px] p-2 bg-white border border-gray-200 shadow-xl rounded-xl z-50" 
 											align="start"
 											onOpenAutoFocus={(e) => e.preventDefault()}
 										>
@@ -319,8 +319,12 @@ export default function Home() {
 									</div>
 								))
 							) : (
-								<div className="col-span-4 text-center py-20 text-neutral-500">
-									No featured venues found at the moment.
+								<div className="col-span-1 sm:col-span-2 lg:col-span-4 flex justify-center py-10">
+									<EmptyState
+										icon={<Building2 className="h-16 w-16 text-neutral-300" />}
+										title="No featured venues right now"
+										description="Check back later for curated top-tier event spaces."
+									/>
 								</div>
 							)}
 						</div>

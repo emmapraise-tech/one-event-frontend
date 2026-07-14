@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Logo } from '@/components/logo';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 export function Header() {
 	const pathname = usePathname();
@@ -45,21 +46,6 @@ export function Header() {
 
 	// Determine transparency based on route and scroll state
 	const isTransparent = isHome && !isScrolled;
-
-	// Dropdown Hover Logic for Desktop
-	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	let closeTimeout: NodeJS.Timeout;
-
-	const handleMouseEnter = () => {
-		clearTimeout(closeTimeout);
-		setIsMenuOpen(true);
-	};
-
-	const handleMouseLeave = () => {
-		closeTimeout = setTimeout(() => {
-			setIsMenuOpen(false);
-		}, 200);
-	};
 
 	// Helper to get initials
 	const getInitials = (firstName?: string, lastName?: string) => {
@@ -96,17 +82,8 @@ export function Header() {
 
 					{isAuthenticated && user ? (
 						<div className="flex items-center gap-4">
-							<DropdownMenu
-								open={isMenuOpen}
-								onOpenChange={setIsMenuOpen}
-								modal={false}
-							>
-								<div
-									onMouseEnter={handleMouseEnter}
-									onMouseLeave={handleMouseLeave}
-									className="py-2"
-								>
-									<DropdownMenuTrigger asChild>
+							<DropdownMenu modal={false}>
+								<DropdownMenuTrigger asChild>
 										<Button
 											variant="ghost"
 											className={`relative h-10 w-10 rounded-full transition-all ${
@@ -129,14 +106,9 @@ export function Header() {
 											</Avatar>
 										</Button>
 									</DropdownMenuTrigger>
-								</div>
-
 								<DropdownMenuContent
 									className="w-64 bg-white/95 backdrop-blur-xl border-neutral-100 shadow-xl rounded-2xl p-2 mt-2"
 									align="end"
-									forceMount
-									onMouseEnter={handleMouseEnter}
-									onMouseLeave={handleMouseLeave}
 								>
 									<DropdownMenuLabel className="font-normal p-3 bg-neutral-50/50 rounded-xl mb-2">
 										<div className="flex flex-col space-y-1">
@@ -230,125 +202,124 @@ export function Header() {
 						</div>
 					)}
 
-					{/* Mobile Menu Button */}
-					<button
-						className={`md:hidden p-2 rounded-full transition-colors ${
-							isTransparent
-								? 'text-white hover:bg-white/20'
-								: 'text-neutral-900 hover:bg-neutral-100'
-						}`}
-						onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-					>
-						<Menu className="h-6 w-6" />
-						<span className="sr-only">Toggle menu</span>
-					</button>
-				</div>
+					{/* Mobile Menu */}
+					<Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+						<SheetTrigger asChild>
+							<button
+								className={`md:hidden p-2 rounded-full transition-colors ${
+									isTransparent
+										? 'text-white hover:bg-white/20'
+										: 'text-neutral-900 hover:bg-neutral-100'
+								}`}
+							>
+								<Menu className="h-6 w-6" />
+								<span className="sr-only">Toggle menu</span>
+							</button>
+						</SheetTrigger>
+						<SheetContent side="left" className="bg-white border-neutral-100 shadow-xl p-4 flex flex-col gap-4 w-[300px] sm:w-[340px]">
+							<nav className="flex flex-col gap-2 mt-8">
+								<Link
+									href="/listings"
+									onClick={() => setIsMobileMenuOpen(false)}
+									className="text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
+								>
+									Venues
+								</Link>
+								<Link
+									href="/services"
+									onClick={() => setIsMobileMenuOpen(false)}
+									className="text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
+								>
+									Services
+								</Link>
+								<Link
+									href="/blog"
+									onClick={() => setIsMobileMenuOpen(false)}
+									className="text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
+								>
+									Blog
+								</Link>
+								<div className="h-px bg-neutral-100 my-1" />
 
-				{/* Mobile Navigation Dropdown - Simplified for now */}
-				{isMobileMenuOpen && (
-					<div className="absolute top-full left-0 right-0 bg-white border-b border-neutral-100 shadow-xl p-4 md:hidden flex flex-col gap-4 animate-in slide-in-from-top-2 z-40">
-						<nav className="flex flex-col gap-2">
-							<Link
-								href="/listings"
-								onClick={() => setIsMobileMenuOpen(false)}
-								className="text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
-							>
-								Venues
-							</Link>
-							<Link
-								href="/services"
-								onClick={() => setIsMobileMenuOpen(false)}
-								className="text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
-							>
-								Services
-							</Link>
-							<Link
-								href="/blog"
-								onClick={() => setIsMobileMenuOpen(false)}
-								className="text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
-							>
-								Blog
-							</Link>
-							<div className="h-px bg-neutral-100 my-1" />
-
-							{/* Auth & Dashboard Links */}
-							{isAuthenticated && user ? (
-								<>
-									<div className="p-2 mb-2 bg-neutral-50 rounded-lg">
-										<p className="text-sm font-bold text-neutral-900">
-											{user.firstName} {user.lastName}
-										</p>
-										<p className="text-xs text-neutral-500 font-medium">
-											{user.email}
-										</p>
-									</div>
-									<Link
-										href="/dashboard"
-										onClick={() => setIsMobileMenuOpen(false)}
-										className="flex items-center text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
-									>
-										<LayoutDashboard className="mr-3 h-4 w-4 text-neutral-400" />
-										Dashboard
-									</Link>
-									<Link
-										href="/dashboard/my-bookings"
-										onClick={() => setIsMobileMenuOpen(false)}
-										className="flex items-center text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
-									>
-										<Calendar className="mr-3 h-4 w-4 text-neutral-400" />
-										My Bookings
-									</Link>
-									<div className="h-px bg-neutral-100 my-1" />
-									<button
-										onClick={() => {
-											setIsMobileMenuOpen(false);
-											logout();
-										}}
-										className="flex items-center text-red-600 font-medium p-2 hover:bg-red-50 rounded-lg text-left"
-									>
-										<LogOut className="mr-3 h-4 w-4" />
-										Log out
-									</button>
-								</>
-							) : (
-								<>
-									<Link
-										href="/login"
-										onClick={() => setIsMobileMenuOpen(false)}
-									>
-										<Button
-											variant="outline"
-											className="w-full justify-start mb-2"
+								{/* Auth & Dashboard Links */}
+								{isAuthenticated && user ? (
+									<>
+										<div className="p-2 mb-2 bg-neutral-50 rounded-lg">
+											<p className="text-sm font-bold text-neutral-900">
+												{user.firstName} {user.lastName}
+											</p>
+											<p className="text-xs text-neutral-500 font-medium">
+												{user.email}
+											</p>
+										</div>
+										<Link
+											href="/dashboard"
+											onClick={() => setIsMobileMenuOpen(false)}
+											className="flex items-center text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
 										>
-											Log In
-										</Button>
-									</Link>
-									<Link
-										href="/register"
-										onClick={() => setIsMobileMenuOpen(false)}
-									>
-										<Button className="w-full justify-start bg-brand-gold hover:bg-brand-gold-hover text-white">
-											Sign Up
-										</Button>
-									</Link>
-								</>
-							)}
+											<LayoutDashboard className="mr-3 h-4 w-4 text-neutral-400" />
+											Dashboard
+										</Link>
+										<Link
+											href="/dashboard/my-bookings"
+											onClick={() => setIsMobileMenuOpen(false)}
+											className="flex items-center text-neutral-700 font-medium p-2 hover:bg-neutral-50 rounded-lg"
+										>
+											<Calendar className="mr-3 h-4 w-4 text-neutral-400" />
+											My Bookings
+										</Link>
+										<div className="h-px bg-neutral-100 my-1" />
+										<button
+											onClick={() => {
+												setIsMobileMenuOpen(false);
+												logout();
+											}}
+											className="flex items-center text-red-600 font-medium p-2 hover:bg-red-50 rounded-lg text-left"
+										>
+											<LogOut className="mr-3 h-4 w-4" />
+											Log out
+										</button>
+									</>
+								) : (
+									<>
+										<Link
+											href="/login"
+											onClick={() => setIsMobileMenuOpen(false)}
+										>
+											<Button
+												variant="outline"
+												className="w-full justify-start mb-2"
+											>
+												Log In
+											</Button>
+										</Link>
+										<Link
+											href="/register"
+											onClick={() => setIsMobileMenuOpen(false)}
+										>
+											<Button className="w-full justify-start bg-brand-gold hover:bg-brand-gold-hover text-white">
+												Sign Up
+											</Button>
+										</Link>
+									</>
+								)}
 
-							{(!isAuthenticated || user?.type === 'CUSTOMER') && (
-								<>
-									<div className="h-px bg-neutral-100 my-1" />
-									<Link
-										href="/partners"
-										onClick={() => setIsMobileMenuOpen(false)}
-										className="text-brand-gold font-bold p-2 hover:bg-amber-50 rounded-lg"
-									>
-										Become a Partner
-									</Link>
-								</>
-							)}
-						</nav>
-					</div>
-				)}
+								{(!isAuthenticated || user?.type === 'CUSTOMER') && (
+									<>
+										<div className="h-px bg-neutral-100 my-1" />
+										<Link
+											href="/partners"
+											onClick={() => setIsMobileMenuOpen(false)}
+											className="text-brand-gold font-bold p-2 hover:bg-amber-50 rounded-lg"
+										>
+											Become a Partner
+										</Link>
+									</>
+								)}
+							</nav>
+						</SheetContent>
+					</Sheet>
+				</div>
 			</div>
 		</header>
 	);
