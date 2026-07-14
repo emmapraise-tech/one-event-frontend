@@ -143,18 +143,18 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 				</div>
 			</div>
 
-			<CardContent className="flex flex-col flex-1 p-5">
+			<CardContent className="flex flex-col flex-1 p-4 sm:p-5">
 				{/* Title & Rating */}
 				<div className="flex justify-between items-start mb-2 gap-2">
-					<h3 className="font-bold text-lg text-neutral-900 line-clamp-1 group-hover:text-primary-blue transition-colors">
+					<h3 className="font-bold text-base sm:text-lg text-neutral-900 line-clamp-1 group-hover:text-primary-blue transition-colors">
 						{listing.name}
 					</h3>
-					<div className="flex items-center gap-1 text-sm font-semibold text-neutral-900 shrink-0">
-						<Star className="h-3.5 w-3.5 fill-accent-gold text-accent-gold shrink-0" />
+					<div className="flex items-center gap-1 text-xs sm:text-sm font-semibold text-neutral-900 shrink-0">
+						<Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-accent-gold text-accent-gold shrink-0" />
 						{listing.rating && listing.rating > 0 ? (
 							<>
 								<span>{listing.rating.toFixed(1)}</span>
-								<span className="text-neutral-400 font-normal">
+								<span className="text-neutral-400 font-normal hidden xs:inline">
 									({listing.reviewCount || 0})
 								</span>
 							</>
@@ -165,23 +165,23 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 				</div>
 
 				{/* Location */}
-				<div className="flex items-center gap-1.5 text-sm text-neutral-500 mb-4">
-					<MapPin className="h-3.5 w-3.5 shrink-0" />
+				<div className="flex items-center gap-1.5 text-xs sm:text-sm text-neutral-500 mb-3 sm:mb-4">
+					<MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
 					<span className="truncate">
 						{locationDisplay}
 					</span>
 				</div>
 
 				{/* Amenities/Tags Row */}
-				<div className="flex gap-2 mb-6 flex-wrap">
+				<div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-6 flex-wrap">
 					{features.map((feature, i) => (
 						<div
 							key={i}
-							className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-50 rounded-lg text-xs font-medium text-neutral-600"
+							className="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 bg-neutral-50 rounded-lg text-[10px] sm:text-xs font-medium text-neutral-600"
 						>
 							{React.isValidElement(feature.icon) 
-								? React.cloneElement(feature.icon as React.ReactElement<any>, { className: 'h-3.5 w-3.5 shrink-0' })
-								: <feature.icon className="h-3.5 w-3.5 shrink-0" />
+								? React.cloneElement(feature.icon as React.ReactElement<any>, { className: 'h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0' })
+								: <feature.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
 							}
 							{feature.label}
 						</div>
@@ -189,20 +189,20 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 				</div>
 
 				{/* Footer: Price & Action */}
-				<div className="mt-auto flex items-end justify-between border-t border-neutral-100 pt-4">
+				<div className="mt-auto flex items-end justify-between border-t border-neutral-100 pt-3 sm:pt-4">
 					<div>
-						<span className="text-[10px] uppercase font-semibold text-neutral-400 tracking-wider">
+						<span className="text-[9px] sm:text-[10px] uppercase font-semibold text-neutral-400 tracking-wider">
 							Starting from
 						</span>
-						<div className="flex items-baseline gap-1">
-							<span className="text-xl font-bold text-primary-blue">
+						<div className="flex items-baseline gap-0.5 sm:gap-1">
+							<span className="text-lg sm:text-xl font-bold text-primary-blue">
 								{priceDisplay}
 							</span>
-							<span className="text-xs text-neutral-500">/ event</span>
+							<span className="text-[10px] sm:text-xs text-neutral-500">/ event</span>
 						</div>
 					</div>
 
-					<span className="w-full max-w-[100px] inline-flex h-9 items-center justify-center rounded-lg bg-brand-blue text-sm font-semibold text-white shadow-sm hover:bg-brand-blue-hover transition-colors pointer-events-none group-hover:bg-brand-blue-hover">
+					<span className="w-full max-w-[85px] sm:max-w-[100px] inline-flex h-8 sm:h-9 items-center justify-center rounded-lg bg-brand-blue text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-brand-blue-hover transition-colors pointer-events-none group-hover:bg-brand-blue-hover">
 						View Details
 					</span>
 				</div>
