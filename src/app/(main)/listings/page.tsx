@@ -720,7 +720,12 @@ export default function ListingsLandingPage() {
 							<EmptyState
 								icon={<Building2 className="h-16 w-16 text-neutral-300" />}
 								title="No venues found"
-								description="Try adjusting your filters or search terms."
+								description="Try adjusting your filters or search terms to find what you're looking for."
+								action={
+									<Button onClick={handleResetFilters} variant="outline" className="mt-4 border-neutral-200 text-neutral-900 hover:border-primary-blue hover:text-primary-blue h-12 px-8 rounded-full">
+										Clear Filters
+									</Button>
+								}
 							/>
 						) : (
 							<>

@@ -121,9 +121,9 @@ export function VenueListingCard({ listing }: VenueListingCardProps) {
 					onClick={(e) => {
 						e.stopPropagation();
 					}}
-					className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-white/50 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors group/heart"
+					className="absolute top-4 right-4 z-10 h-11 w-11 rounded-full bg-white/50 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors group/heart shadow-sm"
 				>
-					<Heart className="h-4 w-4 text-neutral-900 group-hover/heart:fill-red-500 group-hover/heart:text-red-500 transition-colors" />
+					<Heart className="h-5 w-5 text-neutral-900 group-hover/heart:fill-red-500 group-hover/heart:text-red-500 transition-colors" />
 				</button>
 
 				{/* Image Placeholder */}
