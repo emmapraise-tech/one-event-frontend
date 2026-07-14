@@ -724,7 +724,7 @@ export default function ListingsLandingPage() {
 							/>
 						) : (
 							<>
-								<div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
+								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
 									{listings.map((listing) => (
 										<VenueListingCard key={listing.id} listing={listing} />
 									))}
