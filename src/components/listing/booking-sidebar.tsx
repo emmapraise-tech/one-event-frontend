@@ -20,6 +20,7 @@ import {
 	differenceInDays,
 	eachDayOfInterval,
 	startOfDay,
+	addDays,
 } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { Calendar } from '@/components/ui/calendar';
@@ -95,9 +96,9 @@ export function BookingSidebar({
 	const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 	const [selectedHallId, setSelectedHallId] = useState<string>('');
 
-	// Default date range: today for 1 day
+	// Default date range: 3 days from current day
 	const [dateRange, setDateRange] = useState<DateRange | undefined>({
-		from: new Date(),
+		from: addDays(new Date(), 3),
 		to: undefined,
 	});
 

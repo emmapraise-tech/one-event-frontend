@@ -77,10 +77,20 @@ export function useAuth() {
 	});
 
 	const googleLoginMutation = useMutation({
-		mutationFn: authService.googleLogin,
-		onSuccess: (data) => {
+		mutationFn: (variables: string | { token: string; redirectUrl?: string | null | false }) => {
+			const token = typeof variables === 'string' ? variables : variables.token;
+			return authService.googleLogin(token);
+		},
+		onSuccess: (data, variables) => {
 			localStorage.setItem('token', data.access_token);
 			queryClient.setQueryData(['user'], data.user);
+
+			const redirectUrl = typeof variables === 'object' ? variables.redirectUrl : undefined;
+			if (redirectUrl === false) return;
+			if (typeof redirectUrl === 'string') {
+				router.push(redirectUrl);
+				return;
+			}
 
 			// Priority 1: Check for callbackUrl in search params
 			const callbackUrl = searchParams.get('callbackUrl');
@@ -102,7 +112,7 @@ export function useAuth() {
 	const logout = () => {
 		authService.logout();
 		queryClient.setQueryData(['user'], null);
-		router.push('/login');
+		router.push('/');
 	};
 
 	return {

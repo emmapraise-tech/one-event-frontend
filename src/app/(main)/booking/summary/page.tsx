@@ -48,9 +48,7 @@ function BookingSummaryContent() {
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [bookingData, setBookingData] = useState<any>(null);
 	const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
-	const [paymentMethod, setPaymentMethod] = useState<'card' | 'bank' | 'cash'>(
-		'card',
-	);
+	const [paymentMethod, setPaymentMethod] = useState<'card' | 'cash'>('card');
 	const [specialRequest, setSpecialRequest] = useState('');
 	const [isAvailable, setIsAvailable] = useState<boolean | true>(true);
 	const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -183,27 +181,6 @@ function BookingSummaryContent() {
 				return;
 			}
 
-			if (paymentMethod === 'bank') {
-				// Initialize payment with Monnify (Assumed Bank Transfer equivalent provider)
-				// Note: As there is no MONNIFY enum, falling back to a dummy payment initiation or direct reference assignment
-				const paymentResponse: any = await paymentService.create({
-					bookingId: booking.id,
-					amount: grandTotal,
-					paymentType:
-						bookingData.paymentPreference === 'deposit'
-							? PaymentType.DEPOSIT
-							: PaymentType.FULL_PAYMENT,
-					provider: PaymentProvider.PAYSTACK, // Fallback safely to create a record securely
-					callbackUrl: `${window.location.origin}/booking/confirmed`,
-				});
-
-				const referenceToVerify =
-					paymentResponse?.reference ||
-					paymentResponse?.paystackResponse?.reference ||
-					booking.id;
-				router.push(`/booking/confirmed?reference=${referenceToVerify}`);
-				return;
-			}
 
 			// 2. Initialize payment with Paystack for card
 			const paymentResponse: any = await paymentService.create({
@@ -638,7 +615,7 @@ function BookingSummaryContent() {
 										<h4 className="font-bold text-sm text-neutral-900">
 											Select Payment Method
 										</h4>
-										<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 											<div
 												onClick={() => setPaymentMethod('card')}
 												className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
@@ -650,19 +627,6 @@ function BookingSummaryContent() {
 												<CreditCardIcon className="h-6 w-6 mb-2" />
 												<span className="text-sm font-semibold">
 													Card Payment
-												</span>
-											</div>
-											<div
-												onClick={() => setPaymentMethod('bank')}
-												className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all ${
-													paymentMethod === 'bank'
-														? 'border-brand-blue bg-brand-blue-soft text-brand-blue'
-														: 'border-neutral-200 hover:border-brand-blue/50 text-neutral-500'
-												}`}
-											>
-												<Banknote className="h-6 w-6 mb-2" />
-												<span className="text-sm font-semibold">
-													Bank Transfer
 												</span>
 											</div>
 											<div
@@ -692,105 +656,6 @@ function BookingSummaryContent() {
 										</Alert>
 									)}
 
-									{/* Virtual Account Info Block */}
-									{paymentMethod === 'bank' && (
-										<div className="bg-blue-50/50 border border-brand-blue/20 rounded-xl p-4 mb-6">
-											<span className="text-[10px] font-bold text-brand-blue block mb-3 uppercase tracking-wider">
-												Vendor Virtual Account
-											</span>
-											<div className="space-y-3">
-												<div className="flex justify-between items-center text-sm">
-													<span className="text-neutral-500">Bank Name</span>
-													<div className="flex items-center gap-2">
-														<span className="font-semibold text-neutral-900">
-															Providus Bank
-														</span>
-														<Button
-															variant="ghost"
-															size="icon"
-															className="h-6 w-6 text-neutral-400 hover:text-brand-blue"
-															onClick={() =>
-																handleCopy('Providus Bank', 'Bank Name')
-															}
-														>
-															<Copy className="h-3 w-3" />
-														</Button>
-													</div>
-												</div>
-												<div className="flex justify-between items-center text-sm">
-													<span className="text-neutral-500">
-														Account Number
-													</span>
-													<div className="flex items-center gap-2">
-														<span className="font-mono font-bold text-lg text-brand-blue tracking-wider">
-															{(listingData?.vendor as any)
-																?.virtualAccountNumber || '9901234567'}
-														</span>
-														<Button
-															variant="ghost"
-															size="icon"
-															className="h-6 w-6 text-neutral-400 hover:text-brand-blue"
-															onClick={() =>
-																handleCopy(
-																	(listingData?.vendor as any)
-																		?.virtualAccountNumber || '9901234567',
-																	'Account Number',
-																)
-															}
-														>
-															<Copy className="h-3 w-3" />
-														</Button>
-													</div>
-												</div>
-												<div className="flex justify-between items-center text-sm pt-2 border-t border-blue-100">
-													<span className="text-neutral-500">Account Name</span>
-													<div className="flex items-center gap-2">
-														<span className="font-medium text-neutral-900 text-right">
-															{(listingData?.vendor as any)?.businessName ||
-																'OneEvent Virtual Collection'}
-														</span>
-														<Button
-															variant="ghost"
-															size="icon"
-															className="h-6 w-6 text-neutral-400 hover:text-brand-blue"
-															onClick={() =>
-																handleCopy(
-																	(listingData?.vendor as any)?.businessName ||
-																		'OneEvent Virtual Collection',
-																	'Account Name',
-																)
-															}
-														>
-															<Copy className="h-3 w-3" />
-														</Button>
-													</div>
-												</div>
-											</div>
-											<div className="flex items-center justify-between text-xs text-neutral-500 mt-4 leading-relaxed bg-white/60 p-2 rounded">
-												<span>
-													Please transfer exactly{' '}
-													<span className="font-bold text-neutral-900">
-														₦{grandTotal.toLocaleString()}
-													</span>{' '}
-													to this account.
-												</span>
-												<Button
-													variant="ghost"
-													size="icon"
-													className="h-6 w-6 text-neutral-400 hover:text-brand-blue"
-													onClick={() =>
-														handleCopy(grandTotal.toString(), 'Amount')
-													}
-												>
-													<Copy className="h-3 w-3" />
-												</Button>
-											</div>
-											<p className="text-xs text-neutral-500 mt-1 leading-relaxed bg-white/60 p-2 rounded">
-												The system will verify your payment automatically after
-												clicking "I have paid".
-											</p>
-										</div>
-									)}
 
 									<div className="pt-2">
 										<div className="flex items-start gap-2 mb-4">
@@ -828,11 +693,6 @@ function BookingSummaryContent() {
 												<>Processing...</>
 											) : isAvailable === false ? (
 												<>Date Not Available</>
-											) : paymentMethod === 'bank' ? (
-												<>
-													I have paid ₦{grandTotal.toLocaleString()}{' '}
-													<ShieldCheck className="w-4 h-4 ml-2" />
-												</>
 											) : (
 												<>
 													Pay ₦{grandTotal.toLocaleString()}{' '}
