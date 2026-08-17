@@ -181,18 +181,10 @@ export default function VendorPage() {
               />
             </div>
 
-            <div className="border-t pt-4">
+             <div className="border-t pt-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold">Legal & Banking Information</h3>
-                <span className="text-xs bg-brand-blue-soft text-brand-blue px-2 py-1 rounded font-bold">
-                  Virtual Account Pending
-                </span>
               </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                A dedicated virtual account will be automatically generated for
-                your business upon approval. You will receive all booking
-                payments through this account.
-              </p>
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="grid gap-2">
                   <Label htmlFor="taxNumber">Tax Number</Label>
@@ -238,41 +230,6 @@ export default function VendorPage() {
                       id="bankAccountName"
                       {...form.register("bankAccountName")}
                       placeholder="e.g. John Doe"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 p-4 rounded-xl border border-brand-blue-soft bg-brand-blue/5">
-                <h4 className="font-semibold text-sm mb-4 flex items-center">
-                  Virtual Collection Account
-                  <span className="ml-2 text-[10px] bg-brand-blue-soft text-brand-blue px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                    Auto-Generated
-                  </span>
-                </h4>
-                <div className="grid gap-4 sm:grid-cols-3 opacity-80 pointer-events-none">
-                  <div className="grid gap-2">
-                    <Label>Virtual Bank Name</Label>
-                    <Input
-                      value="Providus Bank"
-                      readOnly
-                      className="bg-white/50"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Account Number</Label>
-                    <Input
-                      value="Generating..."
-                      readOnly
-                      className="bg-white/50"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Account Name</Label>
-                    <Input
-                      value={vendor ? vendor.businessName : "OneEvent / Vendor"}
-                      readOnly
-                      className="bg-white/50"
                     />
                   </div>
                 </div>

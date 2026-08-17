@@ -368,43 +368,6 @@ export function ProfileSettings() {
 						</div>
 					</div>
 
-					<div className="flex items-center justify-between mb-6">
-						<div>
-							<h3 className="text-lg font-bold text-gray-900 mb-1">
-								Virtual Collection Account
-							</h3>
-							<p className="text-sm text-muted-foreground">
-								Your dedicated virtual account for receiving payments from
-								customers.
-							</p>
-						</div>
-						<Badge className="bg-brand-blue-soft text-brand-blue rounded-md px-2 py-1 text-xs font-bold border-none transition-colors">
-							AUTO-GENERATED
-						</Badge>
-					</div>
-
-					<div className="grid gap-6 md:grid-cols-2 opacity-80 pointer-events-none">
-						<div className="space-y-2">
-							<Label htmlFor="virtualBankName">Virtual Bank Name</Label>
-							<Input
-								id="virtualBankName"
-								value={'Providus Bank'}
-								readOnly
-								className="bg-gray-50/50 border-gray-200"
-							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="virtualAccountNumber">
-								Virtual Account Number
-							</Label>
-							<Input
-								id="virtualAccountNumber"
-								value={'9901234567'}
-								readOnly
-								className="bg-gray-50/50 border-gray-200 font-mono text-brand-blue font-bold tracking-wider"
-							/>
-						</div>
-					</div>
 					<div className="pt-6 flex justify-end items-center gap-4 border-t border-neutral-100 mt-8">
 						{saveSettlementSuccess && (
 							<span className="text-sm font-bold text-emerald-600 animate-in fade-in slide-in-from-right-2 duration-300">

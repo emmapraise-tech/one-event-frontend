@@ -17,7 +17,7 @@ export function PaymentMethodSelector({
     <RadioGroup
       value={value}
       onValueChange={onChange}
-      className="grid grid-cols-1 md:grid-cols-3 gap-4"
+      className="grid grid-cols-1 md:grid-cols-2 gap-4"
     >
       <div
         className={`relative flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 cursor-pointer transition-all ${
@@ -60,33 +60,6 @@ export function PaymentMethodSelector({
         </div>
         <span className="text-xs text-neutral-500 text-center">
           Secure Payment via Flutterwave Gateway
-        </span>
-      </div>
-
-      <div
-        className={`relative flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 cursor-pointer transition-all ${
-          value === "monnify"
-            ? "border-brand-blue bg-brand-blue-soft"
-            : "border-neutral-200 hover:border-brand-blue/50 hover:bg-neutral-50"
-        }`}
-        onClick={() => onChange("monnify")}
-      >
-        <RadioGroupItem
-          value="monnify"
-          id="monnify"
-          className="absolute top-4 right-4 text-brand-blue border-brand-blue"
-        />
-        <div className="flex flex-col items-center gap-1">
-          <div className="flex items-center gap-2 text-brand-blue font-bold">
-            <Banknote className="h-5 w-5" />
-            <span>Virtual Account</span>
-          </div>
-          <span className="text-[10px] font-semibold text-brand-blue uppercase tracking-wider">
-            Powered by Monnify
-          </span>
-        </div>
-        <span className="text-xs text-neutral-500 text-center mt-1">
-          Direct transfer to the vendor's dedicated virtual account
         </span>
       </div>
     </RadioGroup>
